@@ -5,23 +5,179 @@
 <head>
     <meta charset="UTF-8">
     <title>Rosé & Roots</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
 </head>
 <body>
+    <!-- Top Bar Section (Visible only on PC/Laptop) -->
+    <div class="top-bar d-none d-lg-block">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <div class="top-bar-item">
+                            <i class="bi bi-telephone-fill top-bar-icon"></i>
+                            <span class="customer-support-text">Customer support:</span>
+                            <a href="tel:+918805433102" class="top-bar-contact">+91 88054 33102</a>
+                        </div>
+                        <div class="top-bar-item">
+                            <i class="bi bi-envelope-fill top-bar-icon"></i>
+                            <a href="mailto:support@gmail.com" class="top-bar-contact">support@gmail.com</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="d-flex align-items-center justify-content-end">
+                        <div class="top-bar-item">
+                            <a href="#" class="track-order">
+                                <i class="bi bi-truck"></i>
+                                <span>Track Order</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand & Navigation Section -->
+    <section class="brand-navigation-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Brand Name (Left) -->
+                <div class="col-8 col-sm-8 col-md-6">
+                    <a href="/" class="brand-name">LittleCraftOne</a>
+                </div>
+                
+                <!-- Desktop Navigation Icons (Right) -->
+                <div class="col-md-6 desktop-nav-icons d-none d-lg-block">
+                    <div class="nav-icons">
+                        <a href="#" class="nav-icon-item">
+                            <i class="bi bi-person nav-icon"></i>
+                            <span class="nav-icon-text">Account</span>
+                        </a>
+                        <a href="#" class="nav-icon-item">
+                            <i class="bi bi-heart nav-icon"></i>
+                            <span class="nav-icon-text">Wishlist</span>
+                        </a>
+                        <a href="#" class="nav-icon-item position-relative">
+                            <i class="bi bi-cart3 nav-icon"></i>
+                            <span class="nav-icon-text">Cart</span>
+                            <span class="cart-badge">3</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Mobile Navigation (Right Side) -->
+                <div class="col-4 col-sm-4 col-md-6 d-lg-none">
+                    <div class="d-flex align-items-center justify-content-end">
+                        <!-- Mobile Icons -->
+                        <div class="mobile-nav-icons me-3">
+                            <a href="#" class="nav-icon-item">
+                                <i class="bi bi-person nav-icon"></i>
+                            </a>
+                            <a href="#" class="nav-icon-item position-relative">
+                                <i class="bi bi-cart3 nav-icon"></i>
+                                <span class="cart-badge">3</span>
+                            </a>
+                        </div>
+                        <!-- Mobile Menu Toggle -->
+                        <button class="mobile-nav-toggle" id="mobileMenuToggle">
+                            <i class="bi bi-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation Menu (Desktop only) -->
+    <section class="nav-menu-section d-none d-lg-block">
+        <div class="container">
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link active">Home</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Mobile Menu (Only visible on mobile) -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <h5 class="mb-0">Menu</h5>
+            <button class="mobile-menu-close" id="mobileMenuClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <ul class="mobile-nav-menu">
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link active">Home</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Category</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Cart</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Checkout</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
+            <li class="mobile-nav-menu-item mt-4"><a href="#" class="mobile-nav-menu-link"><i class="bi bi-person me-2"></i>My Account</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link"><i class="bi bi-heart me-2"></i>Wishlist</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link"><i class="bi bi-cart3 me-2"></i>Cart (3)</a></li>
+        </ul>
+    </div>
 
     {% block content %}
     {% endblock %}
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu Toggle
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            
+            function openMobileMenu() {
+                mobileMenu.classList.add('active');
+                mobileMenuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeMobileMenu() {
+                mobileMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            mobileMenuToggle.addEventListener('click', openMobileMenu);
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+            
+            // Menu Navigation
+            const allMenuLinks = document.querySelectorAll('.nav-menu-link, .mobile-nav-menu-link');
+            allMenuLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    allMenuLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    closeMobileMenu();
+                });
+            });
+        });
+    </script>
 </body>
 </html>
