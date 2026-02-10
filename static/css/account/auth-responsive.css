@@ -1,0 +1,402 @@
+/* Responsive Styles for Authentication */
+
+/* Large Desktop Adjustments */
+@media (max-width: 1199.98px) {
+    .auth-left {
+        padding: 40px 30px;
+        min-height: 550px;
+    }
+    
+    .auth-right {
+        padding: 40px 30px;
+    }
+    
+    .auth-heading {
+        font-size: 2.2rem;
+    }
+    
+    .auth-subtitle {
+        font-size: 1.05rem;
+    }
+}
+
+/* Tablet (991px and below) */
+@media (max-width: 991.98px) {
+    .auth-card {
+        margin: 0;
+        border-radius: 20px;
+    }
+    
+    .auth-left,
+    .auth-right {
+        min-height: auto;
+        padding: 40px 30px;
+    }
+    
+    .auth-left {
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .auth-right {
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .auth-heading {
+        font-size: 2rem;
+    }
+    
+    .auth-subtitle {
+        font-size: 1rem;
+    }
+    
+    .feature-item {
+        padding: 15px;
+    }
+    
+    .social-login {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .auth-stats {
+        gap: 20px;
+    }
+    
+    .stat-number {
+        font-size: 1.7rem;
+    }
+}
+
+/* Mobile (767px and below) */
+@media (max-width: 767.98px) {
+    .auth-page-wrapper {
+        padding: 20px 0 40px;
+    }
+    
+    .auth-left,
+    .auth-right {
+        padding: 30px 20px;
+    }
+    
+    .auth-heading {
+        font-size: 1.8rem;
+    }
+    
+    .auth-form-header h2 {
+        font-size: 1.7rem;
+    }
+    
+    .auth-logo {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+    }
+    
+    .feature-item {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        margin-right: 15px;
+    }
+    
+    .feature-text h5 {
+        font-size: 1rem;
+    }
+    
+    .feature-text p {
+        font-size: 0.85rem;
+    }
+    
+    .auth-testimonial {
+        padding: 20px;
+    }
+    
+    .testimonial-text {
+        font-size: 0.95rem;
+    }
+    
+    .auth-stats {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .stat-item {
+        text-align: left;
+    }
+    
+    .social-login {
+        flex-direction: column;
+    }
+    
+    .social-btn {
+        width: 100%;
+    }
+    
+    .password-requirements {
+        padding: 12px;
+    }
+    
+    .req-list {
+        font-size: 0.8rem;
+    }
+}
+
+/* Small Mobile (575px and below) */
+@media (max-width: 575.98px) {
+    .auth-left,
+    .auth-right {
+        padding: 25px 15px;
+    }
+    
+    .auth-heading {
+        font-size: 1.6rem;
+    }
+    
+    .auth-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+    }
+    
+    .auth-form-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .auth-form-header p {
+        font-size: 0.95rem;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .input-group-text {
+        padding: 10px 12px;
+    }
+    
+    .form-control {
+        padding: 10px 12px;
+    }
+    
+    .auth-submit-btn {
+        padding: 13px 18px;
+        font-size: 0.95rem;
+    }
+    
+    .feature-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .feature-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .breadcrumb {
+        font-size: 0.9rem;
+    }
+    
+    /* Make form elements more touch-friendly on mobile */
+    .form-check-input {
+        width: 1.3em;
+        height: 1.3em;
+        margin-top: 0.15em;
+    }
+    
+    .form-check-label {
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .terms-checkbox .form-check-label {
+        font-size: 0.9rem;
+    }
+    
+    .password-toggle {
+        min-width: 50px;
+    }
+    
+    /* Password requirements adjustments for mobile */
+    .password-requirements {
+        padding: 12px;
+        margin-top: 8px;
+    }
+    
+    .req-title {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+    
+    .req-list {
+        font-size: 0.8rem;
+    }
+    
+    .req-item {
+        margin-bottom: 6px;
+    }
+    
+    .req-item i {
+        font-size: 0.75rem;
+        margin-right: 8px;
+    }
+    
+    /* Adjust breadcrumb for mobile */
+    .breadcrumb {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+        margin-top: 10px;
+    }
+    
+    .breadcrumb-item i {
+        font-size: 1rem;
+    }
+}
+
+/* Extra small devices (400px and below) */
+@media (max-width: 400px) {
+    .auth-form-container {
+        padding: 20px 15px;
+    }
+    
+    .auth-form-header h2 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .auth-form-header p {
+        font-size: 0.9rem;
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    
+    .input-group-text {
+        padding: 8px 10px;
+    }
+    
+    .form-control {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+    
+    .invalid-feedback {
+        font-size: 0.8rem;
+    }
+    
+    .form-text {
+        font-size: 0.85rem;
+    }
+    
+    .forgot-link {
+        font-size: 0.85rem;
+    }
+    
+    .auth-submit-btn {
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+    
+    .divider span {
+        font-size: 0.85rem;
+        padding: 0 12px;
+    }
+    
+    .social-btn {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+    }
+    
+    .social-btn i {
+        font-size: 1rem;
+    }
+    
+    .auth-footer p {
+        font-size: 0.9rem;
+    }
+    
+    .auth-link {
+        font-size: 0.9rem;
+    }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 767.98px) and (orientation: landscape) {
+    .auth-page-wrapper {
+        padding: 10px 0 30px;
+    }
+    
+    .auth-card {
+        min-height: auto;
+        margin: 5px 0;
+    }
+    
+    .auth-form-container {
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .row .col-md-6 {
+        margin-bottom: 10px;
+    }
+}
+
+/* Very small devices (320px and below) */
+@media (max-width: 320px) {
+    .auth-form-container {
+        padding: 15px 10px;
+    }
+    
+    .auth-form-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .input-group-text {
+        padding: 6px 8px;
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        padding: 6px 8px;
+        font-size: 0.85rem;
+    }
+    
+    .form-control::placeholder {
+        font-size: 0.85rem;
+    }
+    
+    .auth-submit-btn {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    .auth-form input,
+    .auth-form button {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+    
+    .auth-submit-btn {
+        min-height: 44px; /* Apple's recommended touch target */
+    }
+    
+    .social-btn {
+        min-height: 44px;
+    }
+    
+    .password-toggle {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}

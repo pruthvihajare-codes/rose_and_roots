@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign In - LittleCraftOne{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="container mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i> Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Sign In</li>
+    </ol>
+</nav>
+
+<div class="auth-page-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="auth-card">
+                    <div class="row g-0">
+                        <!-- Left Side - Branding -->
+                        <div class="col-md-4 auth-left">
+                            <div class="auth-left-content">
+                                <a href="/" class="auth-logo">LittleCraftOne</a>
+                                <h1 class="auth-heading">Welcome Back</h1>
+                                <p class="auth-subtitle">Sign in to access your personalized shopping experience</p>
+                                
+                                <div class="auth-features">
+                                    <div class="feature-item">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-truck"></i>
+                                        </div>
+                                        <div class="feature-text">
+                                            <h5>Track Orders</h5>
+                                            <p>Real-time order tracking</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-heart"></i>
+                                        </div>
+                                        <div class="feature-text">
+                                            <h5>Your Wishlist</h5>
+                                            <p>Save your favorite items</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-percent"></i>
+                                        </div>
+                                        <div class="feature-text">
+                                            <h5>Exclusive Deals</h5>
+                                            <p>Member-only discounts</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="auth-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-number">10K+</span>
+                                        <span class="stat-label">Happy Customers</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number">4.9</span>
+                                        <span class="stat-label">Average Rating</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Side - Form -->
+                        <div class="col-md-8 auth-right">
+                            <div class="auth-form-container">
+                                <div class="auth-form-header">
+                                    <h2>Sign In</h2>
+                                    <p>Enter your credentials to continue</p>
+                                </div>
+                                
+                                <!-- Messages Container -->
+                                <div id="authMessages" class="d-none">
+                                    <div class="alert alert-dismissible fade show" role="alert">
+                                        <span id="messageText"></span>
+                                        <button type="button" class="btn-close" onclick="hideMessage()"></button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Login Form -->
+                                <form id="loginForm" class="auth-form" novalidate>
+                                    {% csrf_token %}
+                                    
+                                    <!-- Email Field -->
+                                    <div class="form-group">
+                                        <label for="loginEmail" class="form-label">Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-envelope"></i>
+                                            </span>
+                                            <input type="email" class="form-control" id="loginEmail" name="email" placeholder="Enter your email" required>
+                                        </div>
+                                        <div class="invalid-feedback" id="emailError">
+                                            Please enter a valid email address.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Password Field -->
+                                    <div class="form-group">
+                                        <label for="loginPassword" class="form-label">Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-lock"></i>
+                                            </span>
+                                            <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Enter your password" required>
+                                            <button type="button" class="input-group-text password-toggle" id="toggleLoginPassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback" id="passwordError">
+                                            Please enter your password.
+                                        </div>
+                                        <div class="form-text text-end">
+                                            <a href="#" class="forgot-link">Forgot Password?</a>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Remember Me -->
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                                        <label class="form-check-label" for="rememberMe">
+                                            Remember me for 30 days
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Submit Button -->
+                                    <button type="submit" class="btn btn-primary auth-submit-btn w-100">
+                                        <span class="btn-text">Sign In</span>
+                                        <span class="btn-spinner d-none">
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            Signing in...
+                                        </span>
+                                    </button>
+                                    
+                                    <!-- Divider -->
+                                    <div class="divider">
+                                        <span>or continue with</span>
+                                    </div>
+                                    
+                                    <!-- Social Login -->
+                                    <div class="social-login">
+                                        <button type="button" class="btn btn-outline-secondary social-btn">
+                                            <i class="bi bi-google"></i>
+                                            Google
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary social-btn">
+                                            <i class="bi bi-facebook"></i>
+                                            Facebook
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Sign Up Link -->
+                                    <div class="auth-footer text-center">
+                                        <p class="mb-0">Don't have an account? 
+                                            <a href="{% url 'register' %}" class="auth-link">Sign up here</a>
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include auth JavaScript -->
+<script src="{% static 'js/account/auth.js' %}"></script>
+{% endblock %}

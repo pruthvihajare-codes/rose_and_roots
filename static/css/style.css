@@ -502,3 +502,376 @@
             font-family: var(--default-font);
             overflow-x: hidden;
         }
+
+        /* Account Modal Styles - Compact Version */
+        .account-modal-content {
+            border-radius: 16px;
+            border: none;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(142, 13, 79, 0.15);
+            font-family: var(--default-font);
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .account-modal-header {
+            background: linear-gradient(135deg, #8c0d4f 0%, #a8377e 100%);
+            border-bottom: none;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .account-modal-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.2;
+            transform: rotate(25deg);
+        }
+
+        .account-modal-title-section {
+            position: relative;
+            z-index: 1;
+            padding-right: 30px;
+        }
+
+        .account-modal-title {
+            font-family: var(--heading-font);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: white;
+            letter-spacing: 0.3px;
+        }
+
+        .account-modal-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin: 0;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Fixed Close Button */
+        .account-modal-header .btn-close {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+            opacity: 0.9;
+            border: none;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border-radius: 50%;
+            z-index: 2;
+            transition: all 0.2s ease;
+        }
+
+        .account-modal-header .btn-close:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            opacity: 1;
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        .account-modal-body {
+            padding: 20px;
+            background-color: #fefafc;
+        }
+
+        .account-menu-list {
+            margin-bottom: 20px;
+        }
+
+        .account-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background-color: white;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(142, 13, 79, 0.08);
+            box-shadow: 0 2px 6px rgba(142, 13, 79, 0.04);
+        }
+
+        .account-menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(142, 13, 79, 0.1);
+            border-color: rgba(142, 13, 79, 0.2);
+            background-color: #fef7fa;
+        }
+
+        .account-menu-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f9e6ef 0%, #f4d5e3 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .account-menu-icon i {
+            font-size: 1.2rem;
+            color: #8c0d4f;
+        }
+
+        .account-menu-text {
+            flex-grow: 1;
+        }
+
+        .account-menu-title {
+            display: block;
+            font-family: var(--nav-font);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #3e0925;
+            margin-bottom: 2px;
+        }
+
+        .account-menu-desc {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 400;
+            line-height: 1.3;
+        }
+
+        .account-menu-arrow i {
+            color: #8c0d4f;
+            font-size: 1.1rem;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .account-menu-item:hover .account-menu-arrow i {
+            opacity: 1;
+            transform: translateX(3px);
+        }
+
+        .account-auth-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn-signin, .btn-register {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-family: var(--nav-font);
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            min-height: 44px;
+        }
+
+        .btn-signin {
+            background: linear-gradient(135deg, #8c0d4f 0%, #a3125c 100%);
+            color: white;
+        }
+
+        .btn-signin:hover {
+            background: linear-gradient(135deg, #7a0b45 0%, #8c0d4f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(142, 13, 79, 0.25);
+            color: white;
+        }
+
+        .btn-register {
+            background-color: white;
+            color: #8c0d4f;
+            border: 2px solid #8c0d4f;
+        }
+
+        .btn-register:hover {
+            background-color: #8c0d4f;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(142, 13, 79, 0.15);
+        }
+
+        .account-modal-footer-note {
+            text-align: center;
+            padding: 12px;
+            background-color: #f9f0f5;
+            border-radius: 8px;
+            margin-top: 8px;
+            border: 1px solid rgba(142, 13, 79, 0.1);
+        }
+
+        .account-modal-footer-note p {
+            font-size: 0.8rem;
+            color: #8c0d4f;
+            font-weight: 500;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .account-modal-footer-note i {
+            color: #8c0d4f;
+            font-size: 0.9rem;
+        }
+
+        /* Modal Backdrop Customization - Lighter Shade */
+        .modal-backdrop.show {
+            opacity: 0.5;
+            background-color: #f8e8f0; /* Light pink shade */
+        }
+
+        .modal-backdrop {
+            background-color: #f8e8f0;
+        }
+
+        /* Modal Animation */
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal.show .modal-dialog {
+            animation: modalSlideIn 0.25s ease-out;
+        }
+
+        /* Hover effects for menu items */
+        .account-menu-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .account-menu-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(142, 13, 79, 0.05), transparent);
+            transition: left 0.4s;
+        }
+
+        .account-menu-item:hover::after {
+            left: 100%;
+        }
+
+        /* Reduce modal size on mobile */
+        @media (max-width: 576px) {
+            .account-modal-content {
+                margin: 10px;
+                max-width: calc(100% - 20px);
+            }
+            
+            .account-modal-header {
+                padding: 18px 16px;
+            }
+            
+            .account-modal-title {
+                font-size: 1.3rem;
+            }
+            
+            .account-modal-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .account-modal-header .btn-close {
+                right: 16px;
+                width: 26px;
+                height: 26px;
+            }
+            
+            .account-modal-body {
+                padding: 16px;
+            }
+            
+            .account-menu-item {
+                padding: 12px 14px;
+                margin-bottom: 6px;
+            }
+            
+            .account-menu-icon {
+                width: 36px;
+                height: 36px;
+                margin-right: 10px;
+            }
+            
+            .account-menu-icon i {
+                font-size: 1.1rem;
+            }
+            
+            .account-menu-title {
+                font-size: 0.9rem;
+            }
+            
+            .account-menu-desc {
+                font-size: 0.75rem;
+            }
+            
+            .account-auth-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .btn-signin, .btn-register {
+                padding: 11px 14px;
+                font-size: 0.85rem;
+                min-height: 42px;
+            }
+            
+            .account-modal-footer-note {
+                padding: 10px;
+            }
+            
+            .account-modal-footer-note p {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* For tablets and medium screens */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .account-modal-content {
+                max-width: 400px;
+            }
+        }
+
+        /* Make modal slightly transparent on backdrop click */
+        .modal.fade .modal-dialog {
+            transition: transform 0.25s ease-out;
+        }
+
+        /* Add a subtle scale effect when modal appears */
+        .modal.show .account-modal-content {
+            animation: contentScale 0.3s ease-out;
+        }
+
+        @keyframes contentScale {
+            0% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }

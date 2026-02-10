@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register - LittleCraftOne{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="container mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-door"></i> Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Register</li>
+    </ol>
+</nav>
+
+<div class="auth-page-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="auth-card">
+                    <div class="row g-0">
+                        <!-- Left Side - Branding -->
+                        <div class="col-md-4 auth-left register-left">
+                            <div class="auth-left-content">
+                                <a href="/" class="auth-logo">LittleCraftOne</a>
+                                <h1 class="auth-heading">Join Our Community</h1>
+                                <p class="auth-subtitle">Create an account to unlock exclusive benefits</p>
+                                
+                                <div class="auth-features">
+                                    <div class="feature-item">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-lightning"></i>
+                                        </div>
+                                        <div class="feature-text">
+                                            <h5>Fast Checkout</h5>
+                                            <p>Save your details for faster purchases</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-gift"></i>
+                                        </div>
+                                        <div class="feature-text">
+                                            <h5>Birthday Rewards</h5>
+                                            <p>Special gifts on your birthday</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature-item">
+                                        <div class="feature-icon">
+                                            <i class="bi bi-shield-check"></i>
+                                        </div>
+                                        <div class="feature-text">
+                                            <h5>Secure Account</h5>
+                                            <p>Your data is always protected</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="auth-testimonial">
+                                    <p class="testimonial-text">
+                                        "LittleCraftOne transformed my shopping experience. The personalized recommendations are spot on!"
+                                    </p>
+                                    <div class="testimonial-author">
+                                        <strong>Emma Wilson</strong>
+                                        <span>Premium Member</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Side - Form -->
+                        <div class="col-md-8 auth-right">
+                            <div class="auth-form-container">
+                                <div class="auth-form-header">
+                                    <h2>Create Account</h2>
+                                    <p>Fill in your details to get started</p>
+                                </div>
+                                
+                                <!-- Messages Container -->
+                                <div id="authMessages" class="d-none">
+                                    <div class="alert alert-dismissible fade show" role="alert">
+                                        <span id="messageText"></span>
+                                        <button type="button" class="btn-close" onclick="hideMessage()"></button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Registration Form -->
+                                <form id="registerForm" class="auth-form" novalidate>
+                                    {% csrf_token %}
+                                    
+                                    <!-- Name Fields -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="firstName" class="form-label">First Name</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-person"></i>
+                                                    </span>
+                                                    <input type="text" class="form-control" id="firstName" name="first_name" placeholder="Enter first name" required>
+                                                </div>
+                                                <div class="invalid-feedback" id="firstNameError">
+                                                    Please enter your first name.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="lastName" class="form-label">Last Name</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-person"></i>
+                                                    </span>
+                                                    <input type="text" class="form-control" id="lastName" name="last_name" placeholder="Enter last name" required>
+                                                </div>
+                                                <div class="invalid-feedback" id="lastNameError">
+                                                    Please enter your last name.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Email Field -->
+                                    <div class="form-group">
+                                        <label for="registerEmail" class="form-label">Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-envelope"></i>
+                                            </span>
+                                            <input type="email" class="form-control" id="registerEmail" name="email" placeholder="Enter your email" required>
+                                        </div>
+                                        <div class="invalid-feedback" id="emailError">
+                                            Please enter a valid email address.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Password Field -->
+                                    <div class="form-group">
+                                        <label for="registerPassword" class="form-label">Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-lock"></i>
+                                            </span>
+                                            <input type="password" class="form-control" id="registerPassword" name="password" placeholder="Create a password" required>
+                                            <button type="button" class="input-group-text password-toggle" id="togglePassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback" id="passwordError">
+                                            Please enter a valid password.
+                                        </div>
+                                        
+                                        <!-- Password Requirements -->
+                                        <div class="password-requirements">
+                                            <p class="req-title">Password must contain:</p>
+                                            <ul class="req-list">
+                                                <li class="req-item" data-check="length">
+                                                    <i class="bi bi-circle"></i>
+                                                    <span>At least 8 characters</span>
+                                                </li>
+                                                <li class="req-item" data-check="uppercase">
+                                                    <i class="bi bi-circle"></i>
+                                                    <span>One uppercase letter</span>
+                                                </li>
+                                                <li class="req-item" data-check="lowercase">
+                                                    <i class="bi bi-circle"></i>
+                                                    <span>One lowercase letter</span>
+                                                </li>
+                                                <li class="req-item" data-check="number">
+                                                    <i class="bi bi-circle"></i>
+                                                    <span>One number</span>
+                                                </li>
+                                                <li class="req-item" data-check="special">
+                                                    <i class="bi bi-circle"></i>
+                                                    <span>One special character</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Confirm Password -->
+                                    <div class="form-group">
+                                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-lock"></i>
+                                            </span>
+                                            <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirm your password" required>
+                                            <button type="button" class="input-group-text password-toggle" id="toggleConfirmPassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback" id="confirmPasswordError">
+                                            Passwords do not match.
+                                        </div>
+                                        <div class="password-match d-none" id="passwordMatch">
+                                            <i class="bi bi-check-circle"></i>
+                                            <span>Passwords match</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Terms Checkbox -->
+                                    <div class="form-group">
+                                        <div class="form-check terms-checkbox">
+                                            <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                                            <label class="form-check-label" for="terms">
+                                                I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
+                                            </label>
+                                        </div>
+                                        <div class="invalid-feedback" id="termsError">
+                                            You must agree to the terms and conditions.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Submit Button -->
+                                    <button type="submit" class="btn btn-primary auth-submit-btn w-100">
+                                        <span class="btn-text">Create Account</span>
+                                        <span class="btn-spinner d-none">
+                                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                                            Creating account...
+                                        </span>
+                                    </button>
+                                    
+                                    <!-- Divider -->
+                                    <div class="divider">
+                                        <span>or sign up with</span>
+                                    </div>
+                                    
+                                    <!-- Social Register -->
+                                    <div class="social-login">
+                                        <button type="button" class="btn btn-outline-secondary social-btn">
+                                            <i class="bi bi-google"></i>
+                                            Google
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary social-btn">
+                                            <i class="bi bi-facebook"></i>
+                                            Facebook
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Sign In Link -->
+                                    <div class="auth-footer text-center">
+                                        <p class="mb-0">Already have an account? 
+                                            <a href="{% url 'login' %}" class="auth-link">Sign in here</a>
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include auth JavaScript -->
+<script src="{% static 'js/account/auth.js' %}"></script>
+{% endblock %}
