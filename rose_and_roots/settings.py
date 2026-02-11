@@ -85,8 +85,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'rose_and_roots_db',
         'USER': 'root',
-        # 'PASSWORD': '8805433102waz@',
-        'PASSWORD': '8805433102qwe@',
+        'PASSWORD': '8805433102waz@',
+        # 'PASSWORD': '8805433102qwe@',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {

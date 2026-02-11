@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -6,27 +5,11 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 import json
 import re
-from django.core.exceptions import ValidationError
-from django.contrib.auth import login, authenticate
-from django.contrib import messages
-from django.shortcuts import render, redirect
 from accounts.models import *
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout
-from django.contrib import messages
-from django.shortcuts import redirect, render
-from django.urls import reverse
-from django.contrib.auth import logout
-from django.contrib import messages
-from django.shortcuts import redirect, render
-
-from django.contrib.auth import logout as auth_logout
-from django.contrib import messages
-from django.shortcuts import redirect
 
 def logout(request):
     try:
@@ -46,6 +29,12 @@ def logout(request):
 def login_view(request):
     try:
         if request.user.is_authenticated:
+            # If already logged in, redirect based on role
+            if hasattr(request.user, 'role_id'):
+                if request.user.role_id == 1:  # Admin
+                    return redirect('admin_dashboard')
+                elif request.user.role_id == 2:  # Customer
+                    return redirect('dashboard')
             return redirect('/')
         
         if request.method == 'GET':
@@ -86,8 +75,16 @@ def login_view(request):
                         
                         messages.success(request, f'Welcome back, {user.full_name or user.email}!')
                         
-                        # Redirect to next page if exists
-                        return redirect('admin_dashboard')
+                        # Role-based redirection
+                        if hasattr(user, 'role_id'):
+                            if user.role_id == 1:  # Admin
+                                return redirect('admin_dashboard')
+                            elif user.role_id == 2:  # Customer
+                                return redirect('dashboard')
+                        
+                        # Fallback redirect
+                        return redirect('/')
+                        
                     except Exception as login_error:
                         print(f"Login error: {login_error}")
                         messages.error(request, 'Login failed. Please try again.')
@@ -105,7 +102,7 @@ def login_view(request):
         print(f"Login view unexpected error: {e}")
         messages.error(request, 'Something went wrong. Please try again later.')
         return render(request, 'account/login.html')
-
+    
 def register_view(request):
     try:
         if request.user.is_authenticated:
@@ -192,7 +189,8 @@ def register_view(request):
                         last_name=last_name,
                         phone=phone,  # Added phone field
                         full_name=f"{first_name} {last_name}".strip(),
-                        user_type='guest'
+                        role_id=2,  # 👈 Set role_id to 2 for Customer
+                        user_type='customer',
                     )
                     
                     # Store password in password_storage table
@@ -214,7 +212,7 @@ def register_view(request):
                 try:
                     login(request, user)
                     messages.success(request, 'Registration successful! Welcome to LittleCraftOne.')
-                    return redirect('admin_dashboard')
+                    return redirect('dashboard')
                 except Exception as login_error:
                     print(f"Auto-login error: {login_error}")
                     messages.success(request, 'Registration successful! Please login to continue.')

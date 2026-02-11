@@ -121,14 +121,28 @@
         <div class="container">
             <nav>
                 <ul class="nav-menu">
-                    <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
-                    {% if user.is_authenticated and user.user_type == 'admin' %}
-                    <li class="nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
+                    <!-- Customer Menu (role_id = 2) -->
+                    {% if user.is_authenticated and user.role_id == 2 %}
+                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
+                        
+                    <!-- Admin Menu (role_id = 1) -->
+                    {% elif user.is_authenticated and user.role_id == 1 %}
+                        <li class="nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Masters</a></li>
+                    
+                    <!-- Not Logged In - Show default menu -->
+                    {% else %}
+                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
                     {% endif %}
                 </ul>
             </nav>
@@ -343,12 +357,29 @@
             </button>
         </div>
         <ul class="mobile-nav-menu">
+            <!-- Customer Menu (role_id = 2) -->
+            {% if user.is_authenticated and user.role_id == 2 %}
             <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Category</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Cart</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Checkout</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
+            
+            <!-- Admin Menu (role_id = 1) -->
+            {% elif user.is_authenticated and user.role_id == 1 %}
+            <li class="mobile-nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="mobile-nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Masters</a></li>
+            
+            <!-- Not Logged In - Show default menu -->
+            {% else %}
+            <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Category</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Cart</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Checkout</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
+            {% endif %}
         </ul>
     </div>
 
@@ -450,21 +481,21 @@
             document.addEventListener("DOMContentLoaded", function () {
 
                 {% for message in messages %}
-                Swal.fire({
-                    icon: "{{ message.tags }}",
-                    title: "{{ message.tags|title }}",
-                    text: "{{ message|escapejs }}",
-                    confirmButtonText: "OK",
+                    Swal.fire({
+                        icon: "{{ message.tags }}",
+                        title: "{{ message.tags|title }}",
+                        text: "{{ message|escapejs }}",
+                        confirmButtonText: "OK",
 
-                    background: "#ffffff",
-                    color: "#343a40",
+                        background: "#ffffff",
+                        color: "#343a40",
 
-                    confirmButtonColor: "#8c0d4f",  // your --primary-color
+                        confirmButtonColor: "#8c0d4f",  // your --primary-color
 
-                    customClass: {
-                        popup: 'rounded-4 shadow'
-                    }
-                });
+                        customClass: {
+                            popup: 'rounded-4 shadow'
+                        }
+                    });
                 {% endfor %}
 
             });

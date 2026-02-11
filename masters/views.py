@@ -17,12 +17,22 @@ def admin_dashboard(request):
 
         return render(request, "masters/admin_dashboard.html", context)
 
-    except DatabaseError as db_error:
-        logger.error(f"Admin Dashboard DB Error: {str(db_error)}")
-        messages.error(request, "Database error occurred.")
-        return render(request, "masters/admin_dashboard.html")
-
     except Exception as e:
         logger.exception("Unexpected error in admin_dashboard")
         messages.error(request, "Something went wrong.")
         return render(request, "masters/admin_dashboard.html")
+    
+no_direct_access
+@login_required
+def dashboard(request):
+    try:
+        context = {
+            "page_title": "Dashboard"
+        }
+
+        return render(request, "masters/dashboard.html", context)
+
+    except Exception as e:
+        logger.exception("Unexpected error in dashboard")
+        messages.error(request, "Something went wrong.")
+        return render(request, "masters/dashboard.html")
