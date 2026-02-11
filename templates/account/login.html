@@ -85,7 +85,7 @@
                                 </div>
                                 
                                 <!-- Login Form -->
-                                <form id="loginForm" class="auth-form" novalidate>
+                                <form id="loginForm" class="auth-form" method="post" action="{% url 'login' %}" novalidate>
                                     {% csrf_token %}
                                     
                                     <!-- Email Field -->
@@ -120,14 +120,6 @@
                                         <div class="form-text text-end">
                                             <a href="#" class="forgot-link">Forgot Password?</a>
                                         </div>
-                                    </div>
-                                    
-                                    <!-- Remember Me -->
-                                    <div class="form-group form-check">
-                                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
-                                        <label class="form-check-label" for="rememberMe">
-                                            Remember me for 30 days
-                                        </label>
                                     </div>
                                     
                                     <!-- Submit Button -->
@@ -173,5 +165,6 @@
 </div>
 
 <!-- Include auth JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'js/account/auth.js' %}"></script>
 {% endblock %}

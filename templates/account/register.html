@@ -84,7 +84,7 @@
                                 </div>
                                 
                                 <!-- Registration Form -->
-                                <form id="registerForm" class="auth-form" novalidate>
+                                <form id="registerForm" class="auth-form" method="post" action="{% url 'register' %}" novalidate>
                                     {% csrf_token %}
                                     
                                     <!-- Name Fields -->
@@ -254,5 +254,6 @@
 </div>
 
 <!-- Include auth JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'js/account/auth.js' %}"></script>
 {% endblock %}

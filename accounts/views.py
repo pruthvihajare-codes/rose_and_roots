@@ -1,5 +1,4 @@
 from django.shortcuts import render
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -10,176 +9,226 @@ from django.views.decorators.http import require_POST
 import json
 import re
 from django.core.exceptions import ValidationError
+from django.contrib.auth import login, authenticate
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from accounts.models import *
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth import logout as auth_logout
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.contrib.auth import logout
+from django.contrib import messages
+from django.shortcuts import redirect, render
 
-@csrf_exempt
-@require_POST
-def api_login(request):
-    """Handle login via API"""
+from django.contrib.auth import logout as auth_logout
+from django.contrib import messages
+from django.shortcuts import redirect
+
+def logout(request):
     try:
-        data = json.loads(request.body)
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
-        remember_me = data.get('remember_me', False)
-        
-        # Validate input
-        if not email or not password:
-            return JsonResponse({
-                'success': False,
-                'message': 'Email and password are required.'
-            })
-        
-        # Authenticate user
-        user = authenticate(request, username=email, password=password)
-        
-        if user is not None:
-            # Set session expiration based on remember me
-            if not remember_me:
-                request.session.set_expiry(0)  # Session expires on browser close
-            
-            login(request, user)
-            return JsonResponse({
-                'success': True,
-                'message': 'Login successful!',
-                'redirect_url': '/'
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'message': 'Invalid email or password.'
-            })
-            
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': 'An error occurred. Please try again.'
-        })
+        auth_logout(request)  # correct logout
 
-@csrf_exempt
-@require_POST
-def api_register(request):
-    """Handle registration via API"""
-    try:
-        data = json.loads(request.body)
-        
-        # Extract form data
-        first_name = data.get('first_name', '').strip()
-        last_name = data.get('last_name', '').strip()
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
-        confirm_password = data.get('confirm_password', '')
-        terms_accepted = data.get('terms', False)
-        
-        # Validation
-        errors = {}
-        
-        # Check required fields
-        if not first_name:
-            errors['first_name'] = 'First name is required.'
-        if not last_name:
-            errors['last_name'] = 'Last name is required.'
-        if not email:
-            errors['email'] = 'Email is required.'
-        if not password:
-            errors['password'] = 'Password is required.'
-        if not confirm_password:
-            errors['confirm_password'] = 'Please confirm your password.'
-        
-        # Validate email format
-        if email and '@' not in email:
-            errors['email'] = 'Please enter a valid email address.'
-        
-        # Check if email already exists
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        if email and User.objects.filter(email=email).exists():
-            errors['email'] = 'This email is already registered.'
-        
-        # Validate password
-        if password:
-            if len(password) < 8:
-                errors['password'] = 'Password must be at least 8 characters long.'
-            elif not re.search(r'[A-Z]', password):
-                errors['password'] = 'Password must contain at least one uppercase letter.'
-            elif not re.search(r'[a-z]', password):
-                errors['password'] = 'Password must contain at least one lowercase letter.'
-            elif not re.search(r'\d', password):
-                errors['password'] = 'Password must contain at least one number.'
-            elif not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-                errors['password'] = 'Password must contain at least one special character.'
-        
-        # Check password match
-        if password and confirm_password and password != confirm_password:
-            errors['confirm_password'] = 'Passwords do not match.'
-        
-        # Check terms acceptance
-        if not terms_accepted:
-            errors['terms'] = 'You must agree to the Terms of Service and Privacy Policy.'
-        
-        # If there are errors, return them
-        if errors:
-            return JsonResponse({
-                'success': False,
-                'message': 'Please correct the errors below.',
-                'errors': errors
-            })
-        
-        # Create user
-        try:
-            user = User.objects.create_user(
-                username=email,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name
-            )
-            
-            # Log the user in
-            login(request, user)
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Registration successful! Welcome to LittleCraftOne.',
-                'redirect_url': '/'
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': 'Error creating account. Please try again.'
-            })
-            
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'success': False,
-            'message': 'Invalid data format.'
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': 'An unexpected error occurred.'
-        })
+        messages.success(request, "You have been successfully logged out.")
 
-@login_required
-@require_POST
-def api_logout(request):
-    """Handle logout via API"""
-    logout(request)
-    return JsonResponse({
-        'success': True,
-        'message': 'Logged out successfully.',
-        'redirect_url': '/'
-    })
+        return redirect('home')
+
+    except Exception as e:
+        print(f"Logout error: {e}")
+        messages.error(request, "Something went wrong. Please try again later.")
+        return redirect('home')
 
 # Regular view functions for rendering templates
+
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('/')
-    return render(request, 'account/login.html')
+    try:
+        if request.user.is_authenticated:
+            return redirect('/')
+        
+        if request.method == 'GET':
+            return render(request, 'account/login.html')
+        
+        if request.method == 'POST':
+            try:
+                email = request.POST.get('email', '').strip()
+                password = request.POST.get('password', '')
+                remember_me = request.POST.get('remember_me')
+                
+                # Validation
+                if not email:
+                    messages.error(request, 'Email is required.')
+                    return render(request, 'account/login.html', {'email': email})
+                
+                if not password:
+                    messages.error(request, 'Password is required.')
+                    return render(request, 'account/login.html', {'email': email})
+                
+                # Authenticate user
+                try:
+                    user = authenticate(request, username=email, password=password)
+                except Exception as auth_error:
+                    print(f"Authentication error: {auth_error}")
+                    messages.error(request, 'Authentication service error. Please try again.')
+                    return render(request, 'account/login.html', {'email': email})
+                
+                if user is not None:
+                    try:
+                        login(request, user)
+                        
+                        # Handle remember me
+                        if not remember_me:
+                            request.session.set_expiry(0)  # Session expires when browser closes
+                        else:
+                            request.session.set_expiry(1209600)  # 2 weeks (default)
+                        
+                        messages.success(request, f'Welcome back, {user.full_name or user.email}!')
+                        
+                        # Redirect to next page if exists
+                        return redirect('admin_dashboard')
+                    except Exception as login_error:
+                        print(f"Login error: {login_error}")
+                        messages.error(request, 'Login failed. Please try again.')
+                        return render(request, 'account/login.html', {'email': email})
+                else:
+                    messages.error(request, 'Invalid email or password.')
+                    return render(request, 'account/login.html', {'email': email})
+                    
+            except Exception as post_error:
+                print(f"Login POST error: {post_error}")
+                messages.error(request, 'An error occurred. Please try again.')
+                return render(request, 'account/login.html')
+                
+    except Exception as e:
+        print(f"Login view unexpected error: {e}")
+        messages.error(request, 'Something went wrong. Please try again later.')
+        return render(request, 'account/login.html')
 
 def register_view(request):
-    if request.user.is_authenticated:
-        return redirect('/')
-    return render(request, 'account/register.html')
+    try:
+        if request.user.is_authenticated:
+            return redirect('/')
+        
+        if request.method == 'GET':
+            return render(request, 'account/register.html')
+        
+        if request.method == 'POST':
+            try:
+                # Get form data with defaults
+                first_name = request.POST.get('first_name', '').strip()
+                last_name = request.POST.get('last_name', '').strip()
+                email = request.POST.get('email', '').strip().lower()
+                phone = request.POST.get('phone', '').strip()  # Added phone field
+                password = request.POST.get('password', '')
+                confirm_password = request.POST.get('confirm_password', '')
+                terms = request.POST.get('terms')
+                
+                # Validation
+                errors = {}
+                
+                if not first_name:
+                    errors['first_name'] = 'First name is required.'
+                
+                if not last_name:
+                    errors['last_name'] = 'Last name is required.'
+                
+                if not email:
+                    errors['email'] = 'Email is required.'
+                else:
+                    try:
+                        if CustomUser.objects.filter(email=email).exists():
+                            errors['email'] = 'This email is already registered.'
+                    except Exception as db_error:
+                        print(f"Database error checking email: {db_error}")
+                        errors['email'] = 'Unable to verify email. Please try again.'
+                
+                # Phone validation (optional but if provided, validate format)
+                if phone:
+                    # Basic phone validation - adjust regex as per your requirements
+                    import re
+                    phone_regex = r'^\+?1?\d{9,15}$'  # Simple international format
+                    if not re.match(phone_regex, phone):
+                        errors['phone'] = 'Please enter a valid phone number.'
+                
+                if not password:
+                    errors['password'] = 'Password is required.'
+                elif len(password) < 8:
+                    errors['password'] = 'Password must be at least 8 characters long.'
+                elif not any(char.isupper() for char in password):
+                    errors['password'] = 'Password must contain at least one uppercase letter.'
+                elif not any(char.islower() for char in password):
+                    errors['password'] = 'Password must contain at least one lowercase letter.'
+                elif not any(char.isdigit() for char in password):
+                    errors['password'] = 'Password must contain at least one number.'
+                elif not any(char in '!@#$%^&*(),.?":{}|<>' for char in password):
+                    errors['password'] = 'Password must contain at least one special character.'
+                
+                if password != confirm_password:
+                    errors['confirm_password'] = 'Passwords do not match.'
+                
+                if not terms:
+                    errors['terms'] = 'You must agree to the terms and conditions.'
+                
+                if errors:
+                    # Store errors in messages
+                    for field, error in errors.items():
+                        messages.error(request, error)
+                    
+                    # Pass form data back to template
+                    context = {
+                        'form_data': request.POST,
+                        'errors': errors
+                    }
+                    return render(request, 'account/register.html', context)
+                
+                # Create user
+                try:
+                    user = CustomUser.objects.create_user(
+                        email=email,
+                        password=password,
+                        first_name=first_name,
+                        last_name=last_name,
+                        phone=phone,  # Added phone field
+                        full_name=f"{first_name} {last_name}".strip(),
+                        user_type='guest'
+                    )
+                    
+                    # Store password in password_storage table
+                    try:
+                        PasswordStorage.objects.create(
+                            user=user,
+                            password_text=password  # Note: This stores plain text password - consider encryption
+                        )
+                    except Exception as password_storage_error:
+                        print(f"Password storage error: {password_storage_error}")
+                        # Don't fail registration if password storage fails, just log it
+                    
+                except Exception as create_error:
+                    print(f"User creation error: {create_error}")
+                    messages.error(request, 'Failed to create account. Please try again.')
+                    return render(request, 'account/register.html', {'form_data': request.POST})
+                
+                # Log the user in immediately after registration
+                try:
+                    login(request, user)
+                    messages.success(request, 'Registration successful! Welcome to LittleCraftOne.')
+                    return redirect('admin_dashboard')
+                except Exception as login_error:
+                    print(f"Auto-login error: {login_error}")
+                    messages.success(request, 'Registration successful! Please login to continue.')
+                    return redirect('login')
+                    
+            except Exception as post_error:
+                print(f"Register POST error: {post_error}")
+                messages.error(request, 'An error occurred during registration. Please try again.')
+                return render(request, 'account/register.html', {'form_data': request.POST})
+                
+    except Exception as e:
+        print(f"Register view unexpected error: {e}")
+        messages.error(request, 'Something went wrong. Please try again later.')
+        return render(request, 'account/register.html')
 
 def home(request):
     try:

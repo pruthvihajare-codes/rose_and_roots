@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rosé & Roots</title>
+    <title>{% block title %}LittleCraftOne{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS -->
@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{% static 'css/account/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Top Bar Section (Visible only on PC/Laptop) -->
@@ -63,10 +64,19 @@
                 <!-- Desktop Navigation Icons (Right) -->
                 <div class="col-md-6 desktop-nav-icons d-none d-lg-block">
                     <div class="nav-icons">
+                        {% if user.is_authenticated %}
+                        <!-- Logged In User - Show profile icon with name -->
+                        <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                            <i class="bi bi-person-circle nav-icon"></i>
+                            <span class="nav-icon-text">{{ user.first_name|default:'Account' }}</span>
+                        </a>
+                        {% else %}
+                        <!-- Not Logged In - Default account icon -->
                         <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
                             <i class="bi bi-person nav-icon"></i>
                             <span class="nav-icon-text">Account</span>
                         </a>
+                        {% endif %}
                         <a href="#" class="nav-icon-item">
                             <i class="bi bi-heart nav-icon"></i>
                             <span class="nav-icon-text">Wishlist</span>
@@ -84,8 +94,12 @@
                     <div class="d-flex align-items-center justify-content-end">
                         <!-- Mobile Icons -->
                         <div class="mobile-nav-icons me-3">
-                            <a href="#" class="nav-icon-item">
+                            <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                {% if user.is_authenticated %}
+                                <i class="bi bi-person-circle nav-icon"></i>
+                                {% else %}
                                 <i class="bi bi-person nav-icon"></i>
+                                {% endif %}
                             </a>
                             <a href="#" class="nav-icon-item position-relative">
                                 <i class="bi bi-cart3 nav-icon"></i>
@@ -107,46 +121,90 @@
         <div class="container">
             <nav>
                 <ul class="nav-menu">
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link active">Home</a></li>
+                    <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
                     <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
                     <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
                     <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
                     <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
                     <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
+                    {% if user.is_authenticated and user.user_type == 'admin' %}
+                    <li class="nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>
     </section>
 
     <!-- Account Modal -->
-    <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hi="true">
+    <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content account-modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header account-modal-header">
-                    <div class="account-modal-title-section">
+                    <div class="account-modal-title-section w-100">
+                        {% if user.is_authenticated %}
+                        <!-- Logged In User Header - Without Photo -->
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar-placeholder me-3">
+                                <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <span style="font-size: 24px;">{{ user.first_name|first|default:user.email|first|upper }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="modal-title account-modal-title mb-1">Welcome back, {{ user.first_name|default:'Guest' }}!</h5>
+                                <p class="account-modal-subtitle mb-0">{{ user.email }}</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Not Logged In Header -->
                         <h5 class="modal-title account-modal-title" id="accountModalLabel">Welcome to LittleCraftOne</h5>
                         <p class="account-modal-subtitle">Access account & manage orders</p>
+                        {% endif %}
                     </div>
                     <button type="button" class="btn-close account-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
                 <!-- Modal Body -->
                 <div class="modal-body account-modal-body">
+                    <!-- User Stats Card - Only for logged in users -->
+                    {% if user.is_authenticated %}
+                    <div class="user-stats-card mb-4">
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <div class="stat-item text-center">
+                                    <span class="stat-value">0</span>
+                                    <span class="stat-label">Orders</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item text-center">
+                                    <span class="stat-value">0</span>
+                                    <span class="stat-label">Wishlist</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item text-center">
+                                    <span class="stat-value">0</span>
+                                    <span class="stat-label">Returns</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     <!-- Account Menu Items -->
                     <div class="account-menu-list">
-                        <a href="#" class="account-menu-item">
+                        {% if user.is_authenticated %}
+                        <!-- Logged In User Menu Items - WITHOUT profile URL -->
+                        <div class="account-menu-item">
                             <div class="account-menu-icon">
                                 <i class="bi bi-person-circle"></i>
                             </div>
                             <div class="account-menu-text">
                                 <span class="account-menu-title">My Profile</span>
-                                <span class="account-menu-desc">Manage your personal information</span>
+                                <span class="account-menu-desc">{{ user.email }}</span>
                             </div>
-                            <div class="account-menu-arrow">
-                                <i class="bi bi-chevron-right"></i>
-                            </div>
-                        </a>
+                        </div>
                         
                         <a href="#" class="account-menu-item">
                             <div class="account-menu-icon">
@@ -199,25 +257,75 @@
                                 <i class="bi bi-chevron-right"></i>
                             </div>
                         </a>
+
+                        {% if user.user_type == 'admin' %}
+                        <a href="{% url 'admin_dashboard' %}" class="account-menu-item">
+                            <div class="account-menu-icon">
+                                <i class="bi bi-speedometer2"></i>
+                            </div>
+                            <div class="account-menu-text">
+                                <span class="account-menu-title">Admin Dashboard</span>
+                                <span class="account-menu-desc">Manage your store</span>
+                            </div>
+                            <div class="account-menu-arrow">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        </a>
+                        {% endif %}
+                        
+                        {% else %}
+                        <!-- Not Logged In Menu Items -->
+                        <a href="{% url 'login' %}" class="account-menu-item">
+                            <div class="account-menu-icon">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <div class="account-menu-text">
+                                <span class="account-menu-title">Sign In</span>
+                                <span class="account-menu-desc">Access your account</span>
+                            </div>
+                            <div class="account-menu-arrow">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'register' %}" class="account-menu-item">
+                            <div class="account-menu-icon">
+                                <i class="bi bi-person-plus"></i>
+                            </div>
+                            <div class="account-menu-text">
+                                <span class="account-menu-title">Create Account</span>
+                                <span class="account-menu-desc">Join LittleCraftOne</span>
+                            </div>
+                            <div class="account-menu-arrow">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        </a>
+                        {% endif %}
                     </div>
                     
-                    <!-- Auth Buttons -->
+                    <!-- Auth Buttons - Different for logged in users -->
                     <div class="account-auth-buttons">
-                        <button class="btn btn-signin">
-                            <i class="bi bi-box-arrow-in-right"></i>
-                            Sign In
-                        </button>
-                        <button class="btn btn-register">
-                            <i class="bi bi-person-plus"></i>
-                            Register
-                        </button>
+                        {% if user.is_authenticated %}
+                        <!-- Logged In - Sign Out Button -->
+                        <form method="post" action="{% url 'logout' %}" style="display: inline; width: 100%;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-signout w-100">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Sign Out
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                     
                     <!-- Footer Note -->
                     <div class="account-modal-footer-note">
                         <p class="mb-0">
                             <i class="bi bi-info-circle me-1"></i>
-                            Sign in to unlock exclusive offers & faster checkout
+                            {% if user.is_authenticated %}
+                                Logged in as {{ user.email }}
+                            {% else %}
+                                Sign in to unlock exclusive offers & faster checkout
+                            {% endif %}
                         </p>
                     </div>
                 </div>
@@ -235,27 +343,38 @@
             </button>
         </div>
         <ul class="mobile-nav-menu">
-            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link active">Home</a></li>
+            <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Category</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Cart</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Checkout</a></li>
             <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
-            <li class="mobile-nav-menu-item">
-                <a href="#" class="mobile-nav-menu-link" data-bs-toggle="modal" data-bs-target="#accountModal">
-                    <i class="bi bi-person me-2"></i>My Account
-                </a>
-            </li>
-            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link"><i class="bi bi-heart me-2"></i>Wishlist</a></li>
-            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link"><i class="bi bi-cart3 me-2"></i>Cart (3)</a></li>
         </ul>
     </div>
 
-    {% block content %}
-    {% endblock %}
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
 
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center py-4">
+                    <p class="mb-0">&copy; {% now "Y" %} LittleCraftOne. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile Menu Toggle
@@ -276,73 +395,83 @@
                 document.body.style.overflow = '';
             }
             
-            mobileMenuToggle.addEventListener('click', openMobileMenu);
-            mobileMenuClose.addEventListener('click', closeMobileMenu);
-            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', openMobileMenu);
+            }
             
-            // Menu Navigation
+            if (mobileMenuClose) {
+                mobileMenuClose.addEventListener('click', closeMobileMenu);
+            }
+            
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+            }
+            
+            // Menu Navigation - Active link highlighting
             const allMenuLinks = document.querySelectorAll('.nav-menu-link, .mobile-nav-menu-link');
             allMenuLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    e.preventDefault();
+                    // Don't prevent default for actual navigation links
+                    if (this.getAttribute('href') === '#' || this.getAttribute('href') === '') {
+                        e.preventDefault();
+                    }
+                    
+                    // Remove active class from all links
                     allMenuLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Add active class to clicked link
                     this.classList.add('active');
-                    closeMobileMenu();
+                    
+                    // Close mobile menu if open
+                    if (mobileMenu && mobileMenu.classList.contains('active')) {
+                        closeMobileMenu();
+                    }
                 });
             });
 
-            // Account modal enhancement
-            const accountModal = document.getElementById('accountModal');
-            
-            if (accountModal) {
-                // Add click handlers for menu items
-                const menuItems = accountModal.querySelectorAll('.account-menu-item');
-                menuItems.forEach(item => {
-                    item.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        // Add loading effect
-                        this.style.opacity = '0.7';
+            // Auto-hide Django messages after 5 seconds
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    if (alert) {
+                        alert.style.transition = 'opacity 0.5s';
+                        alert.style.opacity = '0';
                         setTimeout(() => {
-                            this.style.opacity = '1';
-                            // Close modal after click (optional)
-                            // bootstrap.Modal.getInstance(accountModal).hide();
-                        }, 300);
-                    });
-                });
-                
-                // Sign In button handler
-                const signInBtn = accountModal.querySelector('.btn-signin');
-                if (signInBtn) {
-                    signInBtn.addEventListener('click', function() {
-                        // First close the modal
-                        const modalInstance = bootstrap.Modal.getInstance(accountModal);
-                        if (modalInstance) {
-                            modalInstance.hide();
-                        }
-                        // Then redirect to login page
-                        setTimeout(() => {
-                            window.location.href = '/login/'; // This is the correct URL
-                        }, 300);
-                    });
-                }
-
-                // Register button handler
-                const registerBtn = accountModal.querySelector('.btn-register');
-                if (registerBtn) {
-                    registerBtn.addEventListener('click', function() {
-                        // First close the modal
-                        const modalInstance = bootstrap.Modal.getInstance(accountModal);
-                        if (modalInstance) {
-                            modalInstance.hide();
-                        }
-                        // Then redirect to register page
-                        setTimeout(() => {
-                            window.location.href = '/register/'; // This is the correct URL
-                        }, 300);
-                    });
-                }
-            }
+                            alert.remove();
+                        }, 500);
+                    }
+                }, 5000);
+            });
         });
     </script>
+
+    {% if messages %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+
+                {% for message in messages %}
+                Swal.fire({
+                    icon: "{{ message.tags }}",
+                    title: "{{ message.tags|title }}",
+                    text: "{{ message|escapejs }}",
+                    confirmButtonText: "OK",
+
+                    background: "#ffffff",
+                    color: "#343a40",
+
+                    confirmButtonColor: "#8c0d4f",  // your --primary-color
+
+                    customClass: {
+                        popup: 'rounded-4 shadow'
+                    }
+                });
+                {% endfor %}
+
+            });
+        </script>
+    {% endif %}
+    
+    {% block extra_js %}{% endblock %}
+
 </body>
 </html>

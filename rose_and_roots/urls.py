@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from accounts.views import *
+from masters.views import *
 
 urlpatterns = [
     path('', home, name='home'),
@@ -27,7 +28,8 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     
     # API endpoints
-    path('api/login/', api_login, name='api_login'),
-    path('api/register/', api_register, name='api_register'),
-    path('api/logout/', api_logout, name='api_logout'),
+    path('logout/', logout, name='logout'),
+    
+    # masters
+    path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
 ]

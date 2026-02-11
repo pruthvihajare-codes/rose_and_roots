@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize form validation
     initFormValidation();
     
-    // Initialize form submission
-    initFormSubmission();
+    // Note: Form submission is now handled by regular POST, not AJAX
+    // So we don't need initFormSubmission() anymore
 });
 
 // Password Toggle Functionality
@@ -15,9 +15,12 @@ function initPasswordToggles() {
     const toggles = document.querySelectorAll('.password-toggle');
     
     toggles.forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            const targetId = this.id.replace('toggle', '').replace('Confirm', '');
-            const passwordField = document.getElementById(targetId);
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Find the closest input-group and then find the password input within it
+            const inputGroup = this.closest('.input-group');
+            const passwordField = inputGroup.querySelector('input[type="password"], input[type="text"]');
             
             if (passwordField) {
                 const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -25,12 +28,14 @@ function initPasswordToggles() {
                 
                 // Toggle eye icon
                 const icon = this.querySelector('i');
-                if (type === 'text') {
-                    icon.classList.remove('bi-eye');
-                    icon.classList.add('bi-eye-slash');
-                } else {
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
+                if (icon) {
+                    if (type === 'text') {
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    } else {
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    }
                 }
             }
         });
@@ -45,6 +50,7 @@ function initFormValidation() {
         loginForm.addEventListener('submit', function(e) {
             if (!validateLoginForm()) {
                 e.preventDefault();
+                e.stopPropagation();
             }
         });
     }
@@ -67,6 +73,7 @@ function initFormValidation() {
         registerForm.addEventListener('submit', function(e) {
             if (!validateRegisterForm()) {
                 e.preventDefault();
+                e.stopPropagation();
             }
         });
     }
@@ -131,6 +138,16 @@ function validateRegisterForm() {
     } else if (!isValidEmail(email.value)) {
         showError(email, 'emailError', 'Please enter a valid email address.');
         isValid = false;
+    }
+
+    // Validate phone (optional but format check)
+    const phone = document.getElementById('phone');
+    if (phone && phone.value.trim()) {
+        const phoneRegex = /^\+?1?\d{9,15}$/;
+        if (!phoneRegex.test(phone.value.trim())) {
+            showError(phone, 'phoneError', 'Please enter a valid phone number.');
+            isValid = false;
+        }
     }
     
     // Validate password
@@ -300,151 +317,7 @@ function clearErrors() {
     });
 }
 
-// Form Submission
-function initFormSubmission() {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLoginSubmit);
-    }
-    
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegisterSubmit);
-    }
-}
-
-// Handle Login Submission
-async function handleLoginSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateLoginForm()) return;
-    
-    const form = e.target;
-    const submitBtn = form.querySelector('.auth-submit-btn');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnSpinner = submitBtn.querySelector('.btn-spinner');
-    
-    // Show loading state
-    submitBtn.disabled = true;
-    btnText.classList.add('d-none');
-    btnSpinner.classList.remove('d-none');
-    
-    // Prepare form data
-    const formData = {
-        email: document.getElementById('loginEmail').value.trim(),
-        password: document.getElementById('loginPassword').value,
-        remember_me: document.getElementById('rememberMe').checked,
-        csrfmiddlewaretoken: form.querySelector('[name=csrfmiddlewaretoken]').value
-    };
-    
-    try {
-        const response = await fetch('/accounts/api/login/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': formData.csrfmiddlewaretoken
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showMessage('success', data.message);
-            setTimeout(() => {
-                window.location.href = data.redirect_url || '/';
-            }, 1500);
-        } else {
-            showMessage('danger', data.message);
-            submitBtn.disabled = false;
-            btnText.classList.remove('d-none');
-            btnSpinner.classList.add('d-none');
-        }
-        
-    } catch (error) {
-        showMessage('danger', 'An error occurred. Please try again.');
-        submitBtn.disabled = false;
-        btnText.classList.remove('d-none');
-        btnSpinner.classList.add('d-none');
-        console.error('Login error:', error);
-    }
-}
-
-// Handle Register Submission
-async function handleRegisterSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateRegisterForm()) return;
-    
-    const form = e.target;
-    const submitBtn = form.querySelector('.auth-submit-btn');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnSpinner = submitBtn.querySelector('.btn-spinner');
-    
-    // Show loading state
-    submitBtn.disabled = true;
-    btnText.classList.add('d-none');
-    btnSpinner.classList.remove('d-none');
-    
-    // Prepare form data
-    const formData = {
-        first_name: document.getElementById('firstName').value.trim(),
-        last_name: document.getElementById('lastName').value.trim(),
-        email: document.getElementById('registerEmail').value.trim(),
-        password: document.getElementById('registerPassword').value,
-        confirm_password: document.getElementById('confirmPassword').value,
-        terms: document.getElementById('terms').checked,
-        csrfmiddlewaretoken: form.querySelector('[name=csrfmiddlewaretoken]').value
-    };
-    
-    try {
-        const response = await fetch('/accounts/api/register/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': formData.csrfmiddlewaretoken
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showMessage('success', data.message);
-            setTimeout(() => {
-                window.location.href = data.redirect_url || '/';
-            }, 1500);
-        } else {
-            // Display field-specific errors
-            if (data.errors) {
-                for (const [field, message] of Object.entries(data.errors)) {
-                    const fieldElement = document.getElementById(field === 'confirm_password' ? 'confirmPassword' : field);
-                    const errorId = field === 'confirm_password' ? 'confirmPasswordError' : `${field}Error`;
-                    if (fieldElement) {
-                        showError(fieldElement, errorId, message);
-                    }
-                }
-                showMessage('danger', data.message || 'Please correct the errors below.');
-            } else {
-                showMessage('danger', data.message || 'Registration failed. Please try again.');
-            }
-            
-            submitBtn.disabled = false;
-            btnText.classList.remove('d-none');
-            btnSpinner.classList.add('d-none');
-        }
-        
-    } catch (error) {
-        showMessage('danger', 'An error occurred. Please try again.');
-        submitBtn.disabled = false;
-        btnText.classList.remove('d-none');
-        btnSpinner.classList.add('d-none');
-        console.error('Registration error:', error);
-    }
-}
-
-// Show Message
+// Show Message - For displaying Django messages if needed
 function showMessage(type, message) {
     const messagesContainer = document.getElementById('authMessages');
     const messageText = document.getElementById('messageText');

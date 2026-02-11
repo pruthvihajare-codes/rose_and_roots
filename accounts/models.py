@@ -1,25 +1,25 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-class UserManager(BaseUserManager):
+class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
+        
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        if password:
-            user.set_password(password)  # This will trigger password storage
-        else:
-            raise ValueError('Password must be set')
+        user.set_password(password)
         user.save(using=self._db)
         return user
-    
+
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('user_type', 'admin')
+        extra_fields.setdefault('full_name', 'Admin')
         
+        # Set default values for superuser
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -28,82 +28,93 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    """
-    Main Users table (matches your first reference)
-    """
-    email = models.EmailField(unique=True, db_index=True)
-    full_name = models.CharField(max_length=255, blank=True, null=True)
-    
-    # Timestamps
-    created_at = models.DateTimeField(default=timezone.now)
-    created_by = models.CharField(max_length=255, blank=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.CharField(max_length=255, blank=True, null=True)
-    
-    # Status fields
-    status = models.BooleanField(default=True)  # True = active, False = inactive
-    is_staff = models.BooleanField(default=False)
+    USER_TYPES = (
+        ('admin', 'Admin'),
+        ('guest', 'Guest'),
+    )
+
+    id = models.AutoField(primary_key=True)
+    first_name = models.CharField(max_length=255, null=True, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
+    full_name = models.CharField(max_length=255, blank=True)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    first_time_login = models.IntegerField(default=1)
+    last_login = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
-    
-    # Login tracking
-    last_login = models.DateTimeField(null=True, blank=True)
-    last_seen = models.DateTimeField(null=True, blank=True)
-    
-    # Verification
+    is_staff = models.BooleanField(default=False)  # Changed default to False
+    role_id = models.BigIntegerField(null=True, blank=True)
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    dark_mode = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
-    email_verified_at = models.DateTimeField(null=True, blank=True)
-    
-    # Terms acceptance
-    terms_accepted = models.BooleanField(default=False)
-    terms_accepted_at = models.DateTimeField(null=True, blank=True)
-    
-    # User preferences
-    newsletter_subscription = models.BooleanField(default=True)
-    
-    objects = UserManager()
-    
+    session_key = models.CharField(max_length=255, null=True, blank=True)
+    is_logged_in = models.BooleanField(default=False)
+    phone_verified = models.BooleanField(default=False)
+    last_activity = models.DateTimeField(auto_now=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='guest')
+
+    objects = CustomUserManager()
+
+    # Authentication using email
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
-    
+    REQUIRED_FIELDS = ['full_name']  # email is already required by USERNAME_FIELD
+
     class Meta:
         db_table = 'users'
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
-        ordering = ['-created_at']
-    
+
     def __str__(self):
         return self.email
-    
+
     def get_full_name(self):
-        return self.full_name or self.email.split('@')[0]
-    
+        return self.full_name or f"{self.first_name or ''} {self.last_name or ''}".strip()
+
     def get_short_name(self):
-        return self.email.split('@')[0]
+        return self.first_name or self.email
+
+class Roles(models.Model):  # Capitalized class name for consistency
+    id = models.AutoField(primary_key=True)
+    role_name = models.TextField(null=True, blank=True)
+    role_disc = models.TextField(null=True, blank=True)
+    role_type = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True, auto_now=True)
+    created_by = models.TextField(null=True, blank=True)
+    updated_by = models.TextField(null=True, blank=True)
     
-class UserPassword(models.Model):
-    """
-    Separate table for password storage (matches your second reference)
-    Stores plain_password for your reference table
-    """
+    class Meta:
+        db_table = 'roles'
+    
+    def __str__(self):
+        return self.role_name or f"Role {self.id}"
+
+class PasswordStorage(models.Model):  # Capitalized class name for consistency
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         CustomUser, 
         on_delete=models.CASCADE, 
-        related_name='passwords'
+        related_name='password_storage',
+        blank=True, 
+        null=True,
+        db_column='user_id'
     )
-    plain_password = models.CharField(max_length=255)  # For your reference
-    
-    # Hashed versions for actual authentication
-    hashed_password = models.CharField(max_length=255)  # Your actual hashed password
-    password_salt = models.CharField(max_length=255, blank=True, null=True)
-    
-    # Password metadata
-    is_current = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(null=True, blank=True)
+    password_text = models.CharField(max_length=255, null=True, blank=True)  # Renamed to snake_case
     
     class Meta:
-        db_table = 'user_passwords'
-        ordering = ['-created_at']
+        db_table = 'password_storage'
     
     def __str__(self):
-        return f"Password for {self.user.email}"
+        return f"Password for {self.user.email}" if self.user else "Password storage"
+
+class ErrorLog(models.Model):  # Capitalized class name for consistency
+    id = models.AutoField(primary_key=True)
+    method = models.TextField(null=True, blank=True)
+    error = models.TextField(null=True, blank=True)
+    error_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    user_id = models.TextField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'error_log'
+    
+    def __str__(self):
+        return f"Error {self.id} - {self.error_date}"

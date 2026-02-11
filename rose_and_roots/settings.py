@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts',
+    'masters',
 ]
 
 MIDDLEWARE = [
@@ -84,7 +85,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'rose_and_roots_db',
         'USER': 'root',
-        'PASSWORD': '8805433102waz@',
+        # 'PASSWORD': '8805433102waz@',
+        'PASSWORD': '8805433102qwe@',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
@@ -141,18 +143,18 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
 
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
 
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
-    },
-}
+#     'root': {
+#         'handlers': ['console'],
+#         'level': 'DEBUG',
+#     },
+# }
