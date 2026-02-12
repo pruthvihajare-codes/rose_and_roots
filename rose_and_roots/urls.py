@@ -33,4 +33,5 @@ urlpatterns = [
     # masters
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('dashboard/', dashboard, name='dashboard'),
+    path('bouquet/add/', add_bouquet, name='add_bouquet'),
 ]

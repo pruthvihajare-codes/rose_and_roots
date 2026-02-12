@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add New Bouquet - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/masters/bouquet-form.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="container mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add Bouquet</li>
+    </ol>
+</nav>
+
+<div class="bouquet-form-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Form Card -->
+                <div class="bouquet-form-card animate-slide-up">
+                    
+                    <!-- Card Header -->
+                    <div class="bouquet-form-header">
+                        <div class="header-content">
+                            <div class="header-icon">
+                                <i class="bi bi-flower2"></i>
+                            </div>
+                            <div class="header-text">
+                                <h2>Create New Bouquet</h2>
+                                <p>Fill in the details to add a beautiful new bouquet to your collection</p>
+                            </div>
+                        </div>
+                        <div class="header-decoration">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="bouquet-form-body">
+                        <form method="POST" enctype="multipart/form-data" id="bouquetForm">
+                            {% csrf_token %}
+                            
+                            <!-- Product Name -->
+                            <div class="form-group animate-field">
+                                <label for="bouquet_name" class="form-label">
+                                    Bouquet Name <span class="required">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-flower1"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="bouquet_name" name="bouquet_name" 
+                                           placeholder="e.g. Crimson Romance Bouquet" value="{{ form_data.bouquet_name|default:'' }}" required>
+                                </div>
+                                <div class="field-hint">
+                                    <i class="bi bi-question-circle"></i>
+                                    Choose a unique, descriptive name for your bouquet
+                                </div>
+                                {% if errors.bouquet_name %}
+                                <div class="invalid-feedback d-block">{{ errors.bouquet_name }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Short Description -->
+                            <div class="form-group animate-field">
+                                <label for="short_description" class="form-label">
+                                    Short Description <span class="required">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-card-text"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="short_description" name="short_description" 
+                                           placeholder="e.g. 12 Red Roses with Baby's Breath" value="{{ form_data.short_description|default:'' }}" required>
+                                </div>
+                                <div class="field-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    Brief description that appears in product cards
+                                </div>
+                                {% if errors.short_description %}
+                                <div class="invalid-feedback d-block">{{ errors.short_description }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Full Description -->
+                            <div class="form-group animate-field">
+                                <label for="description" class="form-label">
+                                    Full Description <span class="required">*</span>
+                                </label>
+                                <div class="textarea-wrapper">
+                                    <textarea class="form-control" id="description" name="description" 
+                                              rows="4" placeholder="Describe the bouquet in detail..." required>{{ form_data.description|default:'' }}</textarea>
+                                    <div class="textarea-decoration"></div>
+                                </div>
+                                <div class="character-count">
+                                    <span id="descCount">{{ form_data.description|length|default:0 }}</span>/500 characters
+                                </div>
+                                {% if errors.description %}
+                                <div class="invalid-feedback d-block">{{ errors.description }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Price & Discount Row -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group animate-field">
+                                        <label for="price" class="form-label">
+                                            Price (₹) <span class="required">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-currency-rupee"></i>
+                                            </span>
+                                            <input type="number" class="form-control" id="price" name="price" 
+                                                   placeholder="999" step="0.01" min="0" value="{{ form_data.price|default:'' }}" required>
+                                        </div>
+                                        {% if errors.price %}
+                                        <div class="invalid-feedback d-block">{{ errors.price }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group animate-field">
+                                        <label for="discount" class="form-label">
+                                            Discount (%)
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-percent"></i>
+                                            </span>
+                                            <input type="number" class="form-control" id="discount" name="discount" 
+                                                   placeholder="0" min="0" max="100" value="{{ form_data.discount|default:0 }}">
+                                        </div>
+                                        <div class="field-hint">
+                                            Leave 0 for no discount
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group animate-field">
+                                        <label for="discounted_price" class="form-label">
+                                            Discounted Price
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-tag"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="discounted_price" name="discounted_price" 
+                                                   placeholder="0.00" readonly style="background-color: #f9f0f5; color: #8c0d4f; font-weight: 600;">
+                                        </div>
+                                        <div class="field-hint">
+                                            <i class="bi bi-calculator"></i>
+                                            Auto-calculated after discount
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Occasion Selection - MultiSelect Dropdown -->
+                            <div class="form-group animate-field">
+                                <label for="occasions" class="form-label">
+                                    Select Occasions <span class="required">*</span>
+                                </label>
+                                <select class="form-control select2-multiple" id="occasions" name="occasions" multiple required>
+                                    {% for occasion in occasions %}
+                                    <option value="{{ occasion.id }}" 
+                                            {% if occasion.id|stringformat:"s" in selected_occasions %}selected{% endif %}>
+                                        {{ occasion.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="field-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    You can select multiple occasions for this bouquet (Ctrl+Click or Cmd+Click)
+                                </div>
+                                {% if errors.occasions %}
+                                <div class="invalid-feedback d-block">{{ errors.occasions }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Image Upload -->
+                            <div class="form-group animate-field">
+                                <label class="form-label">
+                                    Bouquet Images <span class="required">*</span>
+                                </label>
+                                <div class="image-upload-area" id="imageUploadArea">
+                                    <div class="upload-content">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <h4>Drag & Drop Images Here</h4>
+                                        <p>or click to browse</p>
+                                        <span class="upload-hint">Supports: JPG, PNG, WebP (Max 5MB each)</span>
+                                        <input type="file" id="bouquet_images" name="bouquet_images" 
+                                               accept="image/*" multiple hidden>
+                                        <button type="button" class="btn-browse" onclick="document.getElementById('bouquet_images').click()">
+                                            Browse Files
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                                {% if errors.images %}
+                                <div class="invalid-feedback d-block">{{ errors.images }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Status Toggle -->
+                            <div class="form-group animate-field">
+                                <label class="form-label">Bouquet Status</label>
+                                <div class="status-toggle-wrapper">
+                                    <div class="status-option {% if form_data.is_active == '1' or not form_data %}active{% endif %}" data-status="1">
+                                        <i class="bi bi-check-circle"></i>
+                                        <span>Active</span>
+                                    </div>
+                                    <div class="status-option {% if form_data.is_active == '0' %}active{% endif %}" data-status="0">
+                                        <i class="bi bi-x-circle"></i>
+                                        <span>Inactive</span>
+                                    </div>
+                                    <input type="hidden" name="is_active" id="is_active" value="{% if form_data.is_active %}{{ form_data.is_active }}{% else %}1{% endif %}">
+                                </div>
+                                <div class="field-hint">
+                                    Active bouquets will be visible to customers
+                                </div>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <a href="#" class="btn btn-cancel">
+                                    <i class="bi bi-x-lg"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-submit">
+                                    <span class="btn-text"><i class="bi bi-flower2"></i> Create Bouquet</span>
+                                    <span class="btn-spinner d-none">
+                                        <span class="spinner-border spinner-border-sm"></span>
+                                        Creating...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>    
+    // Show SweetAlert for Django messages
+    {% if messages %}
+        {% for message in messages %}
+            Swal.fire({
+                icon: "{{ message.tags }}",
+                title: "{{ message.tags|title }}",
+                text: "{{ message|escapejs }}",
+                confirmButtonText: "OK",
+                background: "#ffffff",
+                color: "#343a40",
+                confirmButtonColor: "#8c0d4f",
+                customClass: {
+                    popup: 'rounded-4 shadow'
+                }
+            });
+        {% endfor %}
+    {% endif %}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    debugger;
+    // Initialize Select2 with enhanced settings
+    $('.select2').select2({
+        width: '100%',
+        theme: 'default',
+        placeholder: '-- Choose a Vendor --',
+        allowClear: true
+    });
+    
+    // FIXED: Multi-select dropdown - Now works properly!
+    $('.select2-multiple').select2({
+        width: '100%',
+        placeholder: 'Select occasions for this bouquet',
+        theme: 'default',
+        allowClear: true,
+        closeOnSelect: false, // Keeps dropdown open for multiple selections
+        language: {
+            noResults: function() {
+                return "No occasions found";
+            }
+        }
+    });
+    
+    // FIXED: Discount Price Calculator
+    const priceInput = document.getElementById('price');
+    const discountInput = document.getElementById('discount');
+    const discountedPriceInput = document.getElementById('discounted_price');
+    
+    function calculateDiscountedPrice() {
+        const price = parseFloat(priceInput.value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
+        
+        if (price > 0) {
+            if (discount > 0 && discount <= 100) {
+                const discountedPrice = price - (price * discount / 100);
+                discountedPriceInput.value = '₹ ' + discountedPrice.toFixed(2);
+            } else {
+                discountedPriceInput.value = '₹ ' + price.toFixed(2);
+            }
+        } else {
+            discountedPriceInput.value = '';
+        }
+    }
+    
+    if (priceInput && discountInput && discountedPriceInput) {
+        priceInput.addEventListener('input', calculateDiscountedPrice);
+        priceInput.addEventListener('change', calculateDiscountedPrice);
+        discountInput.addEventListener('input', calculateDiscountedPrice);
+        discountInput.addEventListener('change', calculateDiscountedPrice);
+        
+        // Initial calculation with existing values
+        setTimeout(calculateDiscountedPrice, 100);
+    }
+    
+    // Vendor selection details - Enhanced
+    const vendorSelect = document.getElementById('vendor');
+    const vendorDetails = document.getElementById('vendorDetails');
+    
+    if (vendorSelect && vendorDetails) {
+        vendorSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            
+            if (this.value) {
+                document.getElementById('vendorName').textContent = selectedOption.text.split(' - ')[0];
+                document.getElementById('vendorPhone').textContent = selectedOption.dataset.phone || 'N/A';
+                document.getElementById('vendorEmail').textContent = selectedOption.dataset.email || 'N/A';
+                document.getElementById('vendorLocation').textContent = 
+                    `${selectedOption.dataset.area || ''} - ${selectedOption.dataset.address || ''}`;
+                vendorDetails.classList.remove('d-none');
+                vendorDetails.style.animation = 'slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            } else {
+                vendorDetails.classList.add('d-none');
+            }
+        });
+        
+        // Trigger change if vendor already selected (form repopulation)
+        if (vendorSelect.value) {
+            setTimeout(() => {
+                vendorSelect.dispatchEvent(new Event('change'));
+            }, 200);
+        }
+    }
+    
+    // Image upload drag & drop
+    const uploadArea = document.getElementById('imageUploadArea');
+    const imageInput = document.getElementById('bouquet_images');
+    const previewGrid = document.getElementById('imagePreviewGrid');
+    
+    if (uploadArea && imageInput) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('dragover');
+            });
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('dragover');
+            });
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            handleImageUpload(files);
+        });
+        
+        imageInput.addEventListener('change', (e) => {
+            handleImageUpload(e.target.files);
+        });
+        
+        function handleImageUpload(files) {
+            if (!previewGrid) return;
+            
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'preview-item';
+                        previewItem.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview">
+                            <button type="button" class="preview-remove" onclick="this.parentElement.remove()">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        `;
+                        previewGrid.appendChild(previewItem);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+    
+    // Status toggle
+    const statusOptions = document.querySelectorAll('.status-option');
+    const statusInput = document.getElementById('is_active');
+    
+    statusOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            statusOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            statusInput.value = this.dataset.status;
+        });
+    });
+    
+    // Form submission loading state
+    const bouquetForm = document.getElementById('bouquetForm');
+    const submitBtn = document.querySelector('.btn-submit');
+    
+    if (bouquetForm) {
+        bouquetForm.addEventListener('submit', function(e) {
+            submitBtn.classList.add('submitting');
+            submitBtn.disabled = true;
+            
+            // Show loading spinner
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnSpinner = submitBtn.querySelector('.btn-spinner');
+            if (btnText && btnSpinner) {
+                btnText.style.display = 'none';
+                btnSpinner.style.display = 'inline-block';
+            }
+        });
+    }
+    
+    // Character counter
+    const description = document.getElementById('description');
+    const descCount = document.getElementById('descCount');
+    
+    if (description && descCount) {
+        description.addEventListener('input', function() {
+            const count = this.value.length;
+            descCount.textContent = count;
+            descCount.style.color = count > 500 ? '#dc3545' : '#6c757d';
+        });
+    }
+});
+</script>
+{% endblock %}

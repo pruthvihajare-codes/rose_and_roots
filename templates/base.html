@@ -123,26 +123,67 @@
                 <ul class="nav-menu">
                     <!-- Customer Menu (role_id = 2) -->
                     {% if user.is_authenticated and user.role_id == 2 %}
-                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
-                        
+                    <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
+                    
                     <!-- Admin Menu (role_id = 1) -->
                     {% elif user.is_authenticated and user.role_id == 1 %}
-                        <li class="nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Masters</a></li>
+                    <li class="nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
+                    
+                    <!-- Bouquets Dropdown -->
+                    <li class="nav-menu-item dropdown">
+                        <a href="#" class="nav-menu-link dropdown-toggle">
+                            Bouquets
+                            <i class="bi bi-chevron-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'add_bouquet' %}">
+                                <i class="bi bi-plus-circle"></i> Add Bouquet
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="bi bi-list-ul"></i> Manage Bouquets
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="bi bi-tags"></i> Categories
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="bi bi-calendar-event"></i> Occasions
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Masters Dropdown -->
+                    <li class="nav-menu-item dropdown">
+                        <a href="#" class="nav-menu-link dropdown-toggle">
+                            Masters
+                            <i class="bi bi-chevron-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">
+                                <i class="bi bi-building"></i> Vendors
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="bi bi-flower2"></i> Flowers
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="bi bi-box"></i> Categories
+                            </a></li>
+                        </ul>
+                    </li>
                     
                     <!-- Not Logged In - Show default menu -->
                     {% else %}
-                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
+                    <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Category</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
                     {% endif %}
                 </ul>
             </nav>
@@ -368,8 +409,51 @@
             
             <!-- Admin Menu (role_id = 1) -->
             {% elif user.is_authenticated and user.role_id == 1 %}
-            <li class="mobile-nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="mobile-nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
-            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Masters</a></li>
+            <li class="mobile-nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="mobile-nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </a></li>
+            
+            <!-- Bouquets Dropdown (Mobile) -->
+            <li class="mobile-nav-menu-item mobile-dropdown">   
+                <a href="javascript:void(0);" class="mobile-nav-menu-link mobile-dropdown-toggle" onclick="toggleMobileDropdown(event, this)">
+                    <span><i class="bi bi-flower2 me-2"></i>Bouquets</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <ul class="mobile-dropdown-menu">
+                    <li><a href="{% url 'add_bouquet' %}" class="mobile-dropdown-item">
+                        <i class="bi bi-plus-circle me-2"></i>Add Bouquet
+                    </a></li>
+                    <li><a href="#" class="mobile-dropdown-item">
+                        <i class="bi bi-list-ul me-2"></i>Manage Bouquets
+                    </a></li>
+                    <li><hr class="mobile-dropdown-divider"></li>
+                    <li><a href="#" class="mobile-dropdown-item">
+                        <i class="bi bi-tags me-2"></i>Categories
+                    </a></li>
+                    <li><a href="#" class="mobile-dropdown-item">
+                        <i class="bi bi-calendar-event me-2"></i>Occasions
+                    </a></li>
+                </ul>
+            </li>
+
+            <!-- Masters Dropdown (Mobile) - FIXED -->
+            <li class="mobile-nav-menu-item mobile-dropdown">
+                <a href="javascript:void(0);" class="mobile-nav-menu-link mobile-dropdown-toggle" onclick="toggleMobileDropdown(event, this)">
+                    <span><i class="bi bi-gear me-2"></i>Masters</span>
+                    <i class="bi bi-chevron-down"></i>
+                </a>
+                <ul class="mobile-dropdown-menu">
+                    <li><a href="javascript:void(0);" class="mobile-dropdown-item">
+                        <i class="bi bi-building me-2"></i>Vendors
+                    </a></li>
+                    <li><a href="javascript:void(0);" class="mobile-dropdown-item">
+                        <i class="bi bi-flower1 me-2"></i>Flowers
+                    </a></li>
+                    <li><a href="javascript:void(0);" class="mobile-dropdown-item">
+                        <i class="bi bi-box me-2"></i>Categories
+                    </a></li>
+                </ul>
+            </li>
             
             <!-- Not Logged In - Show default menu -->
             {% else %}
@@ -388,6 +472,11 @@
         {% block content %}
         {% endblock %}
     </main>
+
+    <!-- Back to Top Button -->
+    <a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">
+        <i class="bi bi-arrow-up"></i>
+    </a>
 
     <!-- Footer -->
     <footer class="footer-section">
@@ -438,12 +527,12 @@
                 mobileMenuOverlay.addEventListener('click', closeMobileMenu);
             }
             
-            // Menu Navigation - Active link highlighting
+            // FIXED: Menu Navigation - Only close mobile menu for actual navigation links, NOT dropdown toggles
             const allMenuLinks = document.querySelectorAll('.nav-menu-link, .mobile-nav-menu-link');
             allMenuLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     // Don't prevent default for actual navigation links
-                    if (this.getAttribute('href') === '#' || this.getAttribute('href') === '') {
+                    if (this.getAttribute('href') === '#' || this.getAttribute('href') === '' || this.getAttribute('href') === 'javascript:void(0);') {
                         e.preventDefault();
                     }
                     
@@ -453,8 +542,18 @@
                     // Add active class to clicked link
                     this.classList.add('active');
                     
-                    // Close mobile menu if open
-                    if (mobileMenu && mobileMenu.classList.contains('active')) {
+                    // FIX: Only close mobile menu if:
+                    // 1. It's NOT a dropdown toggle
+                    // 2. It's a real navigation link (not # or javascript:void)
+                    // 3. Mobile menu is open
+                    const isDropdownToggle = this.classList.contains('mobile-dropdown-toggle') || 
+                                            this.closest('.mobile-dropdown') !== null;
+                    const isRealLink = this.getAttribute('href') && 
+                                    this.getAttribute('href') !== '#' && 
+                                    this.getAttribute('href') !== '' && 
+                                    this.getAttribute('href') !== 'javascript:void(0);';
+                    
+                    if (mobileMenu && mobileMenu.classList.contains('active') && !isDropdownToggle && isRealLink) {
                         closeMobileMenu();
                     }
                 });
@@ -476,31 +575,182 @@
         });
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ===== Back to Top Button =====
+            const backToTop = document.getElementById('backToTop');
+            
+            if (backToTop) {
+                // Show/hide button based on scroll position
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 300) {
+                        backToTop.classList.add('show');
+                        backToTop.classList.add('float-animation');
+                    } else {
+                        backToTop.classList.remove('show');
+                        backToTop.classList.remove('float-animation');
+                    }
+                });
+                
+                // Smooth scroll to top
+                backToTop.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
+    </script>
+
     {% if messages %}
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-
                 {% for message in messages %}
                     Swal.fire({
                         icon: "{{ message.tags }}",
                         title: "{{ message.tags|title }}",
                         text: "{{ message|escapejs }}",
                         confirmButtonText: "OK",
-
                         background: "#ffffff",
                         color: "#343a40",
-
-                        confirmButtonColor: "#8c0d4f",  // your --primary-color
-
+                        confirmButtonColor: "#8c0d4f",
                         customClass: {
                             popup: 'rounded-4 shadow'
                         }
                     });
                 {% endfor %}
-
             });
         </script>
     {% endif %}
+
+    <script>
+        // Mobile Menu Toggle Functions
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Mobile Dropdown Toggle Function - FIXED
+        function toggleMobileDropdown(event, element) {
+            // CRITICAL: Prevent event from bubbling up to mobile menu
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const parent = element.closest('.mobile-dropdown');
+            
+            // Close other open dropdowns
+            const allDropdowns = document.querySelectorAll('.mobile-dropdown');
+            allDropdowns.forEach(dropdown => {
+                if (dropdown !== parent) {
+                    dropdown.classList.remove('active');
+                }
+            });
+            
+            // Toggle current dropdown
+            parent.classList.toggle('active');
+            
+            return false;
+        }
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu Toggle Event Listeners
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openMobileMenu();
+                });
+            }
+            
+            if (mobileMenuClose) {
+                mobileMenuClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMobileMenu();
+                });
+            }
+            
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMobileMenu();
+                });
+            }
+            
+            // FIX: Prevent mobile menu from closing when clicking inside the mobile menu
+            if (mobileMenu) {
+                mobileMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            
+            // FIX: Handle dropdown toggles - STOP PROPAGATION
+            const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
+            mobileDropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+            
+            // Only close mobile menu when clicking on ACTUAL navigation links (not dropdown toggles)
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-menu-link:not(.mobile-dropdown-toggle)');
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Check if it's a real navigation link (not just '#' or 'javascript:void')
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && href !== '' && href !== 'javascript:void(0);') {
+                        // Small delay to allow navigation
+                        setTimeout(() => {
+                            closeMobileMenu();
+                        }, 300);
+                    } else {
+                        e.preventDefault();
+                    }
+                });
+            });
+            
+            // Fix for dropdown items - only close menu on actual navigation
+            const mobileDropdownItems = document.querySelectorAll('.mobile-dropdown-item');
+            mobileDropdownItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && href !== '' && href !== 'javascript:void(0);') {
+                        // Small delay to allow navigation
+                        setTimeout(() => {
+                            closeMobileMenu();
+                        }, 300);
+                    } else {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
     
     {% block extra_js %}{% endblock %}
 

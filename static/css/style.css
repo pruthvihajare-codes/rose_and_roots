@@ -495,12 +495,35 @@
             scroll-behavior: smooth;
         }
 
+        .modal-content {
+            z-index: 9999;
+        }
+
         /* General Styling */
         body {
             color: var(--default-color);
             background-color: var(--background-color);
             font-family: var(--default-font);
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        main {
+            flex: 1 0 auto;
+            width: 100%;
+        }
+
+        .footer-section {
+            flex-shrink: 0;
+            width: 100%;
         }
 
         /* Account Modal Styles - Compact Version */
@@ -875,3 +898,557 @@
                 transform: scale(1);
             }
         }
+
+        /* ===== Back to Top Button ===== */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #8c0d4f 0%, #a3125c 100%);
+            color: var(--contrast-color, #ffffff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(142, 13, 79, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            bottom: 30px;
+        }
+
+        .back-to-top:hover {
+            background: linear-gradient(135deg, #7a0b45 0%, #8c0d4f 100%);
+            transform: translateY(-8px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(142, 13, 79, 0.4);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .back-to-top i {
+            font-size: 1.6rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top:hover i {
+            transform: translateY(-3px);
+        }
+
+        /* Pulse Animation */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(142, 13, 79, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(142, 13, 79, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(142, 13, 79, 0);
+            }
+        }
+
+        .back-to-top.show {
+            animation: pulse 2s infinite;
+        }
+
+        .back-to-top.show:hover {
+            animation: none;
+        }
+
+        /* Progress Ring Style (Alternative) */
+        .back-to-top.progress-style {
+            background: white;
+            border: 3px solid #8c0d4f;
+            color: #8c0d4f;
+        }
+
+        .back-to-top.progress-style i {
+            color: #8c0d4f;
+        }
+
+        .back-to-top.progress-style:hover {
+            background: #8c0d4f;
+            color: white;
+        }
+
+        .back-to-top.progress-style:hover i {
+            color: white;
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .back-to-top.float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .back-to-top.float-animation:hover {
+            animation: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .back-to-top i {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .back-to-top {
+                bottom: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .back-to-top i {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* ===== Dropdown Menu Styles - FIXED ===== */
+        .nav-menu .dropdown {
+            position: relative;
+        }
+
+        /* Fix: Add padding and delay to prevent disappearing */
+        .nav-menu .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1050;
+            display: none;
+            min-width: 240px;
+            padding: 12px 0;
+            margin-top: 0; /* Changed from 15px */
+            background: white;
+            border: 1px solid rgba(142, 13, 79, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(142, 13, 79, 0.15);
+            list-style: none;
+            animation: dropdownFadeIn 0.3s ease-out;
+        }
+
+        /* Fix: Add invisible bridge between dropdown and menu */
+        .nav-menu .dropdown > .nav-menu-link::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: transparent;
+        }
+
+        .nav-menu .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -8px; /* Adjusted */
+            left: 25px;
+            width: 14px;
+            height: 14px;
+            background: white;
+            transform: rotate(45deg);
+            border-top: 1px solid rgba(142, 13, 79, 0.1);
+            border-left: 1px solid rgba(142, 13, 79, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Fix: Add hover bridge area */
+        .nav-menu .dropdown:hover .dropdown-menu,
+        .nav-menu .dropdown-menu:hover {
+            display: block !important;
+        }
+
+        /* Fix: Smooth transition with delay */
+        .nav-menu .dropdown-menu {
+            transition: opacity 0.2s ease;
+        }
+
+        .nav-menu .dropdown:not(:hover) .dropdown-menu {
+            transition-delay: 0.2s;
+        }
+
+        /* Fix for dropdown items hover */
+        .nav-menu .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            font-family: var(--nav-font);
+            font-size: 0.95rem;
+            color: var(--nav-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            gap: 12px;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        /* Remove the problematic mobile styles from desktop section */
+        @media (min-width: 992px) {
+            .nav-menu .dropdown-menu {
+                display: none !important;
+            }
+            
+            .nav-menu .dropdown:hover .dropdown-menu {
+                display: block !important;
+            }
+            
+            .nav-menu .dropdown > .nav-menu-link i {
+                transition: transform 0.3s ease;
+            }
+            
+            .nav-menu .dropdown:hover > .nav-menu-link i {
+                transform: rotate(180deg);
+            }
+        }
+
+        /* Hover effect for nav items with dropdown */
+        /* ===== Dropdown Menu Styles - Desktop ===== */
+.nav-menu .dropdown {
+    position: relative;
+}
+
+.nav-menu .dropdown > .nav-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-right: 20px;
+}
+
+.nav-menu .dropdown > .nav-menu-link i {
+    font-size: 0.8rem;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: var(--accent-color);
+}
+
+.nav-menu .dropdown:hover > .nav-menu-link i {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu - Glassmorphism Style */
+.nav-menu .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1050;
+    display: none;
+    min-width: 260px;
+    padding: 16px 0;
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(142, 13, 79, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(142, 13, 79, 0.2);
+    list-style: none;
+    animation: dropdownFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Invisible bridge to prevent disappearing */
+.nav-menu .dropdown > .nav-menu-link::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: transparent;
+}
+
+/* Dropdown Arrow - Enhanced */
+.nav-menu .dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 25px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    transform: rotate(45deg);
+    border-top: 1.5px solid rgba(142, 13, 79, 0.15);
+    border-left: 1.5px solid rgba(142, 13, 79, 0.15);
+    border-radius: 4px;
+    box-shadow: -3px -3px 8px rgba(0, 0, 0, 0.02);
+}
+
+/* Hover bridge */
+.nav-menu .dropdown:hover .dropdown-menu,
+.nav-menu .dropdown-menu:hover {
+    display: block !important;
+}
+
+/* Dropdown Items - Enhanced */
+.nav-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 24px;
+    font-family: var(--nav-font);
+    font-size: 0.95rem;
+    color: var(--nav-color);
+    text-decoration: none;
+    transition: all 0.25s ease;
+    gap: 14px;
+    border-left: 4px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-menu .dropdown-item i {
+    font-size: 1.2rem;
+    color: var(--accent-color);
+    width: 24px;
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hover effect with gradient background */
+.nav-menu .dropdown-item:hover {
+    background: linear-gradient(90deg, rgba(142, 13, 79, 0.08) 0%, rgba(249, 230, 239, 0.4) 100%);
+    color: var(--accent-color);
+    border-left-color: var(--accent-color);
+}
+
+.nav-menu .dropdown-item:hover i {
+    color: var(--accent-color);
+    transform: translateX(5px) scale(1.1);
+}
+
+/* Active state */
+.nav-menu .dropdown-item.active {
+    background: linear-gradient(90deg, rgba(142, 13, 79, 0.12) 0%, rgba(249, 230, 239, 0.6) 100%);
+    color: var(--accent-color);
+    font-weight: 600;
+    border-left-color: var(--accent-color);
+}
+
+.nav-menu .dropdown-item.active i {
+    color: var(--accent-color);
+}
+
+/* Dropdown Divider - Enhanced */
+.nav-menu .dropdown-divider {
+    height: 1px;
+    margin: 12px 24px;
+    background: linear-gradient(to right, transparent, rgba(142, 13, 79, 0.2), rgba(142, 13, 79, 0.4), rgba(142, 13, 79, 0.2), transparent);
+    border: none;
+}
+
+/* Dropdown Header */
+.nav-menu .dropdown-header {
+    padding: 8px 24px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: transparent;
+    font-family: var(--nav-font);
+}
+
+/* Animation */
+@keyframes dropdownFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Desktop specific styles */
+@media (min-width: 992px) {
+    .nav-menu .dropdown-menu {
+        display: none !important;
+    }
+    
+    .nav-menu .dropdown:hover .dropdown-menu {
+        display: block !important;
+    }
+}
+
+/* ===== Mobile Dropdown Styles - Enhanced ===== */
+.mobile-dropdown {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.mobile-dropdown-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 12px 16px !important;
+    background: rgba(249, 230, 239, 0.3);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.mobile-dropdown-toggle:hover {
+    background: rgba(249, 230, 239, 0.6);
+    border-color: rgba(142, 13, 79, 0.2);
+}
+
+.mobile-dropdown-toggle i {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: var(--accent-color);
+    font-size: 1rem;
+}
+
+.mobile-dropdown.active .mobile-dropdown-toggle {
+    background: rgba(142, 13, 79, 0.08);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: rgba(142, 13, 79, 0.15);
+    border-bottom-color: transparent;
+}
+
+.mobile-dropdown.active .mobile-dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+.mobile-dropdown-menu {
+    list-style: none;
+    padding: 12px 0 8px 16px;
+    margin-top: 0;
+    margin-bottom: 8px;
+    display: none;
+    background: rgba(249, 230, 239, 0.2);
+    border-radius: 0 0 12px 12px;
+    border-left: 2px solid rgba(142, 13, 79, 0.2);
+    animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mobile-dropdown.active .mobile-dropdown-menu {
+    display: block;
+}
+
+.mobile-dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    font-family: var(--nav-font);
+    font-size: 1rem;
+    color: var(--nav-color);
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    background: transparent;
+}
+
+.mobile-dropdown-item i {
+    color: var(--accent-color);
+    width: 28px;
+    font-size: 1.1rem;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mobile-dropdown-item:hover {
+    background: white;
+    color: var(--accent-color);
+    transform: translateX(6px);
+    box-shadow: 0 4px 12px rgba(142, 13, 79, 0.1);
+}
+
+.mobile-dropdown-item:hover i {
+    transform: scale(1.15);
+    color: var(--accent-color);
+}
+
+.mobile-dropdown-divider {
+    height: 1px;
+    margin: 12px 20px;
+    background: linear-gradient(to right, transparent, rgba(142, 13, 79, 0.15), transparent);
+    border: none;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Mega Menu Styles (Optional) ===== */
+.nav-menu .mega-menu {
+    width: 600px;
+    padding: 24px;
+    left: 0;
+}
+
+.nav-menu .mega-menu .row {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-menu .mega-menu .col {
+    flex: 1;
+}
+
+.nav-menu .mega-menu .mega-menu-title {
+    font-family: var(--heading-font);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(142, 13, 79, 0.2);
+}
+
+/* ===== Custom Scrollbar for Dropdowns ===== */
+.nav-menu .dropdown-menu {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.nav-menu .dropdown-menu::-webkit-scrollbar {
+    width: 5px;
+}
+
+.nav-menu .dropdown-menu::-webkit-scrollbar-track {
+    background: rgba(142, 13, 79, 0.05);
+    border-radius: 10px;
+}
+
+.nav-menu .dropdown-menu::-webkit-scrollbar-thumb {
+    background: rgba(142, 13, 79, 0.3);
+    border-radius: 10px;
+}
+
+.nav-menu .dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}
