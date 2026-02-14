@@ -64,28 +64,50 @@
                 <!-- Desktop Navigation Icons (Right) -->
                 <div class="col-md-6 desktop-nav-icons d-none d-lg-block">
                     <div class="nav-icons">
+                        
                         {% if user.is_authenticated %}
-                        <!-- Logged In User - Show profile icon with name -->
-                        <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
-                            <i class="bi bi-person-circle nav-icon"></i>
-                            <span class="nav-icon-text">{{ user.first_name|default:'Account' }}</span>
-                        </a>
+                            
+                            {% if user.role_id == 1 %}
+                                <!-- ADMIN - Only show account/profile, NO cart/wishlist -->
+                                <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                    <i class="bi bi-person-circle nav-icon"></i>
+                                    <span class="nav-icon-text">{{ user.first_name|default:'Admin' }}</span>
+                                </a>
+                            {% else %}
+                                <!-- CUSTOMER - Show all customer features -->
+                                <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                    <i class="bi bi-person-circle nav-icon"></i>
+                                    <span class="nav-icon-text">{{ user.first_name|default:'Account' }}</span>
+                                </a>
+                                <a href="javascript:void(0);" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#wishlistModal">
+                                    <i class="bi bi-heart nav-icon"></i>
+                                    <span class="nav-icon-text">Wishlist</span>
+                                </a>
+                                <a href="javascript:void(0);" class="nav-icon-item position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
+                                    <i class="bi bi-cart3 nav-icon"></i>
+                                    <span class="nav-icon-text">Cart</span>
+                                    <span class="cart-badge">3</span>
+                                </a>
+                            {% endif %}
+
                         {% else %}
-                        <!-- Not Logged In - Default account icon -->
-                        <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
-                            <i class="bi bi-person nav-icon"></i>
-                            <span class="nav-icon-text">Account</span>
-                        </a>
+
+                            <!-- NOT LOGGED IN - Show default account icon only -->
+                            <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                <i class="bi bi-person nav-icon"></i>
+                                <span class="nav-icon-text">Account</span>
+                            </a>
+                            <a href="javascript:void(0);" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#wishlistModal">
+                                <i class="bi bi-heart nav-icon"></i>
+                                <span class="nav-icon-text">Wishlist</span>
+                            </a>
+                            <a href="javascript:void(0);" class="nav-icon-item position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
+                                <i class="bi bi-cart3 nav-icon"></i>
+                                <span class="nav-icon-text">Cart</span>
+                                <span class="cart-badge">3</span>
+                            </a>
                         {% endif %}
-                        <a href="#" class="nav-icon-item">
-                            <i class="bi bi-heart nav-icon"></i>
-                            <span class="nav-icon-text">Wishlist</span>
-                        </a>
-                        <a href="#" class="nav-icon-item position-relative">
-                            <i class="bi bi-cart3 nav-icon"></i>
-                            <span class="nav-icon-text">Cart</span>
-                            <span class="cart-badge">3</span>
-                        </a>
+
                     </div>
                 </div>
                 
@@ -94,17 +116,25 @@
                     <div class="d-flex align-items-center justify-content-end">
                         <!-- Mobile Icons -->
                         <div class="mobile-nav-icons me-3">
-                            <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
-                                {% if user.is_authenticated %}
-                                <i class="bi bi-person-circle nav-icon"></i>
-                                {% else %}
-                                <i class="bi bi-person nav-icon"></i>
-                                {% endif %}
-                            </a>
-                            <a href="#" class="nav-icon-item position-relative">
-                                <i class="bi bi-cart3 nav-icon"></i>
-                                <span class="cart-badge">3</span>
-                            </a>
+                            {% if user.is_authenticated and user.role_id == 1 %}
+                                <!-- ADMIN - Only account icon, NO cart -->
+                                <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                    <i class="bi bi-person-circle nav-icon"></i>
+                                </a>
+                            {% else %}
+                                <!-- CUSTOMER OR NOT LOGGED IN - Show both account and cart -->
+                                <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                    {% if user.is_authenticated %}
+                                    <i class="bi bi-person-circle nav-icon"></i>
+                                    {% else %}
+                                    <i class="bi bi-person nav-icon"></i>
+                                    {% endif %}
+                                </a>
+                                <a href="javascript:void(0);" class="nav-icon-item position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
+                                    <i class="bi bi-cart3 nav-icon"></i>
+                                    <span class="cart-badge">3</span>
+                                </a>
+                            {% endif %}
                         </div>
                         <!-- Mobile Menu Toggle -->
                         <button class="mobile-nav-toggle" id="mobileMenuToggle">
@@ -381,6 +411,237 @@
                             {% else %}
                                 Sign in to unlock exclusive offers & faster checkout
                             {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Modal (Login Required / Coming Soon) -->
+    <div class="modal fade" id="wishlistModal" tabindex="-1" aria-labelledby="wishlistModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content account-modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header account-modal-header">
+                    <div class="account-modal-title-section w-100">
+                        <h5 class="modal-title account-modal-title" id="wishlistModalLabel">My Wishlist</h5>
+                        <p class="account-modal-subtitle">Your saved items</p>
+                    </div>
+                    <button type="button" class="btn-close account-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal-body account-modal-body">
+                    {% if user.is_authenticated %}
+                        <!-- Wishlist Stats Card -->
+                        <div class="user-stats-card mb-4">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="stat-item text-center">
+                                        <span class="stat-value">0</span>
+                                        <span class="stat-label">Items</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-item text-center">
+                                        <span class="stat-value">₹0</span>
+                                        <span class="stat-label">Total Value</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Wishlist Items (Empty State) -->
+                        <div class="text-center py-4">
+                            <div class="empty-state-icon mb-3">
+                                <i class="bi bi-heart" style="font-size: 48px; color: var(--accent-color); opacity: 0.5;"></i>
+                            </div>
+                            <h6 style="color: var(--heading-color); font-family: var(--heading-font);">Your wishlist is empty</h6>
+                            <p style="color: #6c757d; font-size: 14px;">Start adding items to your wishlist</p>
+                            <a href="#" class="btn mt-2" style="background: var(--accent-color); color: var(--contrast-color); border-radius: 25px; padding: 8px 30px;">
+                                <i class="bi bi-shop me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                        
+                        <!-- Wishlist Menu Items (When items exist - hidden by default) -->
+                        <div class="account-menu-list d-none">
+                            <a href="#" class="account-menu-item">
+                                <div class="account-menu-icon">
+                                    <i class="bi bi-heart-fill" style="color: #ff4d4d;"></i>
+                                </div>
+                                <div class="account-menu-text">
+                                    <span class="account-menu-title">Red Rose Bouquet</span>
+                                    <span class="account-menu-desc">₹999 • In Stock</span>
+                                </div>
+                                <div class="account-menu-arrow">
+                                    <i class="bi bi-cart-plus"></i>
+                                </div>
+                            </a>
+                        </div>
+                        
+                    {% else %}
+                        <!-- Not Logged In State -->
+                        <div class="text-center py-4">
+                            <i class="bi bi-heart" style="font-size: 48px; color: var(--accent-color); opacity: 0.5;"></i>
+                            <p class="mt-3 mb-2" style="color: var(--default-color); font-size: 16px;">
+                                Please login to view your wishlist
+                            </p>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="{% url 'login' %}" class="btn px-4" style="background: var(--accent-color); color: var(--contrast-color); border-radius: 25px;">
+                                    Login
+                                </a>
+                                <a href="{% url 'register' %}" class="btn btn-outline-secondary px-4 rounded-pill">
+                                    Register
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Footer Note -->
+                    <div class="account-modal-footer-note mt-3">
+                        <p class="mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Items in wishlist are saved for later
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content account-modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header account-modal-header">
+                    <div class="account-modal-title-section w-100">
+                        <h5 class="modal-title account-modal-title" id="cartModalLabel">Shopping Cart</h5>
+                        <p class="account-modal-subtitle"><span id="cartItemCount">3</span> items in your cart</p>
+                    </div>
+                    <button type="button" class="btn-close account-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal-body account-modal-body">
+                    {% if user.is_authenticated %}
+                        <!-- Cart Stats Card -->
+                        <div class="user-stats-card mb-4">
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <div class="stat-item text-center">
+                                        <span class="stat-value">3</span>
+                                        <span class="stat-label">Items</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item text-center">
+                                        <span class="stat-value">₹2,997</span>
+                                        <span class="stat-label">Subtotal</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item text-center">
+                                        <span class="stat-value">₹150</span>
+                                        <span class="stat-label">Shipping</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="stat-item text-center p-2" style="background: var(--accent-color-light); border-radius: 8px;">
+                                        <span class="stat-label">Total</span>
+                                        <span class="stat-value" style="color: var(--accent-color); font-size: 18px;">₹3,147</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cart Items -->
+                        <div class="account-menu-list">
+                            <!-- Cart Item 1 -->
+                            <div class="account-menu-item">
+                                <div class="account-menu-icon">
+                                    <img src="#" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #f5f5f5;">
+                                </div>
+                                <div class="account-menu-text">
+                                    <span class="account-menu-title">Red Rose Bouquet</span>
+                                    <span class="account-menu-desc">₹999 x 1</span>
+                                </div>
+                                <div class="account-menu-arrow">
+                                    <button class="btn btn-sm" style="color: #dc3545;" onclick="removeFromCart(1)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Cart Item 2 -->
+                            <div class="account-menu-item">
+                                <div class="account-menu-icon">
+                                    <img src="#" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #f5f5f5;">
+                                </div>
+                                <div class="account-menu-text">
+                                    <span class="account-menu-title">Tulip Delight</span>
+                                    <span class="account-menu-desc">₹1,299 x 1</span>
+                                </div>
+                                <div class="account-menu-arrow">
+                                    <button class="btn btn-sm" style="color: #dc3545;" onclick="removeFromCart(2)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Cart Item 3 -->
+                            <div class="account-menu-item">
+                                <div class="account-menu-icon">
+                                    <img src="#" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #f5f5f5;">
+                                </div>
+                                <div class="account-menu-text">
+                                    <span class="account-menu-title">Mixed Flowers</span>
+                                    <span class="account-menu-desc">₹699 x 1</span>
+                                </div>
+                                <div class="account-menu-arrow">
+                                    <button class="btn btn-sm" style="color: #dc3545;" onclick="removeFromCart(3)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="#" class="btn" style="background: var(--accent-color); color: var(--contrast-color); border-radius: 25px; padding: 10px;">
+                                <i class="bi bi-cart-check me-2"></i>Proceed to Checkout
+                            </a>
+                            <a href="#" class="btn btn-outline-secondary rounded-pill" style="border-color: #ddd;">
+                                <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                        
+                    {% else %}
+                        <!-- Not Logged In State -->
+                        <div class="text-center py-4">
+                            <i class="bi bi-cart3" style="font-size: 48px; color: var(--accent-color); opacity: 0.5;"></i>
+                            <p class="mt-3 mb-2" style="color: var(--default-color); font-size: 16px;">
+                                Please login to view your cart
+                            </p>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="{% url 'login' %}" class="btn px-4" style="background: var(--accent-color); color: var(--contrast-color); border-radius: 25px;">
+                                    Login
+                                </a>
+                                <a href="{% url 'register' %}" class="btn btn-outline-secondary px-4 rounded-pill">
+                                    Register
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Footer Note -->
+                    <div class="account-modal-footer-note mt-3">
+                        <p class="mb-0">
+                            <i class="bi bi-truck me-1"></i>
+                            Free shipping on orders above ₹999
                         </p>
                     </div>
                 </div>
