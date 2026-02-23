@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ bouquet.name }} - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+
+    <link rel="stylesheet" href="{% static 'css/store/product-detail.css' %}">
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="product-detail-page">
+        <div class="container py-4">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'shop' %}">Shop</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ bouquet.name|truncatechars:30 }}</li>
+                </ol>
+            </nav>
+
+            <!-- Product Main Section -->
+            <div class="product-main">
+                <div class="row g-4">
+                    <!-- Product Images (Left Column) -->
+                    <div class="col-lg-6">
+                        <div class="product-gallery">
+                            <!-- Main Image -->
+                            <div class="main-image-container">
+                                {% if images %}
+                                    <img src="{{ MEDIA_URL }}{{ images.0.image_path }}" id="mainProductImage" alt="{{ bouquet.name }}" class="main-product-image">
+                                {% else %}
+                                    <div class="no-image-large">
+                                        <i class="bi bi-flower2"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Badges -->
+                                <div class="product-badges">
+                                    {% if bouquet.discount_percent > 0 %}
+                                    <span class="badge-discount">-{{ bouquet.discount_percent }}%</span>
+                                    {% endif %}
+                                    {% if bouquet.is_featured %}
+                                    <span class="badge-featured">Featured</span>
+                                    {% endif %}
+                                    {% if bouquet.same_day_available %}
+                                    <span class="badge-sameday">Same Day</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Thumbnail Gallery -->
+                            {% if images|length > 1 %}
+                            <div class="thumbnail-gallery">
+                                {% for image in images %}
+                                <div class="thumbnail-item {% if forloop.first %}active{% endif %}" onclick="changeMainImage('{{ MEDIA_URL }}{{ image.image_path }}', this)">
+                                    <img src="{{ MEDIA_URL }}{{ image.image_path }}" alt="{{ bouquet.name }} - Image {{ forloop.counter }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Product Details (Right Column) -->
+                    <div class="col-lg-6">
+                        <div class="product-details">
+                            <!-- Occasion Tags -->
+                            <div class="product-occasions">
+                                {% for occasion in bouquet.occasions.all %}
+                                <span class="occasion-tag">
+                                    {% if 'birth' in occasion.name|lower %}
+                                        <i class="bi bi-gift"></i>
+                                    {% elif 'anni' in occasion.name|lower %}
+                                        <i class="bi bi-gem"></i>
+                                    {% elif 'love' in occasion.name|lower %}
+                                        <i class="bi bi-heart-fill"></i>
+                                    {% elif 'wed' in occasion.name|lower %}
+                                        <i class="bi bi-hearts"></i>
+                                    {% else %}
+                                        <i class="bi bi-flower2"></i>
+                                    {% endif %}
+                                    {{ occasion.name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Product Name -->
+                            <h1 class="product-title">{{ bouquet.name }}</h1>
+
+                            <!-- Ratings (Placeholder) -->
+                            <div class="product-ratings">
+                                <div class="stars">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-half"></i>
+                                </div>
+                                <span class="rating-count">(24 reviews)</span>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="product-price">
+                                {% if bouquet.discount_price %}
+                                    <span class="current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
+                                    <span class="original-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                    <span class="discount-badge">Save {{ bouquet.discount_percent }}%</span>
+                                {% else %}
+                                    <span class="current-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Short Description -->
+                            <div class="short-description">
+                                <p>{{ bouquet.short_description }}</p>
+                            </div>
+
+                            <!-- Availability -->
+                            <div class="availability-info">
+                                <div class="info-item">
+                                    <i class="bi bi-truck"></i>
+                                    <span>
+                                        {% if bouquet.same_day_available %}
+                                            <strong class="text-success">Same Day Delivery Available</strong>
+                                        {% else %}
+                                            <strong>Standard Delivery (2-3 days)</strong>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                {% if bouquet.delivery_info %}
+                                <div class="info-item">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span>{{ bouquet.delivery_info }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Quantity and Actions -->
+                            <div class="product-actions">
+                                <div class="quantity-selector">
+                                    <label for="quantity">Quantity:</label>
+                                    <div class="quantity-controls">
+                                        <button type="button" class="quantity-btn" onclick="decrementQuantity()">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="10">
+                                        <button type="button" class="quantity-btn" onclick="incrementQuantity()">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="action-buttons">
+                                    <button class="btn-add-to-cart" onclick="addToCart('{{ encrypted_id }}', document.getElementById('quantity').value)">
+                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </button>
+                                    <button class="btn-wishlist" onclick="addToWishlist('{{ encrypted_id }}')">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Info -->
+                            {% if bouquet.delivery_info %}
+                            <div class="delivery-card">
+                                <h5><i class="bi bi-truck"></i> Delivery Information</h5>
+                                <p>{{ bouquet.delivery_info|safe }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Description Tabs -->
+            <div class="product-tabs mt-5">
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">Description</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="care-tab" data-bs-toggle="tab" data-bs-target="#care" type="button" role="tab">Care Instructions</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button" role="tab">Delivery Info</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="productTabsContent">
+                    <div class="tab-pane fade show active" id="description" role="tabpanel">
+                        <div class="tab-content-inner">
+                            {{ bouquet.description|safe }}
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="care" role="tabpanel">
+                        <div class="tab-content-inner">
+                            {% if bouquet.instruction_text %}
+                                {{ bouquet.instruction_text|safe }}
+                            {% else %}
+                                <p class="text-muted">No care instructions provided.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="delivery" role="tabpanel">
+                        <div class="tab-content-inner">
+                            {% if bouquet.delivery_info %}
+                                {{ bouquet.delivery_info|safe }}
+                            {% else %}
+                                <p class="text-muted">No delivery information provided.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Products -->
+            {% if related_bouquets %}
+            <div class="related-products mt-5">
+                <h2 class="section-title">You May Also Like</h2>
+                <div class="products-grid">
+                    {% for related in related_bouquets %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if related.primary_image %}
+                                <img src="{{ MEDIA_URL }}{{ related.primary_image }}" alt="{{ related.name }}" class="img-fluid">
+                            {% else %}
+                                <div class="no-image">
+                                    <i class="bi bi-flower2"></i>
+                                </div>
+                            {% endif %}
+                            
+                            {% if related.discount_percent > 0 %}
+                            <span class="badge-discount">-{{ related.discount_percent }}%</span>
+                            {% endif %}
+
+                            <div class="product-actions">
+                                <a href="{% url 'product_detail' %}?id={{ related.encrypted_id }}" class="action-btn" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button class="action-btn" title="Add to Wishlist" onclick="addToWishlist('{{ related.encrypted_id }}')">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">
+                                <a href="{% url 'product_detail' %}?id={{ related.encrypted_id }}">{{ related.name }}</a>
+                            </h3>
+                            <div class="product-price">
+                                {% if related.discount_price %}
+                                    <span class="current-price">₹{{ related.discount_price|floatformat:0 }}</span>
+                                    <span class="original-price">₹{{ related.price|floatformat:0 }}</span>
+                                {% else %}
+                                    <span class="current-price">₹{{ related.price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+    <script src="{% static 'js/store/product-detail.js' %}"></script>
+
+    <script>
+        // Quantity controls
+        function incrementQuantity() {
+            const input = document.getElementById('quantity');
+            const max = parseInt(input.getAttribute('max')) || 10;
+            let value = parseInt(input.value) || 1;
+            if (value < max) {
+                input.value = value + 1;
+            }
+        }
+        
+        function decrementQuantity() {
+            const input = document.getElementById('quantity');
+            let value = parseInt(input.value) || 1;
+            if (value > 1) {
+                input.value = value - 1;
+            }
+        }
+        
+        // Change main image
+        function changeMainImage(imageSrc, element) {
+            document.getElementById('mainProductImage').src = imageSrc;
+            
+            // Update active thumbnail
+            document.querySelectorAll('.thumbnail-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+        
+        // Cart functions
+        function addToCart(encryptedId, quantity) {
+            // Implement your cart logic
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to Cart!',
+                text: 'Product has been added to your cart.',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+        
+        function addToWishlist(encryptedId) {
+            // Implement your wishlist logic
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to Wishlist!',
+                text: 'Product has been added to your wishlist.',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+    </script>
+
+{% endblock %}

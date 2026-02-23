@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add New User - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/masters/user-form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="user-form-page">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'user_list' %}">Users</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add New User</li>
+            </ol>
+        </nav>
+
+        <div class="form-container">
+            <!-- Header -->
+            <div class="form-header">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div>
+                        <h1 class="form-title">Add New User</h1>
+                        <p class="form-subtitle">Create a new system user account</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Form -->
+            <form method="post" action="{% url 'add_user' %}" id="userForm" class="user-form">
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-info-circle me-2"></i>Personal Information
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="first_name" class="form-label">
+                                    First Name <span class="required">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="first_name" 
+                                       name="first_name" 
+                                       placeholder="Enter first name"
+                                       value="{{ form_data.first_name|default:'' }}"
+                                       required>
+                                <div class="invalid-feedback" id="first_nameError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="last_name" 
+                                       name="last_name" 
+                                       placeholder="Enter last name"
+                                       value="{{ form_data.last_name|default:'' }}">
+                                <div class="invalid-feedback" id="last_nameError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email" class="form-label">
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       placeholder="user@example.com"
+                                       value="{{ form_data.email|default:'' }}"
+                                       required>
+                                <div class="invalid-feedback" id="emailError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone" 
+                                       name="phone" 
+                                       placeholder="Enter 10 digit mobile number"
+                                       value="{{ form_data.phone|default:'' }}"
+                                       maxlength="10">
+                                <div class="invalid-feedback" id="phoneError"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-gear me-2"></i>Account Settings
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="role_id" class="form-label">
+                                    Role <span class="required">*</span>
+                                </label>
+                                <select class="form-control" id="role_id" name="role_id" required>
+                                    <option value="">Select Role</option>
+                                    {% for role in roles %}
+                                    <option value="{{ role.id }}" {% if form_data.role_id == role.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ role.role_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback" id="role_idError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="user_type" class="form-label">User Type</label>
+                                <select class="form-control" id="user_type" name="user_type">
+                                    <option value="guest" {% if form_data.user_type == 'guest' %}selected{% endif %}>Guest</option>
+                                    <option value="admin" {% if form_data.user_type == 'admin' %}selected{% endif %}>Admin</option>
+                                </select>
+                                <div class="invalid-feedback" id="user_typeError"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Section -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-lock me-2"></i>Password
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="password" class="form-label">
+                                    Password <span class="required">*</span>
+                                </label>
+                                <!-- Update your password input wrappers like this -->
+                                <div class="password-input-wrapper">
+                                    <input type="password" 
+                                        class="form-control" 
+                                        id="password" 
+                                        name="password" 
+                                        placeholder="Enter password"
+                                        required>
+                                    <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength mt-2">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" id="passwordStrength" role="progressbar" style="width: 0%;"></div>
+                                    </div>
+                                    <small class="text-muted" id="passwordStrengthText">Enter password</small>
+                                </div>
+                                <div class="invalid-feedback" id="passwordError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="confirm_password" class="form-label">
+                                    Confirm Password <span class="required">*</span>
+                                </label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" 
+                                        class="form-control" 
+                                        id="confirm_password" 
+                                        name="confirm_password" 
+                                        placeholder="Confirm password"
+                                        required>
+                                    <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback" id="confirm_passwordError"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Password Requirements -->
+                    <div class="password-requirements mt-3">
+                        <p class="requirements-title">Password must contain:</p>
+                        <ul class="requirements-list">
+                            <li id="req-length" class="invalid">At least 8 characters</li>
+                            <li id="req-uppercase" class="invalid">At least one uppercase letter</li>
+                            <li id="req-lowercase" class="invalid">At least one lowercase letter</li>
+                            <li id="req-number" class="invalid">At least one number</li>
+                            <li id="req-special" class="invalid">At least one special character (!@#$%^&*)</li>
+                            <li id="req-match" class="invalid">Passwords match</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-toggle-on me-2"></i>Status
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="status-toggle">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isActive" name="is_active" value="1" checked>
+                                        <label class="form-check-label" for="isActive">Active</label>
+                                    </div>
+                                    <small class="text-muted">Inactive users cannot log in</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-preview" id="previewBtn">
+                        <i class="bi bi-eye me-2"></i>Preview
+                    </button>
+                    <button type="reset" class="btn btn-reset" id="resetBtn">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                    </button>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="bi bi-check-lg me-2"></i>Create User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content preview-modal-content">
+            <div class="modal-header preview-modal-header">
+                <h5 class="modal-title">User Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body preview-modal-body">
+                <div class="preview-card">
+                    <div class="preview-header">
+                        <div class="preview-avatar">
+                            <div class="avatar-placeholder-large" id="previewAvatar">
+                                P
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="preview-user-name" id="previewName">-</h4>
+                            <p class="preview-user-email" id="previewEmail">-</p>
+                        </div>
+                    </div>
+                    <div class="preview-details">
+                        <div class="preview-detail-item">
+                            <i class="bi bi-telephone"></i>
+                            <span id="previewPhone">-</span>
+                        </div>
+                        <div class="preview-detail-item">
+                            <i class="bi bi-briefcase"></i>
+                            <span id="previewRole">-</span>
+                        </div>
+                        <div class="preview-detail-item">
+                            <i class="bi bi-tag"></i>
+                            <span id="previewType">-</span>
+                        </div>
+                        <div class="preview-detail-item">
+                            <i class="bi bi-circle"></i>
+                            <span id="previewStatus">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/masters/user-form.js' %}"></script>
+
+    <script>
+        // Add click event listeners to password toggle buttons
+        const passwordToggle = document.querySelectorAll('.password-toggle:not(.password-toggle-click)');
+        passwordToggle.forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+        });
+    </script>
+    
+{% endblock %}

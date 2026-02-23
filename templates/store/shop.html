@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shop Bouquets - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/store/shop.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@14.7.0/dist/nouislider.min.css">
+{% endblock %}
+
+{% block content %}
+
+    <div class="shop-page">
+        <div class="container py-4">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Shop</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            {% comment %} <div class="shop-header text-center mb-5">
+                <h1 class="shop-title">Our Beautiful Bouquets</h1>
+                <p class="shop-subtitle">Handcrafted with love for every special moment</p>
+            </div> {% endcomment %}
+
+            <div class="row">
+                <!-- Sidebar Filters (Left Side) -->
+                <div class="col-xl-3 col-lg-4 col-md-5 mb-4">
+                    <div class="filter-sidebar">
+                        <div class="filter-header">
+                            <h5><i class="bi bi-sliders2 me-2"></i>Filter Products</h5>
+                            <a href="{% url 'shop' %}" class="clear-all">Clear All</a>
+                        </div>
+
+                        <!-- Filter Form -->
+                        <form method="get" action="{% url 'shop' %}" id="filterForm">
+                            <!-- Occasion Filter - Multi-select Dropdown with encrypted IDs -->
+                            <div class="filter-section">
+                                <h6 class="filter-title">
+                                    <i class="bi bi-calendar-event me-2"></i>Occasion
+                                    <span class="toggle-icon"><i class="bi bi-chevron-up"></i></span>
+                                </h6>
+                                <div class="filter-content show">
+                                    <select class="form-select occasion-select" name="occasion" multiple size="5">
+                                        {% for occasion in occasions %}
+                                        <option value="{{ occasion.encrypted_id }}" 
+                                            {% if occasion.encrypted_id in selected_occasions %}selected{% endif %}>
+                                            {{ occasion.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted d-block mt-2">Ctrl+Click to select multiple</small>
+                                </div>
+                            </div>
+
+                            <!-- Price Range Filter (no change needed) -->
+                            <div class="filter-section">
+                                <h6 class="filter-title">
+                                    <i class="bi bi-currency-rupee me-2"></i>Price Range
+                                    <span class="toggle-icon"><i class="bi bi-chevron-up"></i></span>
+                                </h6>
+                                <div class="filter-content show">
+                                    <div class="price-range-wrapper">
+                                        <div id="priceSlider" class="price-slider"></div>
+                                        
+                                        <!-- Price values display -->
+                                        <div class="price-values">
+                                            <div class="price-value">
+                                                <span class="price-value-label">Min</span>
+                                                <span class="price-value-number min" id="displayMinPrice">₹{{ min_price|default:price_range.min_price|floatformat:0 }}</span>
+                                            </div>
+                                            <span class="price-range-separator">—</span>
+                                            <div class="price-value">
+                                                <span class="price-value-label">Max</span>
+                                                <span class="price-value-number max" id="displayMaxPrice">₹{{ max_price|default:price_range.max_price|floatformat:0 }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="price-inputs">
+                                            <div class="input-group">
+                                                <span class="input-group-text">₹</span>
+                                                <input type="number" class="form-control" id="minPrice" name="min_price" 
+                                                    value="{{ min_price|default:price_range.min_price|floatformat:0 }}" 
+                                                    min="{{ price_range.min_price|floatformat:0 }}" 
+                                                    max="{{ price_range.max_price|floatformat:0 }}">
+                                            </div>
+                                            <span class="price-separator">-</span>
+                                            <div class="input-group">
+                                                <span class="input-group-text">₹</span>
+                                                <input type="number" class="form-control" id="maxPrice" name="max_price" 
+                                                    value="{{ max_price|default:price_range.max_price|floatformat:0 }}" 
+                                                    min="{{ price_range.min_price|floatformat:0 }}" 
+                                                    max="{{ price_range.max_price|floatformat:0 }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Hidden sort field -->
+                            <input type="hidden" name="sort" id="sortField" value="{{ sort_by }}">
+                            
+                            <button type="submit" class="btn btn-apply-filters w-100">
+                                <i class="bi bi-funnel me-2"></i>Apply Filters
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Products Grid (Right Side) -->
+                <div class="col-xl-9 col-lg-8 col-md-7">
+                    <!-- Sort Bar -->
+                    <div class="sort-bar mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <p class="result-count mb-0">
+                                    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="sort-select-wrapper">
+                                    <select class="form-select sort-select" id="sortSelect">
+                                        <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Sort by: Popular</option>
+                                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Sort by: Newest</option>
+                                        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Sort by: Price: Low to High</option>
+                                        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Sort by: Price: High to Low</option>
+                                    </select>
+                                    <i class="bi bi-chevron-down sort-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Grid -->
+                    <div class="products-grid">
+                        {% for bouquet in bouquets %}
+                        <div class="product-card">
+                            <div class="product-image">
+                                {% if bouquet.primary_image %}
+                                    <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}" class="img-fluid">
+                                {% else %}
+                                    <div class="no-image">
+                                        <i class="bi bi-flower2"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Badges -->
+                                <div class="product-badges">
+                                    {% if bouquet.is_featured %}
+                                    <span class="badge-featured">Featured</span>
+                                    {% endif %}
+                                    {% if bouquet.same_day_available %}
+                                    <span class="badge-sameday">Same Day</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="product-actions">
+                                    <!-- In product actions -->
+                                    <a href="#" class="action-btn" title="Add to Wishlist" onclick="addToWishlist('{{ bouquet.encrypted_id }}')">
+                                        <i class="bi bi-heart"></i>
+                                    </a>
+                                    <a href="#" class="action-btn" title="Quick View" data-bs-toggle="modal" data-bs-target="#quickViewModal{{ bouquet.encrypted_id }}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+
+                                <!-- Add to Cart Button -->
+                                <button class="btn-add-to-cart" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
+                            </div>
+
+                            <div class="product-info">
+                                <!-- Occasion Tags -->
+                                <div class="product-occasions">
+                                    {% for occasion in bouquet.occasion_names|slice:":2" %}
+                                    <span class="occasion-tag">{{ occasion }}</span>
+                                    {% endfor %}
+                                    {% if bouquet.occasion_names|length > 2 %}
+                                    <span class="occasion-tag more">+{{ bouquet.occasion_names|length|add:"-2" }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Product Name -->
+                                <h3 class="product-title">
+                                    <a href="#">{{ bouquet.name }}</a>
+                                </h3>
+
+                                <!-- Short Description -->
+                                <p class="product-description">{{ bouquet.short_description|truncatechars:60 }}</p>
+
+                                <!-- Price -->
+                                <div class="product-price">
+                                    {% if bouquet.discount_price %}
+                                        <span class="current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
+                                        <span class="original-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                        <span class="discount-badge-price">-{{ bouquet.discount_percent }}%</span>
+                                    {% else %}
+                                        <span class="current-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="empty-state text-center py-5">
+                                <i class="bi bi-flower2" style="font-size: 64px; color: var(--accent-color); opacity: 0.5;"></i>
+                                <h3 class="mt-3">No Bouquets Found</h3>
+                                <p class="text-muted">Try adjusting your filters or check back later.</p>
+                                <a href="{% url 'shop' %}" class="btn btn-clear-filters mt-3">
+                                    <i class="bi bi-x-circle me-2"></i>Clear Filters
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.paginator.num_pages > 1 %}
+                        <nav aria-label="Page navigation" class="mt-5">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="First">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Previous">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Next">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Last">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick View Modals - One for each product -->
+    {% for bouquet in bouquets %}
+        <div class="modal fade" id="quickViewModal{{ bouquet.encrypted_id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content quick-view-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Quick View</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="quick-view-image">
+                                    {% if bouquet.primary_image %}
+                                        <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}" class="img-fluid">
+                                    {% else %}
+                                        <div class="no-image-large">
+                                            <i class="bi bi-flower2"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="quick-view-details">
+                                    <h2>{{ bouquet.name }}</h2>
+                                    <!-- In quick view modal -->
+                                    <div class="quick-view-price">
+                                        {% if bouquet.discount_price %}
+                                            <span class="current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
+                                            <span class="original-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                            <span class="discount-badge-price">-{{ bouquet.discount_percent }}%</span>
+                                        {% else %}
+                                            <span class="current-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="quick-view-occasions mt-3">
+                                        <h6>Occasions:</h6>
+                                        {% for occasion in bouquet.occasion_names %}
+                                        <span class="occasion-badge">{{ occasion }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <p class="mt-3">{{ bouquet.short_description }}</p>
+                                    
+                                    {% if bouquet.delivery_info %}
+                                    <div class="delivery-info mt-3">
+                                        <i class="bi bi-truck"></i> {{ bouquet.delivery_info|truncatechars:50 }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="quick-view-actions mt-4">
+                                        <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}" class="btn btn-primary">View Details</a>
+                                        <button class="btn btn-outline-primary" onclick="addToCart({{ bouquet.id }})">
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/nouislider@14.7.0/dist/nouislider.min.js"></script>
+
+    <script src="{% static 'js/store/shop.js' %}"></script>
+
+    <script>
+        // Initialize price slider
+        document.addEventListener('DOMContentLoaded', function() {
+            const priceSlider = document.getElementById('priceSlider');
+            const minPrice = document.getElementById('minPrice');
+            const maxPrice = document.getElementById('maxPrice');
+            
+            if (priceSlider && minPrice && maxPrice) {
+                noUiSlider.create(priceSlider, {
+                    start: [parseFloat(minPrice.value), parseFloat(maxPrice.value)],
+                    connect: true,
+                    step: 100,
+                    range: {
+                        'min': parseFloat(minPrice.min),
+                        'max': parseFloat(maxPrice.max)
+                    },
+                    format: {
+                        to: function(value) {
+                            return Math.round(value);
+                        },
+                        from: function(value) {
+                            return Number(value);
+                        }
+                    }
+                });
+                
+                // Update the price slider initialization
+                priceSlider.noUiSlider.on('update', function(values, handle) {
+                    if (handle === 0) {
+                        minPrice.value = values[0];
+                        document.getElementById('displayMinPrice').textContent = '₹' + values[0];
+                    } else {
+                        maxPrice.value = values[1];
+                        document.getElementById('displayMaxPrice').textContent = '₹' + values[1];
+                    }
+                });
+
+                minPrice.addEventListener('change', function() {
+                    priceSlider.noUiSlider.set([this.value, null]);
+                    document.getElementById('displayMinPrice').textContent = '₹' + this.value;
+                });
+
+                maxPrice.addEventListener('change', function() {
+                    priceSlider.noUiSlider.set([null, this.value]);
+                    document.getElementById('displayMaxPrice').textContent = '₹' + this.value;
+                });
+            }
+            
+            // Sort select change
+            const sortSelect = document.getElementById('sortSelect');
+            const sortField = document.getElementById('sortField');
+            
+            if (sortSelect && sortField) {
+                sortSelect.addEventListener('change', function() {
+                    sortField.value = this.value;
+                    
+                    // Get current form and submit
+                    const form = document.getElementById('filterForm');
+                    
+                    // Preserve all existing parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    
+                    // Update sort parameter
+                    urlParams.set('sort', this.value);
+                    
+                    // Redirect with all parameters
+                    window.location.href = window.location.pathname + '?' + urlParams.toString();
+                });
+            }
+            
+            // For the apply filters button, we need to ensure multiple occasion selections work
+            document.getElementById('filterForm').addEventListener('submit', function(e) {
+                // The form will submit normally with multiple values for 'occasion'
+                // This is handled correctly by Django's getlist
+            });
+            
+            // Toggle filter sections
+            document.querySelectorAll('.filter-title').forEach(title => {
+                title.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('.toggle-icon i');
+                    
+                    if (content.classList.contains('show')) {
+                        content.classList.remove('show');
+                        icon.classList.remove('bi-chevron-up');
+                        icon.classList.add('bi-chevron-down');
+                    } else {
+                        content.classList.add('show');
+                        icon.classList.remove('bi-chevron-down');
+                        icon.classList.add('bi-chevron-up');
+                    }
+                });
+            });
+        });
+        
+        // Cart functions with encrypted IDs
+        function addToCart(encryptedId) {
+            // Implement your cart logic with encrypted ID
+            console.log('Added to cart! Product ID: ' + encryptedId);
+            // You can send this encrypted ID to your backend
+        }
+
+        function addToWishlist(encryptedId) {
+            // Implement your wishlist logic with encrypted ID
+            console.log('Added to wishlist! Product ID: ' + encryptedId);
+        }
+
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sort select change handler
+            const sortSelect = document.getElementById('sortSelect');
+            
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    // Get current URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    
+                    // Update sort parameter
+                    urlParams.set('sort', this.value);
+                    
+                    // Reset to page 1 when sorting changes
+                    urlParams.delete('page');
+                    
+                    // Redirect with updated parameters
+                    window.location.href = window.location.pathname + '?' + urlParams.toString();
+                });
+            }
+            
+            // Price slider initialization (if not already in your JS)
+            const priceSlider = document.getElementById('priceSlider');
+            const minPrice = document.getElementById('minPrice');
+            const maxPrice = document.getElementById('maxPrice');
+            
+            if (priceSlider && minPrice && maxPrice && typeof noUiSlider !== 'undefined') {
+                noUiSlider.create(priceSlider, {
+                    start: [parseFloat(minPrice.value), parseFloat(maxPrice.value)],
+                    connect: true,
+                    step: 100,
+                    range: {
+                        'min': parseFloat(minPrice.min),
+                        'max': parseFloat(maxPrice.max)
+                    },
+                    format: {
+                        to: function(value) {
+                            return Math.round(value);
+                        },
+                        from: function(value) {
+                            return Number(value);
+                        }
+                    }
+                });
+                
+                // Update the price slider initialization
+                priceSlider.noUiSlider.on('update', function(values, handle) {
+                    if (handle === 0) {
+                        minPrice.value = values[0];
+                        document.getElementById('displayMinPrice').textContent = '₹' + values[0];
+                    } else {
+                        maxPrice.value = values[1];
+                        document.getElementById('displayMaxPrice').textContent = '₹' + values[1];
+                    }
+                });
+
+                minPrice.addEventListener('change', function() {
+                    priceSlider.noUiSlider.set([this.value, null]);
+                    document.getElementById('displayMinPrice').textContent = '₹' + this.value;
+                });
+
+                maxPrice.addEventListener('change', function() {
+                    priceSlider.noUiSlider.set([null, this.value]);
+                    document.getElementById('displayMaxPrice').textContent = '₹' + this.value;
+                });
+            }
+            
+            // Toggle filter sections
+            document.querySelectorAll('.filter-title').forEach(title => {
+                title.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('.toggle-icon i');
+                    
+                    if (content.classList.contains('show')) {
+                        content.classList.remove('show');
+                        icon.classList.remove('bi-chevron-up');
+                        icon.classList.add('bi-chevron-down');
+                    } else {
+                        content.classList.add('show');
+                        icon.classList.remove('bi-chevron-down');
+                        icon.classList.add('bi-chevron-up');
+                    }
+                });
+            });
+            
+            // Handle occasion multi-select - ensure Ctrl+Click works
+            const occasionSelect = document.querySelector('.occasion-select');
+            if (occasionSelect) {
+                occasionSelect.addEventListener('mousedown', function(e) {
+                    if (!e.ctrlKey && !e.metaKey) {
+                        // If not holding Ctrl, don't change selection on click
+                        // This allows multi-select with Ctrl+Click
+                    }
+                });
+            }
+        });
+        
+        // Alternative: If you want the sort to work immediately without page reload,
+        // you can use this AJAX approach instead:
+        /*
+        function updateSort() {
+            const sortSelect = document.getElementById('sortSelect');
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('sort', sortSelect.value);
+            urlParams.delete('page');
+            
+            fetch(window.location.pathname + '?' + urlParams.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Parse and update only the products grid and pagination
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Update products grid
+                const newGrid = doc.querySelector('.products-grid');
+                const oldGrid = document.querySelector('.products-grid');
+                if (newGrid && oldGrid) {
+                    oldGrid.innerHTML = newGrid.innerHTML;
+                }
+                
+                // Update pagination
+                const newPagination = doc.querySelector('.pagination');
+                const oldPagination = document.querySelector('.pagination');
+                if (newPagination && oldPagination) {
+                    oldPagination.innerHTML = newPagination.innerHTML;
+                }
+                
+                // Update result count
+                const newCount = doc.querySelector('.result-count');
+                const oldCount = document.querySelector('.result-count');
+                if (newCount && oldCount) {
+                    oldCount.textContent = newCount.textContent;
+                }
+                
+                // Update URL without page reload
+                window.history.pushState({}, '', window.location.pathname + '?' + urlParams.toString());
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        */
+    </script>
+
+{% endblock %}

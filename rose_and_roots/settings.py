@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'masters',
+    'store',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +81,7 @@ STATICFILES_DIRS = [
 ]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'D:/Python Projects/Documents/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'D:/Python Project/Documents/')
 
 WSGI_APPLICATION = 'rose_and_roots.wsgi.application'
 

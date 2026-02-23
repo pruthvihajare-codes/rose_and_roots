@@ -1,0 +1,452 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Bouquet - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/masters/bouquet-edit.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="bouquet-form-page">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'bouquet_list' %}">Bouquets</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Bouquet</li>
+            </ol>
+        </nav>
+
+        <div class="form-container">
+            <!-- Header -->
+            <div class="form-header">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h1 class="form-title">Edit Bouquet</h1>
+                        <p class="form-subtitle">Update your beautiful bouquet</p>
+                    </div>
+                </div>
+                <div class="bouquet-id-badge">
+                    Bouquet ID: #{{ bouquet.id }}
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <form method="post" action="{% url 'edit_bouquet' %}?bouquet_id={{ encrypted_id }}" id="bouquetForm" class="bouquet-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Product Name -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-info-circle me-2"></i>Basic Information
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="bouquet_name" class="form-label">
+                                    Bouquet Name <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="bouquet_name" name="bouquet_name" 
+                                    placeholder="e.g. Crimson Romance Bouquet" value="{{ bouquet.name }}" required>
+                                <div class="invalid-feedback" id="bouquet_nameError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="slug" class="form-label">Slug</label>
+                                <input type="text" class="form-control" id="slug" value="{{ bouquet.slug }}" readonly disabled>
+                                <small class="text-muted">Auto-generated from name</small>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="short_description" class="form-label">
+                                    Short Description <span class="required">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="short_description" name="short_description" 
+                                    placeholder="e.g. 12 Red Roses with Baby's Breath" value="{{ bouquet.short_description }}" required>
+                                <div class="invalid-feedback" id="short_descriptionError"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descriptions -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-card-text me-2"></i>Detailed Information
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="description" class="form-label">
+                                    Full Description <span class="required">*</span>
+                                </label>
+                                <textarea id="description" name="description" class="summernote-full">{{ bouquet.description }}</textarea>
+                                <div class="invalid-feedback" id="descriptionError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="delivery_info" class="form-label">Delivery Information</label>
+                                <textarea id="delivery_info" name="delivery_info" class="summernote-light">{{ bouquet.delivery_info|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="instruction_text" class="form-label">Care Instructions</label>
+                                <textarea id="instruction_text" name="instruction_text" class="summernote-light">{{ bouquet.instruction_text|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price & Discount -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-currency-rupee me-2"></i>Pricing
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="price" class="form-label">
+                                    Price (₹) <span class="required">*</span>
+                                </label>
+                                <input type="number" class="form-control" id="price" name="price" 
+                                    placeholder="999" step="0.01" min="0" value="{{ bouquet.price }}" required>
+                                <div class="invalid-feedback" id="priceError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="discount" class="form-label">Discount (%)</label>
+                                <input type="number" class="form-control" id="discount" name="discount" 
+                                    placeholder="0" min="0" max="100" value="{{ bouquet.discount_percent|default:0 }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="discounted_price" class="form-label">Final Price</label>
+                                <input type="text" class="form-control" id="discounted_price" 
+                                    value="₹{% if bouquet.discount_price %}{{ bouquet.discount_price }}{% else %}{{ bouquet.price }}{% endif %}" 
+                                    readonly style="background-color: #f9f0f5; color: #8c0d4f; font-weight: 600;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Occasion Selection -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-calendar-event me-2"></i>Occasions <span class="required">*</span>
+                    </h5>
+                    
+                    <!-- Hidden input to store selected occasion IDs -->
+                    <input type="hidden" id="selected_occasions_input" name="occasions" value="{{ selected_occasions|join:',' }}">
+                    
+                    <!-- Occasion Cards -->
+                    <div class="occasion-selector-grid" id="occasionSelector">
+                        {% for occasion in occasions %}
+                        <div class="occasion-card {% if occasion.id|stringformat:'i' in selected_occasions %}selected{% endif %}" 
+                             data-id="{{ occasion.id }}" data-name="{{ occasion.name }}">
+                            <div class="occasion-icon">
+                                {% if 'anni' in occasion.name|lower %}
+                                    <i class="bi bi-gem"></i>
+                                {% elif 'birth' in occasion.name|lower %}
+                                    <i class="bi bi-gift"></i>
+                                {% elif 'love' in occasion.name|lower or 'rom' in occasion.name|lower %}
+                                    <i class="bi bi-heart-fill"></i>
+                                {% elif 'wed' in occasion.name|lower %}
+                                    <i class="bi bi-hearts"></i>
+                                {% elif 'thank' in occasion.name|lower %}
+                                    <i class="bi bi-emoji-smile"></i>
+                                {% elif 'sympathy' in occasion.name|lower %}
+                                    <i class="bi bi-flower1"></i>
+                                {% else %}
+                                    <i class="bi bi-flower2"></i>
+                                {% endif %}
+                            </div>
+                            <span class="occasion-name">{{ occasion.name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Selected Occasions Preview -->
+                    <div class="selected-occasions-preview" id="selectedOccasionsPreview">
+                        <div class="preview-placeholder {% if selected_occasions %}d-none{% endif %}">
+                            <i class="bi bi-info-circle"></i>
+                            No occasions selected yet. Click on the cards above.
+                        </div>
+                        {% for occasion in occasions %}
+                            {% if occasion.id|stringformat:'i' in selected_occasions %}
+                            <span class="preview-tag" data-id="{{ occasion.id }}">
+                                <i class="bi bi-check-circle-fill"></i>
+                                {{ occasion.name }}
+                                <i class="bi bi-x-circle-fill" onclick="removeOccasion('{{ occasion.id }}', event)"></i>
+                            </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if errors.occasions %}
+                    <div class="invalid-feedback d-block">{{ errors.occasions }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Existing Images -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-images me-2"></i>Current Images
+                    </h5>
+                    <div class="current-images-grid" id="currentImagesGrid">
+                        {% for image in images %}
+                        <div class="current-image-item" data-image-id="{{ image.id }}">
+                            <img src="{{ MEDIA_URL }}{{ image.image_path }}" alt="Bouquet image">
+                            <div class="image-overlay">
+                                <span class="image-filename">{{ image.image_name|truncatechars:15 }}</span>
+                                <button type="button" class="btn-remove-image" onclick="markImageForDeletion('{{ image.id }}', this)" title="Remove image">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="no-images-message">
+                            <i class="bi bi-exclamation-circle"></i>
+                            No images uploaded yet.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" id="images_to_delete" name="images_to_delete" value="">
+                </div>
+
+                <!-- Add New Images -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-cloud-upload me-2"></i>Add New Images
+                    </h5>
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <div class="upload-content">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <h4>Drag & Drop Images Here</h4>
+                            <p>or click to browse</p>
+                            <span class="upload-hint">Supports: JPG, PNG, WebP, GIF (Max 6MB each, Max 5 total)</span>
+                            <input type="file" id="bouquet_images" name="bouquet_images" 
+                                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" multiple hidden>
+                            <button type="button" class="btn-browse">
+                                Browse Files
+                            </button>
+                        </div>
+                    </div>
+                    <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                </div>
+
+                <!-- Status -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-toggle-on me-2"></i>Status
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="status-toggle">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isActive" name="is_active" value="1" {% if bouquet.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="isActive">Active</label>
+                                    </div>
+                                    <small class="text-muted">Active bouquets are visible to customers</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1" {% if bouquet.is_featured %}checked{% endif %}>
+                                <label class="form-check-label" for="is_featured">Featured</label>
+                            </div>
+                            <small class="text-muted">Featured bouquets appear on homepage</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metadata -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-clock-history me-2"></i>Metadata
+                    </h5>
+                    <div class="metadata-grid">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Created At:</span>
+                            <span class="metadata-value">{{ bouquet.created_at|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Last Updated:</span>
+                            <span class="metadata-value">{{ bouquet.updated_at|date:"d M Y, h:i A" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'view_bouquet' %}?bouquet_id={{ encrypted_id }}" class="btn btn-view">
+                        <i class="bi bi-eye me-2"></i>View
+                    </a>
+                    <button type="button" class="btn btn-preview" id="previewBtn">
+                        <i class="bi bi-eye me-2"></i>Preview
+                    </button>
+                    <a href="{% url 'bouquet_list' %}" class="btn btn-cancel">
+                        <i class="bi bi-x-lg me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="bi bi-check-lg me-2"></i>Update Bouquet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content preview-modal-content">
+            <div class="modal-header preview-modal-header">
+                <h5 class="modal-title">Bouquet Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body preview-modal-body">
+                <div class="preview-card">
+                    <div class="preview-images" id="previewImages">
+                        <!-- Images will be populated by JS -->
+                    </div>
+                    <div class="preview-details">
+                        <h2 class="preview-title" id="previewTitle">{{ bouquet.name }}</h2>
+                        <p class="preview-short-desc" id="previewShortDesc">{{ bouquet.short_description }}</p>
+                        <div class="preview-price">
+                            <span class="preview-current-price" id="previewCurrentPrice">
+                                ₹{% if bouquet.discount_price %}{{ bouquet.discount_price }}{% else %}{{ bouquet.price }}{% endif %}
+                            </span>
+                            {% if bouquet.discount_price %}
+                                <span class="preview-original-price" id="previewOriginalPrice">₹{{ bouquet.price }}</span>
+                                <span class="preview-discount" id="previewDiscount">{{ bouquet.discount_percent }}% OFF</span>
+                            {% endif %}
+                        </div>
+                        <div class="preview-occasions" id="previewOccasions">
+                            {% for occasion in occasions %}
+                                {% if occasion.id|stringformat:'i' in selected_occasions %}
+                                    <span class="preview-occasion-tag">{{ occasion.name }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/masters/bouquet-edit.js' %}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Summernote
+        $('.summernote-full').summernote({
+            height: 250,
+            placeholder: 'Describe the bouquet in detail...'
+        });
+        
+        $('.summernote-light').summernote({
+            height: 150,
+            toolbar: [
+                ['style', ['bold', 'italic']],
+                ['para', ['ul', 'ol']],
+                ['view', ['codeview']]
+            ]
+        });
+
+        // Calculate discounted price
+        const priceInput = document.getElementById('price');
+        const discountInput = document.getElementById('discount');
+        const discountedPriceInput = document.getElementById('discounted_price');
+        
+        function calculateDiscountedPrice() {
+            const price = parseFloat(priceInput.value) || 0;
+            const discount = parseFloat(discountInput.value) || 0;
+            
+            if (price > 0 && discount > 0 && discount <= 100) {
+                const finalPrice = price - (price * discount / 100);
+                discountedPriceInput.value = '₹' + finalPrice.toFixed(2);
+            } else {
+                discountedPriceInput.value = '₹' + price.toFixed(2);
+            }
+        }
+        
+        priceInput.addEventListener('input', calculateDiscountedPrice);
+        discountInput.addEventListener('input', calculateDiscountedPrice);
+    });
+
+    // Image deletion tracking
+    let imagesToDelete = [];
+    
+    function markImageForDeletion(imageId, button) {
+        const imageItem = button.closest('.current-image-item');
+        
+        Swal.fire({
+            icon: 'question',
+            title: 'Remove Image',
+            text: 'Are you sure you want to remove this image?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, remove',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#8c0d4f',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                imagesToDelete.push(imageId);
+                document.getElementById('images_to_delete').value = imagesToDelete.join(',');
+                imageItem.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => imageItem.remove(), 300);
+            }
+        });
+    }
+
+    // Preview functionality
+    document.getElementById('previewBtn').addEventListener('click', function() {
+        updatePreview();
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+        previewModal.show();
+    });
+
+    function updatePreview() {
+        const title = document.getElementById('bouquet_name').value;
+        const shortDesc = document.getElementById('short_description').value;
+        const price = parseFloat(document.getElementById('price').value) || 0;
+        const discount = parseFloat(document.getElementById('discount').value) || 0;
+        
+        document.getElementById('previewTitle').textContent = title || 'Bouquet Name';
+        document.getElementById('previewShortDesc').textContent = shortDesc || 'Short description will appear here';
+        
+        if (discount > 0 && discount <= 100) {
+            const finalPrice = price - (price * discount / 100);
+            document.getElementById('previewCurrentPrice').textContent = '₹' + finalPrice.toFixed(2);
+            document.getElementById('previewOriginalPrice').textContent = '₹' + price.toFixed(2);
+            document.getElementById('previewOriginalPrice').style.display = 'inline';
+            document.getElementById('previewDiscount').textContent = discount + '% OFF';
+            document.getElementById('previewDiscount').style.display = 'inline';
+        } else {
+            document.getElementById('previewCurrentPrice').textContent = '₹' + price.toFixed(2);
+            document.getElementById('previewOriginalPrice').style.display = 'none';
+            document.getElementById('previewDiscount').style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

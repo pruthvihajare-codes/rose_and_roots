@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ bouquet.name }} - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/masters/bouquet-view.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bouquet-view-page">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'bouquet_list' %}">Bouquets</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ bouquet.name|truncatechars:30 }}</li>
+            </ol>
+        </nav>
+
+        <!-- Bouquet Details Card -->
+        <div class="bouquet-details-card">
+            <!-- Header -->
+            <div class="details-header">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="bi bi-flower2"></i>
+                    </div>
+                    <div>
+                        <h1 class="bouquet-name">{{ bouquet.name }}</h1>
+                        <p class="bouquet-id">Bouquet ID: #{{ bouquet.id }}</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <a href="{% url 'edit_bouquet' %}?bouquet_id={{ encrypted_id }}" class="btn btn-edit">
+                        <i class="bi bi-pencil-square me-2"></i>Edit
+                    </a>
+                    <button type="button" class="btn btn-delete" data-bouquet-id="{{ encrypted_id }}" data-bouquet-name="{{ bouquet.name }}">
+                        <i class="bi bi-trash me-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Badges -->
+            <div class="status-section">
+                {% if bouquet.is_active %}
+                    <span class="status-badge status-active">
+                        <i class="bi bi-check-circle me-1"></i>Active
+                    </span>
+                {% else %}
+                    <span class="status-badge status-inactive">
+                        <i class="bi bi-x-circle me-1"></i>Inactive
+                    </span>
+                {% endif %}
+                
+                {% if bouquet.is_featured %}
+                    <span class="status-badge status-featured">
+                        <i class="bi bi-star-fill me-1"></i>Featured
+                    </span>
+                {% endif %}
+                
+                {% if bouquet.same_day_available %}
+                    <span class="status-badge status-sameday">
+                        <i class="bi bi-truck me-1"></i>Same Day Delivery
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Image Gallery -->
+            <div class="image-gallery-section">
+                <h5 class="section-title">
+                    <i class="bi bi-images me-2"></i>Bouquet Images
+                </h5>
+                <div class="image-gallery">
+                    {% for image in images %}
+                    <div class="gallery-item">
+                        <img src="{{ MEDIA_URL }}{{ image.image_path }}" alt="{{ bouquet.name }}" onclick="openLightbox('{{ MEDIA_URL }}{{ image.image_path }}')">
+                    </div>
+                    {% empty %}
+                    <div class="no-images-message">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <p>No images available for this bouquet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="details-grid">
+                <!-- Basic Information -->
+                <div class="details-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-info-circle me-2"></i>Basic Information
+                    </h5>
+                    <div class="details-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Name:</span>
+                            <span class="detail-value">{{ bouquet.name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Slug:</span>
+                            <span class="detail-value"><code>{{ bouquet.slug }}</code></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Short Description:</span>
+                            <span class="detail-value">{{ bouquet.short_description }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Information -->
+                <div class="details-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-currency-rupee me-2"></i>Pricing
+                    </h5>
+                    <div class="details-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Original Price:</span>
+                            <span class="detail-value price-original">₹{{ bouquet.price }}</span>
+                        </div>
+                        {% if bouquet.discount_percent %}
+                        <div class="detail-item">
+                            <span class="detail-label">Discount:</span>
+                            <span class="detail-value price-discount">{{ bouquet.discount_percent }}%</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Final Price:</span>
+                            <span class="detail-value price-final">₹{{ bouquet.discount_price }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Occasions -->
+                <div class="details-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-calendar-event me-2"></i>Occasions
+                    </h5>
+                    <div class="occasions-list">
+                        {% for occasion in occasions %}
+                        <span class="occasion-tag">
+                            {% if 'birth' in occasion.name|lower %}
+                                <i class="bi bi-gift"></i>
+                            {% elif 'anni' in occasion.name|lower %}
+                                <i class="bi bi-gem"></i>
+                            {% elif 'love' in occasion.name|lower %}
+                                <i class="bi bi-heart-fill"></i>
+                            {% elif 'wed' in occasion.name|lower %}
+                                <i class="bi bi-hearts"></i>
+                            {% elif 'thank' in occasion.name|lower %}
+                                <i class="bi bi-emoji-smile"></i>
+                            {% else %}
+                                <i class="bi bi-flower2"></i>
+                            {% endif %}
+                            {{ occasion.name }}
+                        </span>
+                        {% empty %}
+                        <span class="text-muted">No occasions assigned</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Full Description -->
+                <div class="details-section full-width">
+                    <h5 class="section-title">
+                        <i class="bi bi-card-text me-2"></i>Full Description
+                    </h5>
+                    <div class="rich-content">
+                        {{ bouquet.description|safe }}
+                    </div>
+                </div>
+
+                <!-- Delivery Information -->
+                {% if bouquet.delivery_info %}
+                <div class="details-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-truck me-2"></i>Delivery Information
+                    </h5>
+                    <div class="rich-content">
+                        {{ bouquet.delivery_info|safe }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Care Instructions -->
+                {% if bouquet.instruction_text %}
+                <div class="details-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-droplet me-2"></i>Care Instructions
+                    </h5>
+                    <div class="rich-content">
+                        {{ bouquet.instruction_text|safe }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Metadata -->
+                <div class="details-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-clock-history me-2"></i>Metadata
+                    </h5>
+                    <div class="details-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Created At:</span>
+                            <span class="detail-value">{{ bouquet.created_at|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Last Updated:</span>
+                            <span class="detail-value">{{ bouquet.updated_at|date:"d M Y, h:i A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="back-section">
+                <a href="{% url 'bouquet_list' %}" class="btn btn-back">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Bouquets
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content lightbox-content">
+            <div class="modal-header lightbox-header">
+                <h5 class="modal-title">{{ bouquet.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body lightbox-body text-center">
+                <img src="" alt="Bouquet" id="lightboxImage" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteBouquetModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content delete-modal-content">
+            <div class="modal-header delete-modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body delete-modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-triangle warning-icon"></i>
+                </div>
+                <p class="delete-message">Are you sure you want to delete <strong id="deleteBouquetName"></strong>?</p>
+                <p class="delete-warning">This action cannot be undone and will remove all associated images.</p>
+            </div>
+            <div class="modal-footer delete-modal-footer">
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'delete_bouquet' %}" id="deleteBouquetForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="bouquet_id" id="deleteBouquetId">
+                    <button type="submit" class="btn btn-delete">Delete Bouquet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/masters/bouquet-view.js' %}"></script>
+<script>
+    function openLightbox(imageSrc) {
+        document.getElementById('lightboxImage').src = imageSrc;
+        const lightboxModal = new bootstrap.Modal(document.getElementById('lightboxModal'));
+        lightboxModal.show();
+    }
+</script>
+{% endblock %}

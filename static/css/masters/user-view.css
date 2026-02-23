@@ -1,0 +1,334 @@
+/* static/css/masters/user-view.css */
+
+:root {
+    --default-font: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --heading-font: "Quicksand", sans-serif;
+    --nav-font: "Ubuntu", sans-serif;
+    --background-color: #ffffff;
+    --default-color: #212529;
+    --heading-color: #3e0925;
+    --accent-color: #8c0d4f;
+    --surface-color: #ffffff;
+    --contrast-color: #ffffff;
+    --light-background: #f8f4f6;
+}
+
+/* Page Styles */
+.user-view-page {
+    background: var(--light-background);
+    min-height: calc(100vh - 300px);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    padding: 12px 0;
+}
+
+.breadcrumb-item a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.breadcrumb-item.active {
+    color: var(--default-color);
+}
+
+/* User Details Card */
+.user-details-card {
+    background: var(--surface-color);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Header */
+.details-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--light-background);
+}
+
+.header-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--light-background);
+    margin-right: 20px;
+}
+
+.header-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.user-name {
+    font-family: var(--heading-font);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 4px;
+}
+
+.user-email {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.user-id {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #212529;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+    color: #212529;
+    transform: translateY(-2px);
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Status Section */
+.status-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.status-inactive {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.status-superuser {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.status-verified {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+    border: 1px solid rgba(23, 162, 184, 0.2);
+}
+
+.status-online {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+/* Details Grid */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.details-section {
+    background: var(--light-background);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.section-title {
+    font-family: var(--heading-font);
+    font-weight: 600;
+    color: var(--heading-color);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(140, 13, 79, 0.1);
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+/* Details List */
+.details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.detail-label {
+    min-width: 120px;
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.detail-value {
+    color: var(--default-color);
+    font-size: 0.95rem;
+    flex: 1;
+}
+
+.detail-value a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.detail-value a:hover {
+    text-decoration: underline;
+}
+
+.detail-value code {
+    background: var(--surface-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+}
+
+/* Back Section */
+.back-section {
+    text-align: center;
+    padding-top: 24px;
+    border-top: 2px solid var(--light-background);
+}
+
+.btn-back {
+    background: transparent;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    padding: 10px 30px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-back:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .user-details-card {
+        padding: 20px;
+    }
+    
+    .details-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .btn-edit,
+    .btn-delete {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .user-name {
+        font-size: 1.5rem;
+    }
+    
+    .status-section {
+        justify-content: flex-start;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+    }
+    
+    .detail-label {
+        min-width: auto;
+        margin-bottom: 4px;
+    }
+}

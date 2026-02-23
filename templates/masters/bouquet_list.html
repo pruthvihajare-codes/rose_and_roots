@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Bouquets - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/masters/bouquet-list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="bouquet-list-page">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Bouquets</li>
+            </ol>
+        </nav>
+
+        <!-- Header Section -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="page-title">Manage Bouquets</h1>
+                <p class="page-subtitle">View and manage all your beautiful bouquets</p>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="bouquet-count-badge">
+                    <i class="bi bi-flower2 me-1"></i>Total: {{ bouquets|length }}
+                </span>
+                <a href="{% url 'add_bouquet' %}" class="btn btn-add-bouquet">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Bouquet
+                </a>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="search-filter-card mb-4">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="search-box">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="form-control search-input" id="searchBouquet" placeholder="Search by name, occasion or price...">
+                        <button class="btn btn-clear-search" id="clearSearch" style="display: none;">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select filter-select" id="filterOccasion">
+                        <option value="">All Occasions</option>
+                        {% for occasion in occasions %}
+                        <option value="{{ occasion.id }}">{{ occasion.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select filter-select" id="filterStatus">
+                        <option value="">All Status</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-reset-filters w-100" id="resetFilters">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bouquets Table -->
+        <div class="bouquets-table-card">
+            <div class="table-responsive">
+                <table class="table bouquets-table" id="bouquetsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Bouquet Name</th>
+                            <th>Price</th>
+                            <th>Discount</th>
+                            <th>Final Price</th>
+                            <th>Occasions</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bouquetsTableBody">
+                        {% for bouquet in bouquets %}
+                            <tr>
+                                <td>#{{ bouquet.id }}</td>
+                                <td>
+                                    <div class="bouquet-image-cell">
+                                        {% if bouquet.primary_image %}
+                                            <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}" class="bouquet-thumbnail">
+                                        {% else %}
+                                            <div class="no-image-placeholder">
+                                                <i class="bi bi-flower2"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="bouquet-name-cell">
+                                        <strong>{{ bouquet.name }}</strong>
+                                        <small class="text-muted">{{ bouquet.short_description|truncatechars:30 }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="original-price">₹{{ bouquet.price }}</span>
+                                </td>
+                                <td>
+                                    {% if bouquet.discount_percent > 0 %}
+                                        <span class="discount-badge">{{ bouquet.discount_percent }}% OFF</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if bouquet.discount_price %}
+                                        <span class="final-price">₹{{ bouquet.discount_price }}</span>
+                                    {% else %}
+                                        <span class="final-price">₹{{ bouquet.price }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="occasion-tags">{{ bouquet.occasion_list|default:"-" }}</span>
+                                </td>
+                                <td>
+                                    {% if bouquet.is_active == 1 %}
+                                        <span class="status-badge status-active">Active</span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{% url 'view_bouquet' %}?bouquet_id={{ bouquet.encrypted_id }}" class="action-btn view-btn" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'edit_bouquet' %}?bouquet_id={{ bouquet.encrypted_id }}" class="action-btn edit-btn" title="Edit">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <button type="button" class="action-btn delete-btn" title="Delete" data-bouquet-id="{{ bouquet.encrypted_id }}" data-bouquet-name="{{ bouquet.name }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-flower2 empty-icon"></i>
+                                        <h5>No Bouquets Found</h5>
+                                        <p>Get started by adding your first beautiful bouquet</p>
+                                        <a href="{% url 'add_bouquet' %}" class="btn btn-add-bouquet mt-3">
+                                            <i class="bi bi-plus-circle me-2"></i>Add New Bouquet
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteBouquetModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content delete-modal-content">
+            <div class="modal-header delete-modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body delete-modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-triangle warning-icon"></i>
+                </div>
+                <p class="delete-message">Are you sure you want to delete <strong id="deleteBouquetName"></strong>?</p>
+                <p class="delete-warning">This action cannot be undone and will remove all associated images.</p>
+            </div>
+            <div class="modal-footer delete-modal-footer">
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'delete_bouquet' %}" id="deleteBouquetForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="bouquet_id" id="deleteBouquetId">
+                    <button type="submit" class="btn btn-delete">Delete Bouquet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/masters/bouquet-list.js' %}"></script>
+{% endblock %}

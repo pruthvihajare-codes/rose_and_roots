@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Users - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/masters/user-list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="user-list-page">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Users</li>
+            </ol>
+        </nav>
+
+        <!-- Header Section -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="page-title">Manage Users</h1>
+                <p class="page-subtitle">View and manage all system users</p>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="user-count-badge">
+                    <i class="bi bi-people me-1"></i>Total: {{ users|length }}
+                </span>
+                <a href="{% url 'add_user' %}" class="btn btn-add-user">
+                    <i class="bi bi-plus-circle me-2"></i>Add New User
+                </a>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="search-filter-card mb-4">
+            <form method="get" action="{% url 'user_list' %}" class="search-filter-card mb-4">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="search-box">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" class="form-control search-input" id="searchUser" name="search" placeholder="Search by name, email or phone..." value="{{ search_query }}">
+                            {% if search_query %}
+                            <a href="{% url 'user_list' %}" class="btn btn-clear-search">
+                                <i class="bi bi-x"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <select class="form-select filter-select" id="filterRole" name="role">
+                            <option value="">All Roles</option>
+                            {% for role in roles %}
+                            <option value="{{ role.id }}" {% if role_filter == role.id|stringformat:"i" %}selected{% endif %}>{{ role.role_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select filter-select" id="filterStatus" name="status">
+                            <option value="">All Status</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table-card">
+            <div class="table-responsive">
+                <table class="table users-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Contact</th>
+                            <th>Role</th>
+                            <th>User Type</th>
+                            <th>Last Login</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        {% for user in users %}
+                            <tr>
+                                <td>#{{ user.id }}</td>
+                                <td>
+                                    <div class="user-info-cell">
+                                        <div class="user-avatar">
+                                            {% if user.profile_image %}
+                                                <img src="{{ user.profile_image.url }}" alt="{{ user.full_name }}">
+                                            {% else %}
+                                                <div class="avatar-placeholder">
+                                                    {{ user.first_name|first|default:user.email|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="user-details">
+                                            <strong>{{ user.full_name|default:user.email }}</strong>
+                                            <small>{{ user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        {% if user.phone %}
+                                            <div><i class="bi bi-telephone me-1"></i>{{ user.phone }}</div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% for role in roles %}
+                                        {% if role.id == user.role_id %}
+                                            {{ role.role_name }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="user-type-badge {% if user.user_type == 'admin' %}type-admin{% else %}type-guest{% endif %}">
+                                        {{ user.user_type|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="last-login">{{ user.last_login|date:"d M Y" }}</span>
+                                </td>
+                                <td>
+                                    {% if user.is_superuser %}
+                                        <span class="status-badge status-superuser">Superuser</span>
+                                    {% else %}
+                                        <div class="form-check form-switch status-toggle">
+                                            <input class="form-check-input status-switch" type="checkbox" 
+                                                   data-user-id="{{ user.encrypted_id }}"
+                                                   data-user-email="{{ user.email }}"
+                                                   {% if user.is_active %}checked{% endif %}
+                                                   {% if user.id == request.user.id %}disabled{% endif %}>
+                                            <label class="form-check-label">
+                                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{% url 'view_user' %}?user_id={{ user.encrypted_id }}" class="action-btn view-btn" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'edit_user' %}?user_id={{ user.encrypted_id }}" class="action-btn edit-btn" title="Edit">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        {% if not user.is_superuser and user.id != request.user.id %}
+                                        <button type="button" class="action-btn delete-btn" title="Delete" data-user-id="{{ user.encrypted_id }}" data-user-name="{{ user.full_name|default:user.email }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-people empty-icon"></i>
+                                        <h5>No Users Found</h5>
+                                        <p>Get started by adding your first user</p>
+                                        <a href="{% url 'add_user' %}" class="btn btn-add-user mt-3">
+                                            <i class="bi bi-plus-circle me-2"></i>Add New User
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content delete-modal-content">
+            <div class="modal-header delete-modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body delete-modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-exclamation-triangle warning-icon"></i>
+                </div>
+                <p class="delete-message">Are you sure you want to delete <strong id="deleteUserName"></strong>?</p>
+                <p class="delete-warning">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer delete-modal-footer">
+                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'delete_user' %}" id="deleteUserForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" id="deleteUserId">
+                    <button type="submit" class="btn btn-delete">Delete User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/masters/user-list.js' %}"></script>
+{% endblock %}

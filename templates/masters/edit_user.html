@@ -1,0 +1,588 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit User - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/masters/user-form.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="user-form-page">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'user_list' %}">Users</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit User</li>
+            </ol>
+        </nav>
+
+        <div class="form-container">
+            <!-- Header -->
+            <div class="form-header">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h1 class="form-title">Edit User</h1>
+                        <p class="form-subtitle">Update user information</p>
+                    </div>
+                </div>
+                <div class="user-id-badge">
+                    User ID: #{{ user.id }}
+                </div>
+            </div>
+
+            <!-- User Form -->
+            <form method="post" action="{% url 'edit_user' %}?user_id={{ encrypted_id }}" id="userForm" class="user-form">
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-info-circle me-2"></i>Personal Information
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="first_name" class="form-label">
+                                    First Name <span class="required">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="first_name" 
+                                       name="first_name" 
+                                       placeholder="Enter first name"
+                                       value="{{ user.first_name }}"
+                                       required>
+                                <div class="invalid-feedback" id="first_nameError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="last_name" 
+                                       name="last_name" 
+                                       placeholder="Enter last name"
+                                       value="{{ user.last_name|default:'' }}">
+                                <div class="invalid-feedback" id="last_nameError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       value="{{ user.email }}"
+                                       readonly
+                                       disabled>
+                                <small class="text-muted">Email cannot be changed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone" 
+                                       name="phone" 
+                                       placeholder="Enter 10 digit mobile number"
+                                       value="{{ user.phone|default:'' }}"
+                                       maxlength="10">
+                                <div class="invalid-feedback" id="phoneError"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-gear me-2"></i>Account Settings
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="role_id" class="form-label">
+                                    Role <span class="required">*</span>
+                                </label>
+                                <select class="form-control" id="role_id" name="role_id" required>
+                                    <option value="">Select Role</option>
+                                    {% for role in roles %}
+                                    <option value="{{ role.id }}" {% if user.role_id == role.id %}selected{% endif %}>
+                                        {{ role.role_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback" id="role_idError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="user_type" class="form-label">User Type</label>
+                                <select class="form-control" id="user_type" name="user_type">
+                                    <option value="guest" {% if user.user_type == 'guest' %}selected{% endif %}>Guest</option>
+                                    <option value="admin" {% if user.user_type == 'admin' %}selected{% endif %}>Admin</option>
+                                </select>
+                                <div class="invalid-feedback" id="user_typeError"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Section (Optional) -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-lock me-2"></i>Change Password
+                    </h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="change_password" name="change_password" value="1">
+                                    <label class="form-check-label" for="change_password">
+                                        Change password
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="passwordFields" style="display: none;">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="new_password" class="form-label">New Password</label>
+                                    <div class="password-input-wrapper">
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="new_password" 
+                                               name="new_password" 
+                                               placeholder="Enter new password">
+                                        <button type="button" class="password-toggle" onclick="togglePassword('new_password', this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback" id="new_passwordError"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="confirm_new_password" class="form-label">Confirm New Password</label>
+                                    <div class="password-input-wrapper">
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="confirm_new_password" 
+                                               name="confirm_new_password" 
+                                               placeholder="Confirm new password">
+                                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_new_password', this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback" id="confirm_new_passwordError"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Password Requirements -->
+                        <div class="password-requirements mt-3">
+                            <p class="requirements-title">Password must contain:</p>
+                            <ul class="requirements-list">
+                                <li id="req-length" class="invalid">At least 8 characters</li>
+                                <li id="req-uppercase" class="invalid">At least one uppercase letter</li>
+                                <li id="req-lowercase" class="invalid">At least one lowercase letter</li>
+                                <li id="req-number" class="invalid">At least one number</li>
+                                <li id="req-special" class="invalid">At least one special character (!@#$%^&*)</li>
+                                <li id="req-match" class="invalid">Passwords match</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-toggle-on me-2"></i>Status
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="status-toggle">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isActive" name="is_active" value="1" {% if user.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="isActive">Active</label>
+                                    </div>
+                                    <small class="text-muted">Inactive users cannot log in</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metadata -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-clock-history me-2"></i>Metadata
+                    </h5>
+                    <div class="metadata-grid">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Date Joined:</span>
+                            <span class="metadata-value">{{ user.date_joined|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Last Login:</span>
+                            <span class="metadata-value">{{ user.last_login|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Last Activity:</span>
+                            <span class="metadata-value">{{ user.last_activity|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">First Time Login:</span>
+                            <span class="metadata-value">{% if user.first_time_login %}Yes{% else %}No{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'view_user' %}?user_id={{ encrypted_id }}" class="btn btn-view">
+                        <i class="bi bi-eye me-2"></i>View
+                    </a>
+                    <button type="button" class="btn btn-preview" id="previewBtn">
+                        <i class="bi bi-eye me-2"></i>Preview
+                    </button>
+                    <a href="{% url 'user_list' %}" class="btn btn-cancel">
+                        <i class="bi bi-x-lg me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="bi bi-check-lg me-2"></i>Update User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content preview-modal-content">
+            <div class="modal-header preview-modal-header">
+                <h5 class="modal-title">User Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body preview-modal-body">
+                <div class="preview-card">
+                    <div class="preview-header">
+                        <div class="preview-avatar">
+                            <div class="avatar-placeholder-large" id="previewAvatar">
+                                {{ user.first_name|first|default:user.email|first|upper }}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="preview-user-name" id="previewName">{{ user.full_name|default:user.email }}</h4>
+                            <p class="preview-user-email" id="previewEmail">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="preview-details">
+                        <div class="preview-detail-item">
+                            <i class="bi bi-telephone"></i>
+                            <span id="previewPhone">{{ user.phone|default:"-" }}</span>
+                        </div>
+                        <div class="preview-detail-item">
+                            <i class="bi bi-briefcase"></i>
+                            <span id="previewRole">
+                                {% for role in roles %}
+                                    {% if role.id == user.role_id %}
+                                        {{ role.role_name }}
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <div class="preview-detail-item">
+                            <i class="bi bi-tag"></i>
+                            <span id="previewType">{{ user.user_type|title }}</span>
+                        </div>
+                        <div class="preview-detail-item">
+                            <i class="bi bi-circle"></i>
+                            <span id="previewStatus">{% if user.is_active %}Active{% else %}Inactive{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Password toggle function -->
+<script>
+function togglePassword(fieldId, button) {
+    const field = document.getElementById(fieldId);
+    const icon = button.querySelector('i');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+}
+</script>
+
+<!-- Edit user specific JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== Preview Modal Functionality =====
+    const previewBtn = document.getElementById('previewBtn');
+    
+    if (previewBtn) {
+        previewBtn.addEventListener('click', function() {
+            updatePreview();
+            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            previewModal.show();
+        });
+    }
+    
+    // ===== Password Validation for Edit Form =====
+    const changePasswordCheckbox = document.getElementById('change_password');
+    const passwordFields = document.getElementById('passwordFields');
+    const newPassword = document.getElementById('new_password');
+    const confirmNewPassword = document.getElementById('confirm_new_password');
+    
+    // Password requirements elements
+    const reqLength = document.getElementById('req-length');
+    const reqUppercase = document.getElementById('req-uppercase');
+    const reqLowercase = document.getElementById('req-lowercase');
+    const reqNumber = document.getElementById('req-number');
+    const reqSpecial = document.getElementById('req-special');
+    const reqMatch = document.getElementById('req-match');
+    
+    function checkPasswordStrength() {
+        if (!newPassword) return;
+        
+        const pass = newPassword.value;
+        
+        // Check length
+        if (pass.length >= 8) {
+            reqLength.classList.add('valid');
+        } else {
+            reqLength.classList.remove('valid');
+        }
+        
+        // Check uppercase
+        if (/[A-Z]/.test(pass)) {
+            reqUppercase.classList.add('valid');
+        } else {
+            reqUppercase.classList.remove('valid');
+        }
+        
+        // Check lowercase
+        if (/[a-z]/.test(pass)) {
+            reqLowercase.classList.add('valid');
+        } else {
+            reqLowercase.classList.remove('valid');
+        }
+        
+        // Check number
+        if (/[0-9]/.test(pass)) {
+            reqNumber.classList.add('valid');
+        } else {
+            reqNumber.classList.remove('valid');
+        }
+        
+        // Check special character
+        if (/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(pass)) {
+            reqSpecial.classList.add('valid');
+        } else {
+            reqSpecial.classList.remove('valid');
+        }
+    }
+    
+    function checkPasswordMatch() {
+        if (!newPassword || !confirmNewPassword) return;
+        
+        if (confirmNewPassword.value) {
+            if (newPassword.value === confirmNewPassword.value && newPassword.value !== '') {
+                reqMatch.classList.add('valid');
+            } else {
+                reqMatch.classList.remove('valid');
+            }
+        } else {
+            reqMatch.classList.remove('valid');
+        }
+    }
+    
+    // Toggle password fields when checkbox is clicked
+    if (changePasswordCheckbox && passwordFields) {
+        changePasswordCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                passwordFields.style.display = 'block';
+                
+                // Add event listeners when fields become visible
+                if (newPassword) {
+                    newPassword.addEventListener('input', function() {
+                        checkPasswordStrength();
+                        checkPasswordMatch();
+                    });
+                }
+                
+                if (confirmNewPassword) {
+                    confirmNewPassword.addEventListener('input', checkPasswordMatch);
+                }
+            } else {
+                passwordFields.style.display = 'none';
+                
+                // Clear fields and reset validation
+                if (newPassword) newPassword.value = '';
+                if (confirmNewPassword) confirmNewPassword.value = '';
+                
+                // Reset all requirement classes
+                reqLength.classList.remove('valid');
+                reqUppercase.classList.remove('valid');
+                reqLowercase.classList.remove('valid');
+                reqNumber.classList.remove('valid');
+                reqSpecial.classList.remove('valid');
+                reqMatch.classList.remove('valid');
+            }
+        });
+    }
+    
+    // ===== Phone number validation =====
+    const phone = document.getElementById('phone');
+    if (phone) {
+        phone.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+    }
+    
+    // ===== Reset Button =====
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                icon: 'question',
+                title: 'Reset Form',
+                text: 'Are you sure you want to reset all fields?',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, reset',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#8c0d4f',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('userForm').reset();
+                    
+                    // Hide password fields
+                    if (passwordFields) {
+                        passwordFields.style.display = 'none';
+                    }
+                    
+                    // Reset requirement classes
+                    reqLength.classList.remove('valid');
+                    reqUppercase.classList.remove('valid');
+                    reqLowercase.classList.remove('valid');
+                    reqNumber.classList.remove('valid');
+                    reqSpecial.classList.remove('valid');
+                    reqMatch.classList.remove('valid');
+                }
+            });
+        });
+    }
+    
+    // ===== Form Validation =====
+    const userForm = document.getElementById('userForm');
+    if (userForm) {
+        userForm.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    function validateForm() {
+        const firstName = document.getElementById('first_name')?.value.trim();
+        const roleId = document.getElementById('role_id')?.value;
+        
+        let isValid = true;
+        let errorMessage = '';
+        
+        if (!firstName) {
+            errorMessage = 'First name is required';
+            isValid = false;
+        } else if (!roleId) {
+            errorMessage = 'Please select a role';
+            isValid = false;
+        }
+        
+        // Password validation if change password is checked
+        if (changePasswordCheckbox && changePasswordCheckbox.checked) {
+            const newPass = newPassword?.value;
+            const confirmNewPass = confirmNewPassword?.value;
+            
+            if (!newPass) {
+                errorMessage = 'New password is required';
+                isValid = false;
+            } else if (newPass.length < 8) {
+                errorMessage = 'Password must be at least 8 characters';
+                isValid = false;
+            } else if (newPass !== confirmNewPass) {
+                errorMessage = 'Passwords do not match';
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: errorMessage,
+                confirmButtonColor: '#8c0d4f'
+            });
+        }
+        
+        return isValid;
+    }
+    
+    // ===== Preview Update Function =====
+    function updatePreview() {
+        const firstName = document.getElementById('first_name')?.value.trim() || '';
+        const lastName = document.getElementById('last_name')?.value.trim() || '';
+        const fullName = firstName + (lastName ? ' ' + lastName : '');
+        const email = document.getElementById('email')?.value || '-';
+        const phone = document.getElementById('phone')?.value || '-';
+        const roleSelect = document.getElementById('role_id');
+        const role = roleSelect ? roleSelect.options[roleSelect.selectedIndex]?.text || '-' : '-';
+        const userType = document.getElementById('user_type')?.value || 'guest';
+        const isActive = document.getElementById('isActive')?.checked || false;
+        
+        // Update preview
+        document.getElementById('previewName').textContent = fullName || '-';
+        document.getElementById('previewEmail').textContent = email;
+        document.getElementById('previewPhone').textContent = phone || '-';
+        document.getElementById('previewRole').textContent = role;
+        document.getElementById('previewType').textContent = userType.charAt(0).toUpperCase() + userType.slice(1);
+        document.getElementById('previewStatus').textContent = isActive ? 'Active' : 'Inactive';
+        
+        // Update avatar
+        const previewAvatar = document.getElementById('previewAvatar');
+        if (previewAvatar) {
+            previewAvatar.textContent = firstName.charAt(0).toUpperCase() || email.charAt(0).toUpperCase();
+        }
+    }
+});
+</script>
+{% endblock %}
