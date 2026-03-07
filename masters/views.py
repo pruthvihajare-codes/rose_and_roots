@@ -2157,3 +2157,236 @@ def delete_account(request):
         logger.exception(f"Error deleting account for user {request.user.id}: {e}")
         messages.error(request, 'Failed to delete account. Please try again later.')
         return redirect(f"{reverse('profile')}?tab=account-settings")
+
+# views.py (admin views)
+
+from django.db.models import Count, Sum, Q
+from django.utils import timezone
+from datetime import timedelta
+
+@no_direct_access
+@login_required
+def admin_order_list(request):
+    """Admin: List all orders with filters"""
+    try:
+        if request.user.role_id != 1:
+            messages.error(request, 'You do not have permission to access this page.')
+            return redirect('dashboard')
+        
+        # Get filter parameters
+        status_filter = request.GET.get('status', '')
+        date_filter = request.GET.get('date', '')
+        search_query = request.GET.get('search', '')
+        
+        # Base queryset
+        orders = Order.objects.all().select_related('user').order_by('-order_date')
+        
+        # Apply filters
+        if status_filter:
+            orders = orders.filter(status=status_filter)
+        
+        if date_filter == 'today':
+            orders = orders.filter(order_date__date=timezone.now().date())
+        elif date_filter == 'week':
+            week_ago = timezone.now() - timedelta(days=7)
+            orders = orders.filter(order_date__gte=week_ago)
+        elif date_filter == 'month':
+            month_ago = timezone.now() - timedelta(days=30)
+            orders = orders.filter(order_date__gte=month_ago)
+        
+        if search_query:
+            orders = orders.filter(
+                Q(order_number__icontains=search_query) |
+                Q(first_name__icontains=search_query) |
+                Q(last_name__icontains=search_query) |
+                Q(email__icontains=search_query) |
+                Q(phone__icontains=search_query)
+            )
+        
+        # Get statistics for dashboard cards
+        total_orders = Order.objects.count()
+        pending_orders = Order.objects.filter(status='pending').count()
+        processing_orders = Order.objects.filter(status='processing').count()
+        delivered_orders = Order.objects.filter(status='delivered').count()
+        
+        # Calculate total revenue
+        total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
+        
+        # Pagination
+        paginator = Paginator(orders, 15)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        # Encrypt order IDs
+        for order in page_obj:
+            order.encrypted_id = enc(str(order.id))
+        
+        context = {
+            'page_obj': page_obj,
+            'orders': page_obj.object_list,
+            'total_orders': total_orders,
+            'pending_orders': pending_orders,
+            'processing_orders': processing_orders,
+            'delivered_orders': delivered_orders,
+            'total_revenue': total_revenue,
+            'status_filter': status_filter,
+            'date_filter': date_filter,
+            'search_query': search_query,
+            'status_choices': Order.ORDER_STATUS,
+        }
+        
+        return render(request, 'admin/orders/order_list.html', context)
+        
+    except Exception as e:
+        logger.exception(f"Error in admin_order_list: {e}")
+        messages.error(request, 'Something went wrong.')
+        return redirect('admin_dashboard')
+    
+@no_direct_access
+@login_required
+def admin_order_detail(request, order_id):
+    """Admin: View and update order details"""
+    try:
+        if request.user.role_id != 1:
+            messages.error(request, 'You do not have permission to access this page.')
+            return redirect('dashboard')
+        
+        # Decrypt order ID
+        decrypted_id = dec(str(order_id))
+        
+        # Get order with all related data
+        order = Order.objects.select_related('user').prefetch_related('items__bouquet').get(id=decrypted_id)
+        
+        # Get order items
+        order_items = order.items.all()
+        
+        context = {
+            'order': order,
+            'order_items': order_items,
+            'encrypted_id': order_id,
+            'status_choices': Order.ORDER_STATUS,
+        }
+        
+        return render(request, 'admin/orders/order_detail.html', context)
+        
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found.')
+        return redirect('admin_order_list')
+    except Exception as e:
+        logger.exception(f"Error in admin_order_detail: {e}")
+        messages.error(request, 'Something went wrong.')
+        return redirect('admin_order_list')
+    
+@no_direct_access
+@login_required
+def admin_update_order_status(request):
+    """Admin: Update order status"""
+    try:
+        if request.user.role_id != 1:
+            return JsonResponse({'success': False, 'message': 'Permission denied'})
+        
+        order_id = request.POST.get('order_id')
+        new_status = request.POST.get('status')
+        update_payment = request.POST.get('update_payment')  # Optional
+        
+        if not order_id or not new_status:
+            return JsonResponse({'success': False, 'message': 'Missing required fields'})
+        
+        # Decrypt order ID
+        decrypted_id = dec(str(order_id))
+        
+        order = Order.objects.get(id=decrypted_id)
+        order.status = new_status
+        
+        # Optionally update payment status based on order status
+        if new_status == 'delivered':
+            order.payment_status = 'completed'  # Auto-mark as paid when delivered
+        elif new_status == 'cancelled':
+            order.payment_status = 'refunded'  # Or 'cancelled'
+        
+        order.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Order status updated to {order.get_status_display()}',
+            'new_status': order.get_status_display(),
+            'status_class': order.status,
+            'payment_status': order.payment_status  # Return updated payment status
+        })
+        
+    except Exception as e:
+        logger.exception(f"Error updating order status: {e}")
+        return JsonResponse({'success': False, 'message': 'Something went wrong'})
+    
+@no_direct_access
+@login_required
+def admin_print_invoice(request, order_id):
+    """Admin: Generate printable invoice"""
+    try:
+        if request.user.role_id != 1:
+            messages.error(request, 'Permission denied.')
+            return redirect('admin_dashboard')
+        
+        # Decrypt order ID
+        decrypted_id = dec(str(order_id))
+        
+        order = Order.objects.select_related('user').prefetch_related('items__bouquet').get(id=decrypted_id)
+        order_items = order.items.all()
+        
+        context = {
+            'order': order,
+            'order_items': order_items,
+            'encrypted_id': order_id,
+            'today': timezone.now(),
+        }
+        
+        return render(request, 'admin/orders/invoice.html', context)
+        
+    except Exception as e:
+        logger.exception(f"Error generating invoice: {e}")
+        messages.error(request, 'Failed to generate invoice.')
+        return redirect('admin_order_detail', order_id=order_id)
+    
+@no_direct_access
+@login_required
+def admin_cancel_order(request):
+    """Admin: Cancel an order"""
+    try:
+        if request.user.role_id != 1:
+            messages.error(request, 'Permission denied.')
+            return redirect('admin_dashboard')
+        
+        order_id = request.POST.get('order_id')
+        reason = request.POST.get('reason', '')
+        
+        if not order_id:
+            messages.error(request, 'Order ID required.')
+            return redirect('admin_order_list')
+        
+        # Decrypt order ID
+        decrypted_id = dec(str(order_id))
+        
+        order = Order.objects.get(id=decrypted_id)
+        
+        # Only allow cancellation of pending orders
+        if order.status not in ['pending', 'processing']:
+            messages.error(request, 'Only pending or processing orders can be cancelled.')
+            return redirect('admin_order_detail', order_id=order_id)
+        
+        order.status = 'cancelled'
+        order.save()
+        
+        # Optional: Send cancellation email to customer
+        # send_order_cancellation_email(order, reason)
+        
+        messages.success(request, f'Order #{order.order_number} has been cancelled.')
+        return redirect('admin_order_detail', order_id=order_id)
+        
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found.')
+        return redirect('admin_order_list')
+    except Exception as e:
+        logger.exception(f"Error cancelling order: {e}")
+        messages.error(request, 'Failed to cancel order.')
+        return redirect('admin_order_list')
+

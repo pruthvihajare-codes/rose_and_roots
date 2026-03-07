@@ -35,6 +35,13 @@ urlpatterns = [
     # masters
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('dashboard/', dashboard, name='dashboard'),
+
+    # Admin Order Management
+    path('dashboard/orders/', admin_order_list, name='admin_order_list'),
+    path('dashboard/orders/<str:order_id>/', admin_order_detail, name='admin_order_detail'),
+    path('admin_update_order_status/', admin_update_order_status, name='admin_update_order_status'),
+    path('dashboard/orders/<str:order_id>/invoice/', admin_print_invoice, name='admin_print_invoice'),
+    path('admin_cancel_order/', admin_cancel_order, name='admin_cancel_order'),
     
     # Bouquet Management
     path('bouquets/', bouquet_list, name='bouquet_list'),
@@ -96,6 +103,10 @@ urlpatterns = [
     
     # order confirmation
     path('order-confirmation/<str:order_id>/', order_confirmation, name='order_confirmation'),
+
+    # urls.py - Add these patterns
+
+    
     
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

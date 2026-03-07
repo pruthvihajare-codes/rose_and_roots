@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ order.order_number }}</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 40px;
+            color: #212529;
+        }
+        
+        .invoice-box {
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #8c0d4f;
+        }
+        
+        .header h1 {
+            color: #8c0d4f;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .company-info, .customer-info {
+            flex: 1;
+        }
+        
+        .company-info h3, .customer-info h3 {
+            color: #3e0925;
+            margin-bottom: 10px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .items-table th {
+            background: #f8f4f6;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #8c0d4f;
+        }
+        
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .items-table tfoot td {
+            font-weight: bold;
+            background: #f8f4f6;
+        }
+        
+        .total-section {
+            margin-top: 30px;
+            text-align: right;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        .print-btn {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        @media print {
+            .print-btn {
+                display: none;
+            }
+            body {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-btn">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #8c0d4f; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            <i class="bi bi-printer"></i> Print Invoice
+        </button>
+    </div>
+    
+    <div class="invoice-box">
+        <div class="header">
+            <h1>LittleCraftOne</h1>
+            <p>Handcrafted with love for every special moment</p>
+        </div>
+        
+        <div class="invoice-info">
+            <div class="company-info">
+                <h3>From:</h3>
+                <p>
+                    <strong>LittleCraftOne</strong><br>
+                    littlecraftone.support@gmail.com<br>
+                    +91 88054 33102
+                </p>
+            </div>
+            <div class="customer-info">
+                <h3>Bill To:</h3>
+                <p>
+                    <strong>{{ order.first_name }} {{ order.last_name }}</strong><br>
+                    {{ order.email }}<br>
+                    {{ order.phone }}<br>
+                    {{ order.address_line1 }}<br>
+                    {% if order.address_line2 %}{{ order.address_line2 }}<br>{% endif %}
+                    {{ order.city }}, {{ order.state }} - {{ order.pincode }}
+                </p>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <p><strong>Invoice #:</strong> {{ order.order_number }}</p>
+            <p><strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}</p>
+            <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+        </div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                <tr>
+                    <td>{{ item.bouquet_name }}</td>
+                    <td>₹{{ item.price|floatformat:0 }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹{{ item.price|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" style="text-align: right;">Subtotal:</td>
+                    <td>₹{{ order.subtotal|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="text-align: right;">Shipping:</td>
+                    <td>{% if order.delivery_charge > 0 %}₹{{ order.delivery_charge|floatformat:0 }}{% else %}FREE{% endif %}</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="text-align: right;">Total:</td>
+                    <td><strong>₹{{ order.total|floatformat:0 }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>For any questions, please contact littlecraftone.support@gmail.com</p>
+            <p>&copy; {% now "Y" %} LittleCraftOne. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

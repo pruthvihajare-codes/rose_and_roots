@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Orders - LittleCraftOne Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-page {
+        background: linear-gradient(135deg, #f9e6ef 0%, #ffffff 50%, #f4d5e3 100%);
+        min-height: calc(100vh - 300px);
+        padding: 20px 0;
+    }
+    
+    .admin-header {
+        margin-bottom: 30px;
+    }
+    
+    .admin-title {
+        font-family: var(--heading-font);
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 5px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(140, 13, 79, 0.08);
+        border: 1px solid rgba(140, 13, 79, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(140, 13, 79, 0.15);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(140, 13, 79, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    
+    .stat-icon i {
+        font-size: 24px;
+        color: var(--accent-color);
+    }
+    
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 14px;
+    }
+    
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(140, 13, 79, 0.05);
+        border: 1px solid rgba(140, 13, 79, 0.1);
+    }
+    
+    .filter-title {
+        font-family: var(--heading-font);
+        font-weight: 600;
+        color: var(--heading-color);
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+    
+    .orders-table {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(140, 13, 79, 0.05);
+        border: 1px solid rgba(140, 13, 79, 0.1);
+    }
+    
+    .orders-table th {
+        background: #f8f4f6;
+        padding: 15px;
+        font-weight: 600;
+        color: var(--heading-color);
+        border-bottom: 2px solid var(--accent-color);
+    }
+    
+    .orders-table td {
+        padding: 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .orders-table tr:hover {
+        background: rgba(140, 13, 79, 0.02);
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .status-pending {
+        background: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.2);
+    }
+    
+    .status-processing {
+        background: rgba(23, 162, 184, 0.1);
+        color: #17a2b8;
+        border: 1px solid rgba(23, 162, 184, 0.2);
+    }
+    
+    .status-shipped {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+    
+    .status-delivered {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+    
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+    
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 5px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    
+    .action-btn.view {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .action-btn.view:hover {
+        background: #0d6efd;
+        color: white;
+    }
+    
+    .action-btn.edit {
+        background: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .action-btn.edit:hover {
+        background: #ffc107;
+        color: white;
+    }
+    
+    .action-btn.invoice {
+        background: rgba(23, 162, 184, 0.1);
+        color: #17a2b8;
+    }
+    
+    .action-btn.invoice:hover {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .pagination {
+        margin-top: 25px;
+        justify-content: center;
+    }
+    
+    .page-link {
+        border: 1px solid #dee2e6;
+        border-radius: 8px !important;
+        color: var(--default-color);
+        padding: 8px 14px;
+        margin: 0 3px;
+    }
+    
+    .page-link:hover {
+        background: var(--light-background);
+        color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--accent-color), #a3125c);
+        border-color: var(--accent-color);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .orders-table th {
+            display: none;
+        }
+        
+        .orders-table td {
+            display: block;
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .orders-table td:before {
+            content: attr(data-label);
+            float: left;
+            font-weight: bold;
+            color: var(--heading-color);
+            width: 100px;
+        }
+        
+        .action-buttons {
+            margin-left: 100px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="container">
+        <!-- Header -->
+        <div class="admin-header">
+            <h1 class="admin-title">Manage Orders</h1>
+            <p class="text-muted">View and manage all customer orders</p>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div class="stat-value">{{ total_orders }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-value">{{ pending_orders }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-gear"></i>
+                </div>
+                <div class="stat-value">{{ processing_orders }}</div>
+                <div class="stat-label">Processing</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ delivered_orders }}</div>
+                <div class="stat-label">Delivered</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+                <div class="stat-value">₹{{ total_revenue|floatformat:0 }}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filter-card">
+            <h5 class="filter-title">Filter Orders</h5>
+            <form method="get" action="{% url 'admin_order_list' %}" class="row g-3">
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        {% for status, label in status_choices %}
+                        <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="date" class="form-select">
+                        <option value="">All Time</option>
+                        <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if date_filter == 'week' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="month" {% if date_filter == 'month' %}selected{% endif %}>Last 30 Days</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search by order #, customer, email..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100" style="background: var(--accent-color); border: none;">
+                        <i class="bi bi-funnel"></i> Apply
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Orders Table -->
+        <div class="orders-table">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td data-label="Order #">#{{ order.order_number }}</td>
+                            <td data-label="Customer">
+                                <strong>{{ order.first_name }} {{ order.last_name }}</strong><br>
+                                <small>{{ order.email }}</small>
+                            </td>
+                            <td data-label="Date">{{ order.order_date|date:"d M Y" }}<br><small>{{ order.order_date|date:"h:i A" }}</small></td>
+                            <td data-label="Items">{{ order.items.count }}</td>
+                            <td data-label="Total">₹{{ order.total|floatformat:0 }}</td>
+                            <td data-label="Status">
+                                <span class="status-badge status-{{ order.status }}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td data-label="Actions">
+                                <div class="action-buttons">
+                                    <a href="{% url 'admin_order_detail' order.encrypted_id %}" class="action-btn view" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'admin_print_invoice' order.encrypted_id %}" target="_blank" class="action-btn invoice" title="Print Invoice">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-inbox" style="font-size: 48px; color: var(--accent-color); opacity: 0.5;"></i>
+                                <h5 class="mt-3">No Orders Found</h5>
+                                <p class="text-muted">No orders match your filters.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="First">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Last">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

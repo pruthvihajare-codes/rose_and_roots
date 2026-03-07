@@ -160,19 +160,24 @@
         <div class="container">
             <nav>
                 <ul class="nav-menu">
-                    <!-- Common menu items for all -->
-                    <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                    <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
-                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
                     
                     <!-- Customer Only Menu Items -->
                     {% if user.is_authenticated and user.role_id == 2 %}
+                        <!-- Common menu items for all -->
+                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                        <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
                         <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
                         <li class="nav-menu-item"><a href="{% url 'checkout' %}" class="nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li>
                     
                     <!-- Guest Users - Show cart but not checkout -->
                     {% elif not user.is_authenticated %}
+                        <!-- Common menu items for all -->
+                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                        <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
                         <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
                     
                     <!-- Admin Menu (role_id = 1) -->
@@ -192,17 +197,37 @@
                                 <li><a class="dropdown-item" href="{% url 'bouquet_list' %}">
                                     <i class="bi bi-list-ul"></i> Manage Bouquets
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'bouquet_list' %}?status=active">
-                                    <i class="bi bi-check-circle"></i> Active Bouquets
+                            </ul>
+                        </li>
+
+                        <!-- Orders Dropdown - ADD THIS NEW SECTION -->
+                        <li class="nav-menu-item dropdown">
+                            <a href="#" class="nav-menu-link dropdown-toggle">
+                                Orders
+                                <i class="bi bi-chevron-down"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'admin_order_list' %}">
+                                    <i class="bi bi-list-ul"></i> All Orders
                                 </a></li>
-                                <li><a class="dropdown-item" href="{% url 'bouquet_list' %}?status=inactive">
-                                    <i class="bi bi-x-circle"></i> Inactive Bouquets
+                                <li><a class="dropdown-item" href="{% url 'admin_order_list' %}?status=pending">
+                                    <i class="bi bi-clock-history"></i> Pending
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_order_list' %}?status=processing">
+                                    <i class="bi bi-gear"></i> Processing
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_order_list' %}?status=delivered">
+                                    <i class="bi bi-check-circle"></i> Delivered
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_order_list' %}?date=today">
+                                    <i class="bi bi-calendar-day"></i> Today's Orders
                                 </a></li>
                             </ul>
                         </li>
 
-                        {% comment %} <!-- Vendors Dropdown -->
+                        <!-- Vendors Dropdown (commented out) -->
+                        {% comment %}
                         <li class="nav-menu-item dropdown">
                             <a href="#" class="nav-menu-link dropdown-toggle">
                                 Vendors
@@ -216,7 +241,8 @@
                                     <i class="bi bi-list-ul"></i> Manage Vendors
                                 </a></li>
                             </ul>
-                        </li> {% endcomment %}
+                        </li>
+                        {% endcomment %}
                         
                         <!-- Occasions Dropdown -->
                         <li class="nav-menu-item dropdown">
@@ -618,11 +644,6 @@
         </div>
         
         <ul class="mobile-nav-menu">
-            <!-- Common menu items for all -->
-            <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-            <li class="mobile-nav-menu-item"><a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
-            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
-            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
             
             <!-- Customer Only Menu Items -->
             {% if user.is_authenticated and user.role_id == 2 %}
@@ -631,6 +652,11 @@
             
             <!-- Guest Users - Show cart but not checkout -->
             {% elif not user.is_authenticated %}
+                <!-- Common menu items for all -->
+                <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                <li class="mobile-nav-menu-item"><a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
+                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
+                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
             
             <!-- Admin Menu (role_id = 1) -->
@@ -658,7 +684,29 @@
                     </ul>
                 </li>
 
-                <!-- Vendors Dropdown (Mobile) -->
+                <!-- Orders Dropdown (Mobile) - ADD THIS NEW SECTION -->
+                <li class="mobile-nav-menu-item mobile-dropdown">
+                    <a href="javascript:void(0);" class="mobile-nav-menu-link mobile-dropdown-toggle" onclick="toggleMobileDropdown(event, this)">
+                        <span><i class="bi bi-box-seam me-2"></i>Orders</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                    <ul class="mobile-dropdown-menu">
+                        <li><a href="{% url 'admin_order_list' %}" class="mobile-dropdown-item">
+                            <i class="bi bi-list-ul me-2"></i>All Orders
+                        </a></li>
+                        <li><a href="{% url 'admin_order_list' %}?status=pending" class="mobile-dropdown-item">
+                            <i class="bi bi-clock-history me-2"></i>Pending
+                        </a></li>
+                        <li><a href="{% url 'admin_order_list' %}?status=processing" class="mobile-dropdown-item">
+                            <i class="bi bi-gear me-2"></i>Processing
+                        </a></li>
+                        <li><a href="{% url 'admin_order_list' %}?status=delivered" class="mobile-dropdown-item">
+                            <i class="bi bi-check-circle me-2"></i>Delivered
+                        </a></li>
+                    </ul>
+                </li>
+
+                <!-- Vendors Dropdown (Mobile) - Keep as is -->
                 <li class="mobile-nav-menu-item mobile-dropdown">
                     <a href="javascript:void(0);" class="mobile-nav-menu-link mobile-dropdown-toggle" onclick="toggleMobileDropdown(event, this)">
                         <span><i class="bi bi-truck me-2"></i>Vendors</span>
