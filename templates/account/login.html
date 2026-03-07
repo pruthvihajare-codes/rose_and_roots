@@ -87,6 +87,10 @@
                                 <!-- Login Form -->
                                 <form id="loginForm" class="auth-form" method="post" action="{% url 'login' %}" novalidate>
                                     {% csrf_token %}
+
+                                    {% if next %}
+                                        <input type="hidden" name="next" value="{{ next }}">
+                                    {% endif %}
                                     
                                     <!-- Email Field -->
                                     <div class="form-group">

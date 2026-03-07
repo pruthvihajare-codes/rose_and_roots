@@ -93,3 +93,240 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Star rating functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star-rating i');
+    const ratingInput = document.getElementById('selectedRating');
+    
+    if (stars.length) {
+        stars.forEach(star => {
+            star.addEventListener('mouseenter', function() {
+                const rating = this.dataset.rating;
+                highlightStars(rating);
+            });
+            
+            star.addEventListener('mouseleave', function() {
+                const currentRating = ratingInput.value;
+                if (currentRating) {
+                    highlightStars(currentRating);
+                } else {
+                    resetStars();
+                }
+            });
+            
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                ratingInput.value = rating;
+                highlightStars(rating);
+            });
+        });
+    }
+    
+    // Character count for review
+    const reviewTextarea = document.getElementById('reviewComment');
+    const charCount = document.getElementById('charCount');
+    
+    if (reviewTextarea && charCount) {
+        reviewTextarea.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+            
+            if (count >= 500) {
+                charCount.style.color = '#dc3545';
+            } else {
+                charCount.style.color = 'var(--accent-color)';
+            }
+        });
+    }
+    
+    // Review form submission with SweetAlert
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate rating
+            if (!ratingInput.value) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Rating Required',
+                    text: 'Please select a star rating',
+                    confirmButtonColor: '#8c0d4f'
+                });
+                return;
+            }
+            
+            // Validate comment
+            const comment = reviewTextarea.value.trim();
+            if (!comment) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Review Required',
+                    text: 'Please write your review',
+                    confirmButtonColor: '#8c0d4f'
+                });
+                return;
+            }
+            
+            if (comment.length < 10) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Review Too Short',
+                    text: 'Please write at least 10 characters',
+                    confirmButtonColor: '#8c0d4f'
+                });
+                return;
+            }
+            
+            // Show loading
+            Swal.fire({
+                title: 'Submitting...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Submit form
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Review Submitted!',
+                        text: data.message,
+                        confirmButtonColor: '#8c0d4f'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message,
+                        confirmButtonColor: '#8c0d4f'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong',
+                    confirmButtonColor: '#8c0d4f'
+                });
+            });
+        });
+    }
+});
+
+function highlightStars(rating) {
+    const stars = document.querySelectorAll('.star-rating i');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.remove('bi-star');
+            star.classList.add('bi-star-fill');
+        } else {
+            star.classList.remove('bi-star-fill');
+            star.classList.add('bi-star');
+        }
+    });
+}
+
+function resetStars() {
+    const stars = document.querySelectorAll('.star-rating i');
+    stars.forEach(star => {
+        star.classList.remove('bi-star-fill');
+        star.classList.add('bi-star');
+    });
+}
+
+// Sticky Header on Scroll
+document.addEventListener('DOMContentLoaded', function() {
+    const stickyHeader = document.getElementById('stickyProductHeader');
+    const mainProductSection = document.querySelector('.product-main');
+    const mainQuantity = document.getElementById('quantity');
+    const stickyQuantity = document.getElementById('stickyQuantity');
+    
+    if (stickyHeader && mainProductSection) {
+        // Get the offset position of the main product section
+        const mainSectionBottom = mainProductSection.offsetTop + mainProductSection.offsetHeight;
+        
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > mainSectionBottom - 100) {
+                stickyHeader.classList.add('show');
+                document.body.classList.add('has-sticky-header');
+            } else {
+                stickyHeader.classList.remove('show');
+                document.body.classList.remove('has-sticky-header');
+            }
+        });
+    }
+    
+    // Sync quantities between main and sticky
+    if (mainQuantity && stickyQuantity) {
+        // Update sticky quantity when main changes
+        mainQuantity.addEventListener('input', function() {
+            stickyQuantity.value = this.value;
+        });
+        
+        // Update main quantity when sticky changes
+        stickyQuantity.addEventListener('input', function() {
+            mainQuantity.value = this.value;
+        });
+    }
+});
+
+// Sticky quantity controls
+function incrementStickyQuantity() {
+    const input = document.getElementById('stickyQuantity');
+    const mainInput = document.getElementById('quantity');
+    const max = parseInt(input.getAttribute('max')) || 10;
+    let value = parseInt(input.value) || 1;
+    
+    if (value < max) {
+        input.value = value + 1;
+        if (mainInput) mainInput.value = value + 1;
+    }
+}
+
+function decrementStickyQuantity() {
+    const input = document.getElementById('stickyQuantity');
+    const mainInput = document.getElementById('quantity');
+    let value = parseInt(input.value) || 1;
+    
+    if (value > 1) {
+        input.value = value - 1;
+        if (mainInput) mainInput.value = value - 1;
+    }
+}
+
+// Add to cart from sticky header
+function addToCartFromSticky(encryptedId) {
+    const quantity = document.getElementById('stickyQuantity').value;
+    addToCart(encryptedId, quantity);
+}
+
+// Update your existing addToCart function to handle the call
+function addToCart(encryptedId, quantity) {
+    // Your existing add to cart logic
+    console.log('Adding to cart:', encryptedId, 'Quantity:', quantity);
+    Swal.fire({
+        icon: 'success',
+        title: 'Added to Cart!',
+        text: 'Product has been added to your cart.',
+        showConfirmButton: false,
+        timer: 1500
+    });
+}

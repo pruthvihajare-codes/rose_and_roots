@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/store/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'shop' %}">Shop</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="cart-header text-center mb-5">
+            <h1 class="cart-title">Your Shopping Cart</h1>
+            <p class="cart-subtitle">
+                {% if item_count > 0 %}
+                    You have {{ item_count }} item{{ item_count|pluralize }} in your cart
+                {% else %}
+                    Your cart is empty
+                {% endif %}
+            </p>
+        </div>
+
+        {% if item_count > 0 %}
+            <div class="row">
+                <!-- Cart Items Section -->
+                <div class="col-lg-8">
+                    <!-- Cart Limit Indicator -->
+                    <div class="cart-limit-indicator mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="limit-text">
+                                <i class="bi bi-info-circle"></i>
+                                Maximum {{ cart_limit }} items per cart
+                            </span>
+                            <span class="limit-count {% if remaining_slots == 0 %}limit-reached{% endif %}">
+                                {{ item_count }}/{{ cart_limit }} items
+                            </span>
+                        </div>
+                        <div class="progress limit-progress">
+                            <div class="progress-bar" role="progressbar" 
+                                style="width: {% widthratio item_count cart_limit 100 %}%;"
+                                aria-valuenow="{{ item_count }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="{{ cart_limit }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart Items List -->
+                    <div class="cart-items-list">
+                        {% for item in cart_items %}
+                            <div class="cart-item" data-id="{{ item.encrypted_id }}">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 col-4">
+                                        <div class="cart-item-image">
+                                            {% if item.image %}
+                                                <img src="{{ MEDIA_URL }}{{ item.image }}" alt="{{ item.name }}" class="img-fluid">
+                                            {% else %}
+                                                <div class="no-image">
+                                                    <i class="bi bi-flower2"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-8">
+                                        <div class="cart-item-details">
+                                            <h3 class="cart-item-title">
+                                                <a href="{% url 'product_detail' %}?id={{ item.encrypted_id }}">{{ item.name }}</a>
+                                            </h3>
+                                            <div class="cart-item-price">
+                                                {% if item.original_price %}
+                                                    <span class="current-price">₹{{ item.price|floatformat:0 }}</span>
+                                                    <span class="original-price">₹{{ item.original_price|floatformat:0 }}</span>
+                                                    <span class="discount-badge">-{{ item.discount_percent }}%</span>
+                                                {% else %}
+                                                    <span class="current-price">₹{{ item.price|floatformat:0 }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-6">
+                                        <div class="cart-item-subtotal">
+                                            <span class="subtotal-label">Subtotal</span>
+                                            <span class="subtotal-value">₹{{ item.price|floatformat:0 }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-6">
+                                        <button class="btn-remove-item" onclick="removeFromCart('{{ item.encrypted_id }}')" title="Remove item">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Continue Shopping -->
+                    <div class="continue-shopping mt-4">
+                        <a href="{% url 'shop' %}" class="btn-continue">
+                            <i class="bi bi-arrow-left"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Cart Summary Section -->
+                <div class="col-lg-4">
+                    <div class="cart-summary">
+                        <h4 class="summary-title">Order Summary</h4>
+                        
+                        <div class="summary-details">
+                            <div class="summary-row">
+                                <span>Subtotal ({{ item_count }} items)</span>
+                                <span>₹{{ subtotal|floatformat:0 }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Shipping</span>
+                                {% if free_shipping_qualified %}
+                                    <span class="free-shipping">Free</span>
+                                {% else %}
+                                    <span>₹150</span>
+                                {% endif %}
+                            </div>
+                            {% if not free_shipping_qualified %}
+                                <div class="shipping-note">
+                                    <i class="bi bi-truck"></i> Add ₹{{ remaining_for_free_shipping|floatformat:0 }} more for FREE shipping
+                                </div>
+                            {% else %}
+                                <div class="shipping-note free-shipping-achieved">
+                                    <i class="bi bi-check-circle-fill"></i> You've qualified for FREE shipping!
+                                </div>
+                            {% endif %}
+                            <div class="summary-row total">
+                                <span>Total</span>
+                                <span class="total-amount">₹{{ total|floatformat:0 }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Free Shipping Progress Bar -->
+                        {% if not free_shipping_qualified %}
+                        <div class="free-shipping-progress mt-3 mb-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {% widthratio subtotal 2000 100 %}%; background: var(--accent-color);"
+                                     aria-valuenow="{{ subtotal }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="2000">
+                                </div>
+                            </div>
+                            {% comment %} <small class="text-muted mt-1 d-block">
+                                ₹{{ subtotal|floatformat:0 }} of ₹2000
+                            </small> {% endcomment %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Checkout Button with Role-Based Access -->
+                        {% if user.is_authenticated and user.role_id == 2 %}
+                            <!-- Customer logged in -->
+                            <a href="{% url 'checkout' %}" class="btn-checkout">
+                                <i class="bi bi-lock"></i> Proceed to Checkout
+                            </a>
+                        {% elif user.is_authenticated and user.role_id == 1 %}
+                            <!-- Admin - cannot checkout -->
+                            <div class="admin-checkout-blocked text-center py-3">
+                                <p class="text-muted mb-2"><i class="bi bi-shield-lock"></i> Admin accounts cannot place orders</p>
+                                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                                    Go to Dashboard
+                                </a>
+                            </div>
+                        {% else %}
+                            <!-- Guest user -->
+                            <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn-checkout">
+                                <i class="bi bi-box-arrow-in-right"></i> Login to Checkout
+                            </a>
+                            <p class="text-center mt-2 small">
+                                <a href="{% url 'register' %}?next={% url 'checkout' %}" class="text-muted">New user? Register here</a>
+                            </p>
+                        {% endif %}
+
+                        <!-- Payment Methods -->
+                        <div class="payment-methods">
+                            <p class="payment-text">We accept</p>
+                            <div class="payment-icons">
+                                <i class="bi bi-credit-card"></i>
+                                <i class="bi bi-bank"></i>
+                                <i class="bi bi-paypal"></i>
+                                <i class="bi bi-google"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty Cart State -->
+            <div class="empty-cart text-center py-5">
+                <div class="empty-cart-icon">
+                    <i class="bi bi-cart3"></i>
+                </div>
+                <h2 class="empty-cart-title">Your cart is empty</h2>
+                <p class="empty-cart-message">Looks like you haven't added any items to your cart yet.</p>
+                <a href="{% url 'shop' %}" class="btn-shop-now">
+                    <i class="bi bi-shop"></i> Start Shopping
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+    {% if messages %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: "{{ message.tags }}",
+                        title: "{{ message.tags|title }}",
+                        text: "{{ message|escapejs }}",
+                        confirmButtonText: "OK",
+                        background: "#ffffff",
+                        color: "#343a40",
+                        confirmButtonColor: "#8c0d4f",
+                        customClass: {
+                            popup: 'rounded-4 shadow'
+                        }
+                    });
+                {% endfor %}
+            });
+        </script>
+    {% endif %}
+
+    <script src="{% static 'js/store/cart.js' %}"></script>
+
+{% endblock %}

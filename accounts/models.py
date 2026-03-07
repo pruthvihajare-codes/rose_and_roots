@@ -118,3 +118,140 @@ class ErrorLog(models.Model):  # Capitalized class name for consistency
     
     def __str__(self):
         return f"Error {self.id} - {self.error_date}"
+    
+# models.py (in your accounts app or wherever CustomUser is)
+
+class UserProfile(models.Model):
+    """Extended profile information for users"""
+    id = models.AutoField(primary_key=True)
+    
+    # Link to the user
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
+    
+    # Personal Information
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(
+        max_length=10,
+        choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')],
+        null=True, 
+        blank=True
+    )
+    
+    # Address Information (Single Address - No office/home distinction)
+    address_line1 = models.CharField(max_length=255, null=True, blank=True)
+    address_line2 = models.CharField(max_length=255, null=True, blank=True)
+    landmark = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    pincode = models.CharField(max_length=6, null=True, blank=True)
+    country = models.CharField(max_length=100, default='India')
+    
+    # Contact Information (additional)
+    alternate_phone = models.CharField(max_length=15, null=True, blank=True)
+    
+    # Preferences
+    newsletter_subscribed = models.BooleanField(default=False)
+    sms_notifications = models.BooleanField(default=False)
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'user_profiles'
+    
+    def __str__(self):
+        return f"Profile for {self.user.email}"
+    
+    def get_full_address(self):
+        """Return formatted full address"""
+        parts = []
+        if self.address_line1:
+            parts.append(self.address_line1)
+        if self.address_line2:
+            parts.append(self.address_line2)
+        if self.landmark:
+            parts.append(f"Near {self.landmark}")
+        if self.city:
+            parts.append(self.city)
+        if self.state:
+            parts.append(self.state)
+        if self.pincode:
+            parts.append(self.pincode)
+        if self.country:
+            parts.append(self.country)
+        return ', '.join(parts)
+    
+    def get_completion_percentage(self):
+        """Calculate profile completion percentage"""
+        total_fields = 0
+        completed_fields = 0
+        
+        # Personal Information fields
+        personal_fields = [
+            self.user.first_name,
+            self.user.last_name,
+            self.user.phone,
+            self.date_of_birth,
+            self.gender,
+            self.alternate_phone,
+        ]
+        
+        # Address fields
+        address_fields = [
+            self.address_line1,
+            self.city,
+            self.state,
+            self.pincode,
+        ]
+        
+        # Count total fields
+        total_fields = len(personal_fields) + len(address_fields)
+        
+        # Count completed personal fields
+        for field in personal_fields:
+            if field and str(field).strip():
+                completed_fields += 1
+        
+        # Count completed address fields
+        for field in address_fields:
+            if field and str(field).strip():
+                completed_fields += 1
+        
+        # Calculate percentage
+        if total_fields == 0:
+            return 0
+        
+        percentage = (completed_fields / total_fields) * 100
+        return round(percentage)
+    
+    def get_missing_fields(self):
+        """Return list of missing fields"""
+        missing = []
+        
+        if not self.user.first_name:
+            missing.append("First Name")
+        if not self.user.last_name:
+            missing.append("Last Name")
+        if not self.user.phone:
+            missing.append("Phone Number")
+        if not self.date_of_birth:
+            missing.append("Date of Birth")
+        if not self.gender:
+            missing.append("Gender")
+        if not self.alternate_phone:
+            missing.append("Alternate Phone")
+        if not self.address_line1:
+            missing.append("Address")
+        if not self.city:
+            missing.append("City")
+        if not self.state:
+            missing.append("State")
+        if not self.pincode:
+            missing.append("Pincode")
+        
+        return missing

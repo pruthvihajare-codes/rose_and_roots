@@ -4,13 +4,10 @@
 {% block title %}{{ bouquet.name }} - LittleCraftOne{% endblock %}
 
 {% block extra_css %}
-
     <link rel="stylesheet" href="{% static 'css/store/product-detail.css' %}">
-
 {% endblock %}
 
 {% block content %}
-
     <div class="product-detail-page">
         <div class="container py-4">
             <!-- Breadcrumb -->
@@ -22,46 +19,76 @@
                 </ol>
             </nav>
 
+            <!-- Sticky Product Header (appears on scroll) -->
+            <div class="sticky-product-header" id="stickyProductHeader">
+                <div class="container">
+                    <div class="sticky-header-content">
+                        <div class="sticky-product-info">
+                            {% if images %}
+                                <img src="{{ MEDIA_URL }}{{ images.0.image_path }}" alt="{{ bouquet.name }}" class="sticky-product-image">
+                            {% endif %}
+                            <div class="sticky-product-details">
+                                <h3 class="sticky-product-title">{{ bouquet.name|truncatechars:40 }}</h3>
+                                <div class="sticky-product-price">
+                                    {% if bouquet.discount_price %}
+                                        <span class="sticky-current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
+                                        <span class="sticky-original-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                    {% else %}
+                                        <span class="sticky-current-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sticky Header Add to Cart Button -->
+                        <div class="sticky-actions">
+                            <button class="sticky-add-to-cart" onclick="addToCart('{{ encrypted_id }}')">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Product Main Section -->
             <div class="product-main">
                 <div class="row g-4">
+                    
                     <!-- Product Images (Left Column) -->
                     <div class="col-lg-6">
-                        <div class="product-gallery">
-                            <!-- Main Image -->
-                            <div class="main-image-container">
-                                {% if images %}
-                                    <img src="{{ MEDIA_URL }}{{ images.0.image_path }}" id="mainProductImage" alt="{{ bouquet.name }}" class="main-product-image">
-                                {% else %}
-                                    <div class="no-image-large">
-                                        <i class="bi bi-flower2"></i>
+                        <div class="sticky-top" style="top: 20px; z-index: 1;">
+                            <div class="product-gallery">
+                                <!-- Main Image -->
+                                <div class="main-image-container">
+                                    {% if images %}
+                                        <img src="{{ MEDIA_URL }}{{ images.0.image_path }}" id="mainProductImage" alt="{{ bouquet.name }}" class="main-product-image">
+                                    {% else %}
+                                        <div class="no-image-large">
+                                            <i class="bi bi-flower2"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Badges -->
+                                    <div class="product-badges">
+                                        {% if bouquet.is_featured %}
+                                            <span class="badge-featured">Featured</span>
+                                        {% endif %}
+                                        {% if bouquet.same_day_available %}
+                                            <span class="badge-sameday">Same Day</span>
+                                        {% endif %}
                                     </div>
-                                {% endif %}
-                                
-                                <!-- Badges -->
-                                <div class="product-badges">
-                                    {% if bouquet.discount_percent > 0 %}
-                                    <span class="badge-discount">-{{ bouquet.discount_percent }}%</span>
-                                    {% endif %}
-                                    {% if bouquet.is_featured %}
-                                    <span class="badge-featured">Featured</span>
-                                    {% endif %}
-                                    {% if bouquet.same_day_available %}
-                                    <span class="badge-sameday">Same Day</span>
-                                    {% endif %}
                                 </div>
-                            </div>
 
-                            <!-- Thumbnail Gallery -->
-                            {% if images|length > 1 %}
-                            <div class="thumbnail-gallery">
-                                {% for image in images %}
-                                <div class="thumbnail-item {% if forloop.first %}active{% endif %}" onclick="changeMainImage('{{ MEDIA_URL }}{{ image.image_path }}', this)">
-                                    <img src="{{ MEDIA_URL }}{{ image.image_path }}" alt="{{ bouquet.name }} - Image {{ forloop.counter }}">
+                                <!-- Thumbnail Gallery -->
+                                {% if images|length > 1 %}
+                                <div class="thumbnail-gallery">
+                                    {% for image in images %}
+                                    <div class="thumbnail-item {% if forloop.first %}active{% endif %}" onclick="changeMainImage('{{ MEDIA_URL }}{{ image.image_path }}', this)">
+                                        <img src="{{ MEDIA_URL }}{{ image.image_path }}" alt="{{ bouquet.name }} - Image {{ forloop.counter }}">
+                                    </div>
+                                    {% endfor %}
                                 </div>
-                                {% endfor %}
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
                     </div>
 
@@ -131,46 +158,39 @@
                                         {% endif %}
                                     </span>
                                 </div>
-                                {% if bouquet.delivery_info %}
-                                <div class="info-item">
-                                    <i class="bi bi-info-circle"></i>
-                                    <span>{{ bouquet.delivery_info }}</span>
-                                </div>
-                                {% endif %}
                             </div>
 
                             <!-- Quantity and Actions -->
-                            <div class="product-actions">
-                                <div class="quantity-selector">
-                                    <label for="quantity">Quantity:</label>
-                                    <div class="quantity-controls">
-                                        <button type="button" class="quantity-btn" onclick="decrementQuantity()">
-                                            <i class="bi bi-dash"></i>
-                                        </button>
-                                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="10">
-                                        <button type="button" class="quantity-btn" onclick="incrementQuantity()">
-                                            <i class="bi bi-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
+                            <div class="main-product-actions">
+                                <!-- In the action-buttons section, modify for non-logged in users -->
                                 <div class="action-buttons">
-                                    <button class="btn-add-to-cart" onclick="addToCart('{{ encrypted_id }}', document.getElementById('quantity').value)">
-                                        <i class="bi bi-cart-plus"></i> Add to Cart
-                                    </button>
-                                    <button class="btn-wishlist" onclick="addToWishlist('{{ encrypted_id }}')">
-                                        <i class="bi bi-heart"></i>
-                                    </button>
+                                    {% if user.is_authenticated and user.role_id == 2 %}
+                                        
+                                        <!-- Main Add to Cart Button -->
+                                        <button class="btn-add-to-cart" onclick="addToCart('{{ encrypted_id }}')">
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                        </button>
+
+                                        <!-- Buy Now Button - for logged in users -->
+                                        <button class="btn-buy-now" onclick="buyNow('{{ encrypted_id }}')">
+                                            <i class="bi bi-lightning-charge"></i> Buy Now
+                                        </button>
+                                        
+                                    {% else %}
+                                        {% comment %} <a href="{% url 'login' %}?next={% url 'product_detail' %}?id={{ encrypted_id|urlencode }}" class="btn-add-to-cart">
+                                            <i class="bi bi-box-arrow-in-right"></i> Login to Buy
+                                        </a>
+                                        <a href="{% url 'register' %}?next={% url 'product_detail' %}?id={{ encrypted_id }}" class="btn-wishlist" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-person-plus"></i>
+                                        </a> {% endcomment %}
+
+                                        <!-- For non-logged in users, modify the login button -->
+                                        <a href="{% url 'login' %}?next={% url 'checkout' %}?buy_now={{ encrypted_id|urlencode }}" class="btn-buy-now" style="text-decoration: none;">
+                                            <i class="bi bi-lightning-charge"></i> Buy Now
+                                        </a>
+                                    {% endif %}
                                 </div>
                             </div>
-
-                            <!-- Delivery Info -->
-                            {% if bouquet.delivery_info %}
-                            <div class="delivery-card">
-                                <h5><i class="bi bi-truck"></i> Delivery Information</h5>
-                                <p>{{ bouquet.delivery_info|safe }}</p>
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -216,114 +236,424 @@
                 </div>
             </div>
 
-            <!-- Related Products -->
-            {% if related_bouquets %}
-            <div class="related-products mt-5">
-                <h2 class="section-title">You May Also Like</h2>
-                <div class="products-grid">
-                    {% for related in related_bouquets %}
-                    <div class="product-card">
-                        <div class="product-image">
-                            {% if related.primary_image %}
-                                <img src="{{ MEDIA_URL }}{{ related.primary_image }}" alt="{{ related.name }}" class="img-fluid">
-                            {% else %}
-                                <div class="no-image">
-                                    <i class="bi bi-flower2"></i>
+            <!-- Reviews Section -->
+            <div class="reviews-section mt-5">  
+                <h2 class="section-title">Customer Reviews</h2>
+                
+                <!-- Review Form - Only for logged in users who haven't reviewed yet -->
+                {% if user.is_authenticated and user.role_id == 2 %}
+                    {% if user_review %}
+                        <!-- User has already reviewed - show message -->
+                        <div class="already-reviewed-message">
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                You have already reviewed this product. Your review is shown below.
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- User hasn't reviewed yet - show form -->
+                        <div class="review-form-container">
+                            <h5>Write a Review</h5>
+                            <form method="post" action="{% url 'add_review' %}" id="reviewForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="bouquet_id" value="{{ encrypted_id }}">
+                                
+                                <div class="rating-select">
+                                    <label>Your Rating <span class="required">*</span></label>
+                                    <div class="star-rating">
+                                        <i class="bi bi-star" data-rating="1"></i>
+                                        <i class="bi bi-star" data-rating="2"></i>
+                                        <i class="bi bi-star" data-rating="3"></i>
+                                        <i class="bi bi-star" data-rating="4"></i>
+                                        <i class="bi bi-star" data-rating="5"></i>
+                                    </div>
+                                    <input type="hidden" name="rating" id="selectedRating" required>
                                 </div>
-                            {% endif %}
-                            
-                            {% if related.discount_percent > 0 %}
-                            <span class="badge-discount">-{{ related.discount_percent }}%</span>
-                            {% endif %}
-
-                            <div class="product-actions">
-                                <a href="{% url 'product_detail' %}?id={{ related.encrypted_id }}" class="action-btn" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <button class="action-btn" title="Add to Wishlist" onclick="addToWishlist('{{ related.encrypted_id }}')">
-                                    <i class="bi bi-heart"></i>
+                                
+                                <div class="form-group">
+                                    <label for="reviewComment">Your Review <span class="required">*</span></label>
+                                    <textarea class="form-control" id="reviewComment" name="comment" rows="4" 
+                                            placeholder="Share your experience with this product..." 
+                                            maxlength="500" required></textarea>
+                                    <small class="text-muted"><span id="charCount">0</span>/500 characters</small>
+                                </div>
+                                
+                                <button type="submit" class="btn-submit-review">
+                                    <i class="bi bi-check-lg"></i> Submit Review
                                 </button>
-                            </div>
+                            </form>
                         </div>
-                        <div class="product-info">
-                            <h3 class="product-title">
-                                <a href="{% url 'product_detail' %}?id={{ related.encrypted_id }}">{{ related.name }}</a>
-                            </h3>
-                            <div class="product-price">
-                                {% if related.discount_price %}
-                                    <span class="current-price">₹{{ related.discount_price|floatformat:0 }}</span>
-                                    <span class="original-price">₹{{ related.price|floatformat:0 }}</span>
-                                {% else %}
-                                    <span class="current-price">₹{{ related.price|floatformat:0 }}</span>
-                                {% endif %}
-                            </div>
-                        </div>
+                    {% endif %}
+                {% elif not user.is_authenticated %}
+                    <div class="login-to-review">
+                        <p><i class="bi bi-box-arrow-in-right"></i> 
+                            <a href="{% url 'login' %}?next={% url 'product_detail' %}?id={{ encrypted_id }}">Login</a> 
+                            to write a review
+                        </p>
                     </div>
+                {% endif %}
+                
+                <!-- Reviews List -->
+                <div class="reviews-list" id="reviewsList">
+                    {% for review in page_obj %}
+                        {% if user_review and review.id == user_review.id %}
+                            <!-- This is the current user's review - highlight it -->
+                            <div class="review-item current-user-review">
+                                <div class="review-header">
+                                    <div class="reviewer-info">
+                                        <span class="reviewer-name">
+                                            {{ review.user.full_name|default:review.user.email }}
+                                            <span class="your-review-badge">Your Review</span>
+                                        </span>
+                                        <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                                    </div>
+                                    <div class="review-rating">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="review-content">
+                                    <p>{{ review.comment }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Regular review -->
+                            <div class="review-item">
+                                <div class="review-header">
+                                    <div class="reviewer-info">
+                                        <span class="reviewer-name">{{ review.user.full_name|default:review.user.email }}</span>
+                                        <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                                    </div>
+                                    <div class="review-rating">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="review-content">
+                                    <p>{{ review.comment }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="no-reviews">
+                            <p>No reviews yet. Be the first to review this product!</p>
+                        </div>
                     {% endfor %}
                 </div>
+                
+                <!-- Pagination -->
+                {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="reviews-pagination">
+                        <nav aria-label="Reviews pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?id={{ encrypted_id }}&page={{ page_obj.previous_page_number }}#reviewsList" aria-label="Previous">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?id={{ encrypted_id }}&page={{ num }}#reviewsList">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?id={{ encrypted_id }}&page={{ page_obj.next_page_number }}#reviewsList" aria-label="Next">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
             </div>
+
+            <!-- Related Products -->
+            {% if related_bouquets %}
+                <div class="related-products mt-5">
+                    <h2 class="section-title">You May Also Like</h2>
+                    <div class="products-grid">
+                        {% for related in related_bouquets %}
+                        <div class="product-card">
+                            <div class="product-image">
+                                {% if related.primary_image %}
+                                    <img src="{{ MEDIA_URL }}{{ related.primary_image }}" alt="{{ related.name }}" class="img-fluid">
+                                {% else %}
+                                    <div class="no-image">
+                                        <i class="bi bi-flower2"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if related.discount_percent > 0 %}
+                                <span class="badge-discount">-{{ related.discount_percent }}%</span>
+                                {% endif %}
+
+                                <div class="main-product-actions">
+                                    <a href="{% url 'product_detail' %}?id={{ related.encrypted_id }}" class="action-btn" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <button class="action-btn" title="Add to Wishlist" onclick="addToWishlist('{{ related.encrypted_id }}')">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-title">
+                                    <a href="{% url 'product_detail' %}?id={{ related.encrypted_id }}">{{ related.name }}</a>
+                                </h3>
+                                <div class="product-price">
+                                    {% if related.discount_price %}
+                                        <span class="current-price">₹{{ related.discount_price|floatformat:0 }}</span>
+                                        <span class="original-price">₹{{ related.price|floatformat:0 }}</span>
+                                    {% else %}
+                                        <span class="current-price">₹{{ related.price|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             {% endif %}
         </div>
     </div>
-
 {% endblock %}
 
 {% block extra_js %}
-
-    <script src="{% static 'js/store/product-detail.js' %}"></script>
-
+    
     <script>
-        // Quantity controls
-        function incrementQuantity() {
-            const input = document.getElementById('quantity');
-            const max = parseInt(input.getAttribute('max')) || 10;
-            let value = parseInt(input.value) || 1;
-            if (value < max) {
-                input.value = value + 1;
-            }
-        }
         
-        function decrementQuantity() {
-            const input = document.getElementById('quantity');
-            let value = parseInt(input.value) || 1;
-            if (value > 1) {
-                input.value = value - 1;
+        // ========== HELPER FUNCTIONS ==========
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
-        
-        // Change main image
+
+        // ========== CART FUNCTIONS ==========
+        function addToCart(encryptedId) {
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+            btn.disabled = true;
+            
+            const csrftoken = getCookie('csrftoken');
+            
+            $.ajax({
+                url: "{% url 'add_to_cart' %}",
+                type: 'POST',
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': csrftoken },
+                data: JSON.stringify({ bouquet_id: encryptedId }),
+                success: function(data) {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Added to Cart!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        if (typeof updateCartBadge === 'function') {
+                            updateCartBadge(data.cart_count);
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cannot Add to Cart',
+                            text: data.message,
+                            confirmButtonColor: '#8c0d4f'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error:', xhr);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Something went wrong',
+                        confirmButtonColor: '#8c0d4f'
+                    });
+                },
+                complete: function() {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        function addToCartFromSticky(encryptedId) {
+            const quantity = document.getElementById('stickyQuantity').value;
+            addToCart(encryptedId, quantity);
+        }
+
+        function addToWishlist(encryptedId) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Wishlist',
+                text: 'Wishlist feature coming soon!',
+                confirmButtonColor: '#8c0d4f'
+            });
+        }
+
+        // ========== IMAGE GALLERY ==========
         function changeMainImage(imageSrc, element) {
-            document.getElementById('mainProductImage').src = imageSrc;
+            const mainImage = document.getElementById('mainProductImage');
+            if (mainImage) {
+                mainImage.src = imageSrc;
+            }
             
             // Update active thumbnail
             document.querySelectorAll('.thumbnail-item').forEach(item => {
                 item.classList.remove('active');
             });
-            element.classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            }
         }
-        
-        // Cart functions
-        function addToCart(encryptedId, quantity) {
-            // Implement your cart logic
-            Swal.fire({
-                icon: 'success',
-                title: 'Added to Cart!',
-                text: 'Product has been added to your cart.',
-                showConfirmButton: false,
-                timer: 1500
+
+        // ========== STAR RATING FUNCTIONS ==========
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('.star-rating i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('bi-star');
+                    star.classList.add('bi-star-fill');
+                } else {
+                    star.classList.remove('bi-star-fill');
+                    star.classList.add('bi-star');
+                }
             });
         }
-        
-        function addToWishlist(encryptedId) {
-            // Implement your wishlist logic
-            Swal.fire({
-                icon: 'success',
-                title: 'Added to Wishlist!',
-                text: 'Product has been added to your wishlist.',
-                showConfirmButton: false,
-                timer: 1500
+
+        function resetStars() {
+            const stars = document.querySelectorAll('.star-rating i');
+            stars.forEach(star => {
+                star.classList.remove('bi-star-fill');
+                star.classList.add('bi-star');
             });
         }
+
+        // ========== DOCUMENT READY ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOMContentLoaded fired');
+            
+            // Log elements
+            console.log('Sticky header element:', document.getElementById('stickyProductHeader'));
+            console.log('Main product section:', document.querySelector('.product-main'));
+
+            // ===== STICKY HEADER =====
+            const stickyHeader = document.getElementById('stickyProductHeader');
+            const mainProductSection = document.querySelector('.product-main');
+
+            // Only initialize sticky header on non-mobile devices
+            if (stickyHeader && mainProductSection && window.innerWidth > 768) {
+                console.log('✅ Setting up sticky header');
+                
+                function checkStickyHeader() {
+                    const rect = mainProductSection.getBoundingClientRect();
+                    if (rect.bottom < 0) {
+                        stickyHeader.classList.add('show');
+                        document.body.classList.add('has-sticky-header');
+                    } else {
+                        stickyHeader.classList.remove('show');
+                        document.body.classList.remove('has-sticky-header');
+                    }
+                }
+                
+                // Check immediately on page load
+                setTimeout(checkStickyHeader, 100);
+                
+                window.addEventListener('scroll', checkStickyHeader);
+                
+                // Re-check on resize
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth <= 768) {
+                        stickyHeader.classList.remove('show');
+                        document.body.classList.remove('has-sticky-header');
+                    } else {
+                        checkStickyHeader();
+                    }
+                });
+            } else if (stickyHeader) {
+                console.log('ℹ️ Sticky header disabled on mobile');
+                stickyHeader.classList.remove('show');
+                document.body.classList.remove('has-sticky-header');
+            }
+
+            // ===== STAR RATING INITIALIZATION =====
+            const stars = document.querySelectorAll('.star-rating i');
+            const ratingInput = document.getElementById('selectedRating');
+            
+            if (stars.length) {
+                console.log('✅ Initializing star rating');
+                stars.forEach(star => {
+                    star.addEventListener('mouseenter', function() {
+                        const rating = this.dataset.rating;
+                        highlightStars(rating);
+                    });
+                    
+                    star.addEventListener('mouseleave', function() {
+                        const currentRating = ratingInput ? ratingInput.value : null;
+                        if (currentRating) {
+                            highlightStars(currentRating);
+                        } else {
+                            resetStars();
+                        }
+                    });
+                    
+                    star.addEventListener('click', function() {
+                        const rating = this.dataset.rating;
+                        if (ratingInput) {
+                            ratingInput.value = rating;
+                        }
+                        highlightStars(rating);
+                    });
+                });
+            }
+        });
+
+        // Buy Now function
+        function buyNow(encryptedId) {
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+            btn.disabled = true;
+            
+            // Directly redirect to checkout with buy_now parameter
+            window.location.href = "{% url 'checkout' %}?buy_now=" + encodeURIComponent(encryptedId);
+        }
+
     </script>
 
 {% endblock %}

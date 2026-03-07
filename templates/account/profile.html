@@ -1,0 +1,940 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+
+    <link rel="stylesheet" href="{% static 'css/account/profile.css' %}">
+    <style>
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="profile-page">
+        <div class="container py-4">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">My Profile</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="profile-header text-center mb-5">
+                <h1 class="profile-title">My Account</h1>
+                <p class="profile-subtitle">Manage your profile, orders, and preferences</p>
+            </div>
+
+            <div class="row">
+                <!-- Sidebar Tabs -->
+                <div class="col-lg-3 mb-4">
+                    <div class="profile-sidebar">
+                        <!-- Keep this avatar display -->
+                        <div class="profile-avatar text-center">
+                            {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" alt="{{ user.full_name }}" class="avatar-img">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    {{ user.first_name|first|default:user.email|first|upper }}
+                                </div>
+                            {% endif %}
+                            <h5 class="mt-3">{{ user.full_name|default:user.email }}</h5>
+                            <p class="text-muted">{{ user.email }}</p>
+                            
+                            <!-- Profile Completion Indicator -->
+                            <div class="profile-completion mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="completion-label">Profile Completion</span>
+                                    <span class="completion-percentage">{{ completion_percentage }}%</span>
+                                </div>
+                                <div class="progress completion-progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                        style="width: {{ completion_percentage }}%;" 
+                                        aria-valuenow="{{ completion_percentage }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
+                                
+                                {% if missing_count > 0 %}
+                                <button type="button" class="btn btn-link p-0 mt-2" data-bs-toggle="modal" data-bs-target="#profileCompletionModal">
+                                    <i class="bi bi-info-circle"></i> {{ missing_count }} field{{ missing_count|pluralize }} missing
+                                </button>
+                                {% else %}
+                                <div class="text-success mt-2">
+                                    <i class="bi bi-check-circle-fill"></i> Profile Complete!
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="nav flex-column nav-pills" id="profileTabs" role="tablist">
+                            <button class="nav-link {% if active_tab == 'profile' %}active{% endif %}" 
+                                    onclick="location.href='?tab=profile'">
+                                <i class="bi bi-person-circle me-2"></i> My Profile
+                            </button>
+                            
+                            <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}" 
+                                    onclick="location.href='?tab=orders'">
+                                <i class="bi bi-box-seam me-2"></i> My Orders
+                            </button>
+                            
+                            <button class="nav-link {% if active_tab == 'address' %}active{% endif %}" 
+                                    onclick="location.href='?tab=address'">
+                                <i class="bi bi-geo-alt me-2"></i> Address Book
+                            </button>
+                            
+                            <button class="nav-link {% if active_tab == 'reviews' %}active{% endif %}" 
+                                    onclick="location.href='?tab=reviews'">
+                                <i class="bi bi-star me-2"></i> My Reviews
+                            </button>
+                            
+                            <button class="nav-link {% if active_tab == 'account-settings' %}active{% endif %}" 
+                                    onclick="location.href='?tab=account-settings'">
+                                <i class="bi bi-gear me-2"></i> Account Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="col-lg-9">
+                    <div class="tab-content-container">
+                        
+                        <!-- My Profile Tab -->
+                        {% if active_tab == 'profile' %}
+                            <div class="profile-tab active">
+                                <h3 class="tab-title">My Profile</h3>
+                                
+                                <form method="post" action="{% url 'update_profile' %}" class="profile-form">
+                                    {% csrf_token %}
+                                    
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="first_name">First Name</label>
+                                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                                    value="{{ user.first_name|default:'' }}" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="last_name">Last Name</label>
+                                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                                    value="{{ user.last_name|default:'' }}" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email">Email Address</label>
+                                                <input type="email" class="form-control" id="email" value="{{ user.email }}" readonly disabled>
+                                                <small class="text-muted">Email cannot be changed</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="phone">Phone Number</label>
+                                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                                    value="{{ user.phone|default:'' }}" maxlength="10">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="date_of_birth">Date of Birth</label>
+                                                <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
+                                                    value="{{ profile.date_of_birth|date:'Y-m-d'|default:'' }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="gender">Gender</label>
+                                                <select class="form-select" id="gender" name="gender">
+                                                    <option value="">Select Gender</option>
+                                                    <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>Male</option>
+                                                    <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>Female</option>
+                                                    <option value="O" {% if profile.gender == 'O' %}selected{% endif %}>Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="alternate_phone">Alternate Phone</label>
+                                                <input type="tel" class="form-control" id="alternate_phone" name="alternate_phone" 
+                                                    value="{{ profile.alternate_phone|default:'' }}" maxlength="10">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter_subscribed" 
+                                                    {% if profile.newsletter_subscribed %}checked{% endif %}>
+                                                <label class="form-check-label" for="newsletter">Subscribe to newsletter</label>
+                                            </div>
+                                            
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="sms_notifications" name="sms_notifications" 
+                                                    {% if profile.sms_notifications %}checked{% endif %}>
+                                                <label class="form-check-label" for="sms_notifications">Receive SMS notifications</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <button type="submit" class="btn-save-profile">
+                                                <i class="bi bi-check-lg"></i> Save Changes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        
+                        <!-- Address Book Tab -->
+                        {% elif active_tab == 'address' %}
+                            <div class="profile-tab active">
+                                <h3 class="tab-title">Address Book</h3>
+                                
+                                <form method="post" action="{% url 'update_address' %}" class="address-form">
+                                    {% csrf_token %}
+                                    
+                                    <div class="row g-4">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="address_line1">Address Line 1</label>
+                                                <input type="text" class="form-control" id="address_line1" name="address_line1" 
+                                                    value="{{ profile.address_line1|default:'' }}" placeholder="House/Flat No., Building Name">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="address_line2">Address Line 2 (Optional)</label>
+                                                <input type="text" class="form-control" id="address_line2" name="address_line2" 
+                                                    value="{{ profile.address_line2|default:'' }}" placeholder="Street, Area, Locality">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="landmark">Landmark (Optional)</label>
+                                                <input type="text" class="form-control" id="landmark" name="landmark" 
+                                                    value="{{ profile.landmark|default:'' }}" placeholder="Near...">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="city">City</label>
+                                                <input type="text" class="form-control" id="city" name="city" 
+                                                    value="{{ profile.city|default:'' }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="state">State</label>
+                                                <input type="text" class="form-control" id="state" name="state" 
+                                                    value="{{ profile.state|default:'' }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="pincode">Pincode</label>
+                                                <input type="text" class="form-control" id="pincode" name="pincode" 
+                                                    value="{{ profile.pincode|default:'' }}" maxlength="6">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="country">Country</label>
+                                                <input type="text" class="form-control" id="country" name="country" 
+                                                    value="{{ profile.country|default:'India' }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <button type="submit" class="btn-save-address">
+                                                <i class="bi bi-check-lg"></i> Save Address
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        
+                        <!-- My Reviews Tab -->
+                        {% elif active_tab == 'reviews' %}
+                            <div class="profile-tab active">
+                                <h3 class="tab-title">My Reviews</h3>
+                                
+                                <div class="reviews-list">
+                                    {% for review in reviews %}
+                                    <div class="review-item">
+                                        <div class="review-header">
+                                            <div>
+                                                <h5 class="review-product">{{ review.bouquet.name }}</h5>
+                                                <div class="review-rating">
+                                                    {% for i in "12345"|make_list %}
+                                                        {% if forloop.counter <= review.rating %}
+                                                            <i class="bi bi-star-fill"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-star"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="review-content">
+                                            <p>{{ review.comment }}</p>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="no-reviews text-center py-5">
+                                        <i class="bi bi-star" style="font-size: 48px; color: var(--accent-color); opacity: 0.5;"></i>
+                                        <h4 class="mt-3">No Reviews Yet</h4>
+                                        <p class="text-muted">You haven't reviewed any products yet.</p>
+                                        <a href="{% url 'shop' %}" class="btn-shop-now mt-3">
+                                            <i class="bi bi-shop"></i> Shop Now
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Pagination -->
+                                {% if reviews.has_other_pages %}
+                                <nav aria-label="Reviews pagination" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        {% if reviews.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=reviews&reviews_page={{ reviews.previous_page_number }}">Previous</a>
+                                        </li>
+                                        {% endif %}
+                                        
+                                        {% for num in reviews.paginator.page_range %}
+                                            {% if reviews.number == num %}
+                                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?tab=reviews&reviews_page={{ num }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if reviews.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=reviews&reviews_page={{ reviews.next_page_number }}">Next</a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                                {% endif %}
+                            </div>
+                        
+                        <!-- My Orders Tab -->
+                        {% elif active_tab == 'orders' %}
+                            <div class="profile-tab active">
+                                <h3 class="tab-title">My Orders</h3>
+                                
+                                <div class="orders-list">
+                                    {% for order in orders %}
+                                        <div class="order-item">
+                                            <div class="order-header">
+                                                <span class="order-id">Order #{{ order.order_number }}</span>
+                                                <span class="order-date">{{ order.order_date|date:"d M Y" }}</span>
+                                                <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+                                            </div>
+                                            <div class="order-body">
+                                                <div class="row">
+                                                    <div class="col-md-8">
+                                                        {% for item in order.items.all|slice:":2" %}
+                                                        <div class="order-product">
+                                                            <span class="product-name">{{ item.bouquet_name }}</span>
+                                                            <span class="product-qty">x{{ item.quantity }}</span>
+                                                            <span class="product-price">₹{{ item.price|floatformat:0 }}</span>
+                                                        </div>
+                                                        {% endfor %}
+                                                        {% if order.items.count > 2 %}
+                                                        <div class="more-items">+{{ order.items.count|add:"-2" }} more items</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-4 text-end">
+                                                        <span class="order-total">Total: ₹{{ order.total|floatformat:0 }}</span>
+                                                        <a href="{% url 'order_confirmation' order.encrypted_id %}" class="btn-view-order">View Details</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="no-orders text-center py-5">
+                                            <i class="bi bi-box-seam" style="font-size: 48px; color: var(--accent-color); opacity: 0.5;"></i>
+                                            <h4 class="mt-3">No Orders Yet</h4>
+                                            <p class="text-muted">You haven't placed any orders yet.</p>
+                                            <a href="{% url 'shop' %}" class="btn-shop-now mt-3">
+                                                <i class="bi bi-shop"></i> Start Shopping
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Pagination -->
+                                {% if orders.has_other_pages %}
+                                    <nav aria-label="Orders pagination" class="mt-4">
+                                        <ul class="pagination justify-content-center">
+                                            {% if orders.has_previous %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?tab=orders&orders_page={{ orders.previous_page_number }}">Previous</a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% for num in orders.paginator.page_range %}
+                                                {% if orders.number == num %}
+                                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                                {% else %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?tab=orders&orders_page={{ num }}">{{ num }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if orders.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?tab=orders&orders_page={{ orders.next_page_number }}">Next</a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                {% endif %}
+                            </div>
+                        
+                        <!-- Account Settings Tab -->
+                        {% elif active_tab == 'account-settings' %}
+                            <div class="profile-tab active">
+                                <h3 class="tab-title">Account Settings</h3>
+                                
+                                <!-- Change Password Form -->
+                                <form method="post" action="{% url 'change_password_profile' %}" class="password-form mb-5">
+                                    {% csrf_token %}
+                                    
+                                    <div class="row g-4">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="current_password">Current Password</label>
+                                                <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="new_password">New Password</label>
+                                                <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="confirm_password">Confirm New Password</label>
+                                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <button type="submit" class="btn-change-password">
+                                                <i class="bi bi-shield-lock"></i> Change Password
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <!-- Danger Zone - Delete Account -->
+                                <div class="danger-zone mt-5">
+                                    <h4 class="danger-title">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        Danger Zone
+                                    </h4>
+                                    
+                                    <div class="delete-account-card">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-8">
+                                                <h5>Delete Account</h5>
+                                                <p class="text-muted mb-md-0">Once you delete your account, there is no going back. All your data will be permanently removed.</p>
+                                            </div>
+                                            <div class="col-md-4 text-md-end">
+                                                <button type="button" class="btn-delete-account" onclick="confirmAccountDeletion()">
+                                                    <i class="bi bi-trash"></i> Delete Account
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Completion Modal -->
+        <div class="modal fade" id="profileCompletionModal" tabindex="-1" aria-labelledby="profileCompletionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, var(--accent-color), #a3125c); color: white;">
+                        <h5 class="modal-title" id="profileCompletionModalLabel">
+                            <i class="bi bi-pencil-square me-2"></i>Complete Your Profile
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Your profile is <strong>{{ completion_percentage }}% complete</strong>. Complete the following fields to reach 100%:</p>
+                        
+                        <div class="missing-fields-list mt-3">
+                            {% for field in missing_fields %}
+                            <div class="missing-field-item d-flex align-items-center mb-2">
+                                <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                <span>{{ field }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="progress mt-3 mb-3">
+                            <div class="progress-bar" role="progressbar" 
+                                style="width: {{ completion_percentage }}%; background: linear-gradient(135deg, var(--accent-color), #a3125c);" 
+                                aria-valuenow="{{ completion_percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                {{ completion_percentage }}%
+                            </div>
+                        </div>
+                        
+                        <p class="text-muted small">
+                            <i class="bi bi-lightbulb"></i> Complete your profile to get personalized recommendations and faster checkout.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Later</button>
+                        <a href="?tab=profile" class="btn" style="background: var(--accent-color); color: white;">
+                            <i class="bi bi-person-circle"></i> Update Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Account Confirmation Modal -->
+        <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: #dc3545; color: white;">
+                        <h5 class="modal-title" id="deleteAccountModalLabel">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Delete Account
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-shield-exclamation" style="font-size: 64px; color: #dc3545; opacity: 0.7;"></i>
+                        </div>
+                        
+                        <h5 class="text-center mb-3">Are you absolutely sure?</h5>
+                        
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            This action <strong>CANNOT</strong> be undone. You will lose:
+                        </div>
+                        
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i> Your profile information</li>
+                            <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i> All your reviews</li>
+                            <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i> Order history</li>
+                            <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i> Cart items</li>
+                            <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i> Access to your account</li>
+                        </ul>
+                        
+                        <form method="post" action="{% url 'delete_account' %}" id="deleteAccountForm">
+                            {% csrf_token %}
+                            
+                            <div class="form-group mb-3">
+                                <label for="delete_password">Enter your password to confirm:</label>
+                                <input type="password" class="form-control" id="delete_password" name="password" required>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirm_delete" name="confirm_delete" value="yes" required>
+                                <label class="form-check-label" for="confirm_delete">
+                                    I understand that this action is permanent and cannot be undone
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="bi bi-x-lg"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Permanently Delete My Account
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // ===== TAB NAVIGATION =====
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab') || 'profile';
+
+            // ===== AUTO-SCROLL TO PROFILE CONTENT =====
+            setTimeout(function() {
+                const tabContentContainer = document.querySelector('.tab-content-container');
+                if (tabContentContainer) {
+                    // Get the header height to offset the scroll
+                    const headerHeight = document.querySelector('.sticky-product-header')?.offsetHeight || 0;
+                    const navHeight = document.querySelector('.nav-menu-section')?.offsetHeight || 0;
+                    const topBarHeight = document.querySelector('.top-bar')?.offsetHeight || 0;
+                    const totalOffset = headerHeight + navHeight + topBarHeight + 20; // 20px extra padding
+                    
+                    const elementPosition = tabContentContainer.getBoundingClientRect().top + window.pageYOffset;
+                    const offsetPosition = elementPosition - totalOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+            
+            // Highlight active tab in sidebar
+            document.querySelectorAll('.nav-pills .nav-link').forEach(link => {
+                if (link.getAttribute('onclick')?.includes(`tab=${activeTab}`)) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // ===== FORM VALIDATION =====
+            
+            // Phone number validation
+            const phoneInputs = document.querySelectorAll('input[type="tel"]');
+            phoneInputs.forEach(input => {
+                input.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+                });
+                
+                input.addEventListener('blur', function() {
+                    validatePhone(this);
+                });
+            });
+            
+            // Pincode validation
+            const pincodeInput = document.getElementById('pincode');
+            if (pincodeInput) {
+                pincodeInput.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+                });
+                
+                pincodeInput.addEventListener('blur', function() {
+                    validatePincode(this);
+                });
+            }
+            
+            // Profile form validation
+            const profileForm = document.querySelector('.profile-form');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    if (!validateProfileForm()) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            
+            // Address form validation
+            const addressForm = document.querySelector('.address-form');
+            if (addressForm) {
+                addressForm.addEventListener('submit', function(e) {
+                    if (!validateAddressForm()) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            
+            // Password form validation
+            const passwordForm = document.querySelector('.password-form');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    if (!validatePasswordForm()) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            
+            // ===== AUTO-SAVE FEATURE (Optional) =====
+            const profileInputs = document.querySelectorAll('.profile-form input, .profile-form select, .profile-form textarea');
+            profileInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Optional: Implement auto-save indicator
+                    console.log('Form changed');
+                });
+            });
+        });
+
+        // ===== VALIDATION FUNCTIONS =====
+
+        function validatePhone(input) {
+            const phone = input.value.trim();
+            const errorElement = input.nextElementSibling?.classList.contains('invalid-feedback') 
+                ? input.nextElementSibling 
+                : createErrorElement(input);
+            
+            if (phone && !/^\d{10}$/.test(phone)) {
+                showFieldError(input, errorElement, 'Please enter a valid 10-digit phone number');
+                return false;
+            } else {
+                clearFieldError(input, errorElement);
+                return true;
+            }
+        }
+
+        function validatePincode(input) {
+            const pincode = input.value.trim();
+            const errorElement = input.nextElementSibling?.classList.contains('invalid-feedback') 
+                ? input.nextElementSibling 
+                : createErrorElement(input);
+            
+            if (pincode && !/^\d{6}$/.test(pincode)) {
+                showFieldError(input, errorElement, 'Please enter a valid 6-digit pincode');
+                return false;
+            } else {
+                clearFieldError(input, errorElement);
+                return true;
+            }
+        }
+
+        function validateProfileForm() {
+            let isValid = true;
+            let errorMessage = '';
+            
+            const firstName = document.getElementById('first_name');
+            const lastName = document.getElementById('last_name');
+            const phone = document.getElementById('phone');
+            
+            if (!firstName.value.trim()) {
+                errorMessage = 'First name is required';
+                isValid = false;
+            } else if (!lastName.value.trim()) {
+                errorMessage = 'Last name is required';
+                isValid = false;
+            } else if (phone.value.trim() && !/^\d{10}$/.test(phone.value.trim())) {
+                errorMessage = 'Please enter a valid 10-digit phone number';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: errorMessage,
+                    confirmButtonColor: '#8c0d4f'
+                });
+            }
+            
+            return isValid;
+        }
+
+        function validateAddressForm() {
+            let isValid = true;
+            let errorMessage = '';
+            
+            const addressLine1 = document.getElementById('address_line1');
+            const city = document.getElementById('city');
+            const state = document.getElementById('state');
+            const pincode = document.getElementById('pincode');
+            
+            if (!addressLine1.value.trim()) {
+                errorMessage = 'Address is required';
+                isValid = false;
+            } else if (!city.value.trim()) {
+                errorMessage = 'City is required';
+                isValid = false;
+            } else if (!state.value.trim()) {
+                errorMessage = 'State is required';
+                isValid = false;
+            } else if (!pincode.value.trim()) {
+                errorMessage = 'Pincode is required';
+                isValid = false;
+            } else if (!/^\d{6}$/.test(pincode.value.trim())) {
+                errorMessage = 'Please enter a valid 6-digit pincode';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: errorMessage,
+                    confirmButtonColor: '#8c0d4f'
+                });
+            }
+            
+            return isValid;
+        }
+
+        function validatePasswordForm() {
+            let isValid = true;
+            let errorMessage = '';
+            
+            const currentPassword = document.getElementById('current_password');
+            const newPassword = document.getElementById('new_password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            if (!currentPassword.value) {
+                errorMessage = 'Current password is required';
+                isValid = false;
+            } else if (!newPassword.value) {
+                errorMessage = 'New password is required';
+                isValid = false;
+            } else if (newPassword.value.length < 8) {
+                errorMessage = 'Password must be at least 8 characters long';
+                isValid = false;
+            } else if (!/[A-Z]/.test(newPassword.value)) {
+                errorMessage = 'Password must contain at least one uppercase letter';
+                isValid = false;
+            } else if (!/[a-z]/.test(newPassword.value)) {
+                errorMessage = 'Password must contain at least one lowercase letter';
+                isValid = false;
+            } else if (!/[0-9]/.test(newPassword.value)) {
+                errorMessage = 'Password must contain at least one number';
+                isValid = false;
+            } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword.value)) {
+                errorMessage = 'Password must contain at least one special character';
+                isValid = false;
+            } else if (newPassword.value !== confirmPassword.value) {
+                errorMessage = 'New passwords do not match';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: errorMessage,
+                    confirmButtonColor: '#8c0d4f'
+                });
+            }
+            
+            return isValid;
+        }
+
+        // ===== HELPER FUNCTIONS =====
+
+        function createErrorElement(input) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'invalid-feedback';
+            input.parentNode.appendChild(errorDiv);
+            return errorDiv;
+        }
+
+        function showFieldError(input, errorElement, message) {
+            input.classList.add('is-invalid');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearFieldError(input, errorElement) {
+            input.classList.remove('is-invalid');
+            if (errorElement) {
+                errorElement.textContent = '';
+                errorElement.style.display = 'none';
+            }
+        }
+
+        // ===== CONFIRMATION DIALOGS =====
+
+        function confirmAddressUpdate() {
+            return Swal.fire({
+                title: 'Update Address?',
+                text: 'Are you sure you want to update your address?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#8c0d4f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, update'
+            });
+        }
+
+        function confirmPasswordChange() {
+            return Swal.fire({
+                title: 'Change Password?',
+                text: 'You will be logged out after changing your password.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#8c0d4f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, change'
+            });
+        }
+
+        // ===== TAB SWITCHING WITH ANIMATION =====
+
+        function switchTab(tabName) {
+            const currentTab = document.querySelector('.profile-tab.active');
+            const newTab = document.getElementById(`tab-${tabName}`);
+            
+            if (currentTab && newTab) {
+                // Fade out current tab
+                currentTab.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    currentTab.classList.remove('active');
+                    currentTab.style.animation = '';
+                    
+                    // Fade in new tab
+                    newTab.classList.add('active');
+                    newTab.style.animation = 'fadeIn 0.4s ease';
+                    
+                    // Update URL without page reload
+                    const url = new URL(window.location);
+                    url.searchParams.set('tab', tabName);
+                    window.history.pushState({}, '', url);
+                    
+                    // Update active state in sidebar
+                    document.querySelectorAll('.nav-pills .nav-link').forEach(link => {
+                        if (link.getAttribute('onclick')?.includes(`tab=${tabName}`)) {
+                            link.classList.add('active');
+                        } else {
+                            link.classList.remove('active');
+                        }
+                    });
+                }, 300);
+            }
+        }
+
+        // Delete account confirmation
+        function confirmAccountDeletion() {
+            const modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+            modal.show();
+        }
+
+    </script>
+
+{% endblock %}

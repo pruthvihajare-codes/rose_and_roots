@@ -10,12 +10,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction, DatabaseError
 from django.conf import settings
+from django.urls import reverse
 from django.utils.text import slugify
 
 from rose_and_roots.access_control import no_direct_access
 from accounts.models import *
+from store.models import *
 from masters.models import *
 from rose_and_roots.encryption import *
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.db import IntegrityError
+
+# views.py
+from django.contrib.auth import logout
 
 logger = logging.getLogger(__name__)
 
@@ -1803,5 +1812,348 @@ def toggle_user_status(request):
     except Exception as e:
         logger.exception(f"Unexpected error in toggle_user_status: {str(e)}")
         return JsonResponse({'success': False, 'message': 'Something went wrong.'})
+
+# Personal profile management
+
+@no_direct_access
+@login_required
+def profile_view(request):
+    """Display and update user profile with tabs"""
+    try:
+        user = request.user
+        
+        # Get or create profile
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        
+        # Calculate profile completion
+        completion_percentage = profile.get_completion_percentage()
+        missing_fields = profile.get_missing_fields()
+        
+        # Get user's reviews
+        user_reviews = Review.objects.filter(user=user).order_by('-created_at')
+        reviews_paginator = Paginator(user_reviews, 5)
+        reviews_page = request.GET.get('reviews_page')
+        reviews = reviews_paginator.get_page(reviews_page)
+        
+        # Get user's orders with encrypted IDs
+        user_orders = Order.objects.filter(user=user).order_by('-order_date')
+        for order in user_orders:
+            order.encrypted_id = enc(str(order.id))
+        
+        orders_paginator = Paginator(user_orders, 5)
+        orders_page = request.GET.get('orders_page')
+        orders = orders_paginator.get_page(orders_page)
+        
+        context = {
+            'user': user,
+            'profile': profile,
+            'reviews': reviews,
+            'orders': orders,
+            'active_tab': request.GET.get('tab', 'profile'),
+            'completion_percentage': completion_percentage,
+            'missing_fields': missing_fields,
+            'missing_count': len(missing_fields),
+        }
+        
+        return render(request, 'account/profile.html', context)
+        
+    except Exception as e:
+        logger.exception(f"Unexpected error in profile_view for user {request.user.id}: {e}")
+        messages.error(request, 'Something went wrong. Please try again later.')
+        return redirect('dashboard')
+
+@no_direct_access
+@login_required
+def update_profile(request):
+    """Update profile information"""
+    try:
+        user = request.user
+        
+        # Get profile with error handling
+        try:
+            profile = user.profile
+        except UserProfile.DoesNotExist:
+            # Create profile if it doesn't exist
+            profile = UserProfile.objects.create(user=user)
+        except Exception as e:
+            logger.exception(f"Error accessing profile for user {user.id}: {e}")
+            messages.error(request, 'Failed to access profile. Please try again.')
+            return redirect(f"{reverse('profile')}?tab=profile")
+        
+        # Update user basic info with validation
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        
+        if not first_name:
+            messages.error(request, 'First name is required.')
+            return redirect(f"{reverse('profile')}?tab=profile")
+        
+        if not last_name:
+            messages.error(request, 'Last name is required.')
+            return redirect(f"{reverse('profile')}?tab=profile")
+        
+        # Validate phone if provided
+        if phone and not phone.isdigit():
+            messages.error(request, 'Phone number must contain only digits.')
+            return redirect(f"{reverse('profile')}?tab=profile")
+        
+        if phone and len(phone) != 10:
+            messages.error(request, 'Phone number must be 10 digits.')
+            return redirect(f"{reverse('profile')}?tab=profile")
+        
+        user.first_name = first_name
+        user.last_name = last_name
+        user.phone = phone
+        user.full_name = f"{first_name} {last_name}".strip()
+        
+        # Update profile fields
+        profile.date_of_birth = request.POST.get('date_of_birth') or None
+        profile.gender = request.POST.get('gender') or None
+        
+        alternate_phone = request.POST.get('alternate_phone', '').strip()
+        if alternate_phone:
+            if not alternate_phone.isdigit() or len(alternate_phone) != 10:
+                messages.error(request, 'Alternate phone must be a valid 10-digit number.')
+                return redirect(f"{reverse('profile')}?tab=profile")
+            profile.alternate_phone = alternate_phone
+        else:
+            profile.alternate_phone = None
+        
+        profile.newsletter_subscribed = request.POST.get('newsletter_subscribed') == 'on'
+        profile.sms_notifications = request.POST.get('sms_notifications') == 'on'
+        
+        # Save with transaction
+        from django.db import transaction
+        with transaction.atomic():
+            user.save()
+            profile.save()
+        
+        messages.success(request, 'Profile updated successfully!')
+        return redirect(f"{reverse('profile')}?tab=profile")
+        
+    except IntegrityError as e:
+        logger.exception(f"Database integrity error updating profile for user {request.user.id}: {e}")
+        messages.error(request, 'Failed to update profile due to data conflict. Please try again.')
+        return redirect(f"{reverse('profile')}?tab=profile")
+        
+    except Exception as e:
+        logger.exception(f"Unexpected error updating profile for user {request.user.id}: {e}")
+        messages.error(request, 'Failed to update profile. Please try again.')
+        return redirect(f"{reverse('profile')}?tab=profile")
+
+@no_direct_access
+@login_required
+def update_address(request):
+    """Update user's address"""
+    try:
+        user = request.user
+        
+        # Get profile with error handling
+        try:
+            profile = user.profile
+        except UserProfile.DoesNotExist:
+            # Create profile if it doesn't exist
+            profile = UserProfile.objects.create(user=user)
+        except Exception as e:
+            logger.exception(f"Error accessing profile for user {user.id}: {e}")
+            messages.error(request, 'Failed to access profile. Please try again.')
+            return redirect(f"{reverse('profile')}?tab=address")
+        
+        # Get and validate address fields
+        address_line1 = request.POST.get('address_line1', '').strip()
+        city = request.POST.get('city', '').strip()
+        state = request.POST.get('state', '').strip()
+        pincode = request.POST.get('pincode', '').strip()
+        
+        # Basic validation
+        if address_line1 and len(address_line1) < 5:
+            messages.error(request, 'Please enter a valid address.')
+            return redirect(f"{reverse('profile')}?tab=address")
+        
+        if city and len(city) < 2:
+            messages.error(request, 'Please enter a valid city name.')
+            return redirect(f"{reverse('profile')}?tab=address")
+        
+        if state and len(state) < 2:
+            messages.error(request, 'Please enter a valid state name.')
+            return redirect(f"{reverse('profile')}?tab=address")
+        
+        # Validate pincode if provided
+        if pincode:
+            if not pincode.isdigit() or len(pincode) != 6:
+                messages.error(request, 'Pincode must be a 6-digit number.')
+                return redirect(f"{reverse('profile')}?tab=address")
+        
+        # Update profile address fields
+        profile.address_line1 = address_line1
+        profile.address_line2 = request.POST.get('address_line2', '').strip() or None
+        profile.landmark = request.POST.get('landmark', '').strip() or None
+        profile.city = city
+        profile.state = state
+        profile.pincode = pincode
+        profile.country = request.POST.get('country', 'India').strip()
+        
+        profile.save()
+        
+        messages.success(request, 'Address updated successfully!')
+        return redirect(f"{reverse('profile')}?tab=address")
+        
+    except IntegrityError as e:
+        logger.exception(f"Database integrity error updating address for user {request.user.id}: {e}")
+        messages.error(request, 'Failed to update address due to data conflict. Please try again.')
+        return redirect(f"{reverse('profile')}?tab=address")
+        
+    except Exception as e:
+        logger.exception(f"Unexpected error updating address for user {request.user.id}: {e}")
+        messages.error(request, 'Failed to update address. Please try again.')
+        return redirect(f"{reverse('profile')}?tab=address")
+
+@no_direct_access
+@login_required
+def change_password_from_profile(request):
+    """Change user password from profile page"""
+    try:
+        user = request.user
+        
+        # Get form data
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        
+        # Validate inputs
+        if not current_password:
+            messages.error(request, 'Current password is required.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        if not new_password:
+            messages.error(request, 'New password is required.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        if not confirm_password:
+            messages.error(request, 'Please confirm your new password.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Verify current password
+        if not user.check_password(current_password):
+            messages.error(request, 'Current password is incorrect.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Validate new password strength
+        if len(new_password) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        if not any(char.isupper() for char in new_password):
+            messages.error(request, 'Password must contain at least one uppercase letter.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        if not any(char.islower() for char in new_password):
+            messages.error(request, 'Password must contain at least one lowercase letter.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        if not any(char.isdigit() for char in new_password):
+            messages.error(request, 'Password must contain at least one number.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        if not any(char in '!@#$%^&*(),.?":{}|<>' for char in new_password):
+            messages.error(request, 'Password must contain at least one special character.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Check if new password matches confirmation
+        if new_password != confirm_password:
+            messages.error(request, 'New passwords do not match.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Check if new password is same as old
+        if user.check_password(new_password):
+            messages.error(request, 'New password must be different from current password.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Update password with transaction
+        from django.db import transaction
+        with transaction.atomic():
+            user.set_password(new_password)
+            user.save()
+            
+            # Update password storage (if exists)
+            try:
+                password_storage = PasswordStorage.objects.filter(user=user).first()
+                if password_storage:
+                    password_storage.password_text = new_password
+                    password_storage.save()
+                else:
+                    # Create new password storage entry
+                    PasswordStorage.objects.create(
+                        user=user,
+                        password_text=new_password
+                    )
+            except Exception as storage_error:
+                logger.warning(f"Failed to update password storage for user {user.id}: {storage_error}")
+                # Don't fail the password change if storage fails
+        
+        messages.success(request, 'Password changed successfully! Please login with your new password.')
+        return redirect('login')
+        
+    except IntegrityError as e:
+        logger.exception(f"Database integrity error changing password for user {request.user.id}: {e}")
+        messages.error(request, 'Failed to change password due to data conflict. Please try again.')
+        return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+    except Exception as e:
+        logger.exception(f"Unexpected error changing password for user {request.user.id}: {e}")
+        messages.error(request, 'Failed to change password. Please try again.')
+        return redirect(f"{reverse('profile')}?tab=account-settings")
     
-    
+@no_direct_access
+@login_required
+def delete_account(request):
+    """Delete user account permanently"""
+    try:
+        user = request.user
+        email = user.email
+        
+        # Prevent admin deletion
+        if user.role_id == 1:
+            messages.error(request, 'Admin accounts cannot be deleted.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Verify password
+        password = request.POST.get('password', '')
+        if not user.check_password(password):
+            messages.error(request, 'Incorrect password. Account not deleted.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Double-check confirmation
+        confirm = request.POST.get('confirm_delete')
+        if confirm != 'yes':
+            messages.error(request, 'Please confirm account deletion.')
+            return redirect(f"{reverse('profile')}?tab=account-settings")
+        
+        # Log the user out first
+        logout(request)
+        
+        # Delete user (cascades to Profile, Reviews, Cart, etc.)
+        with transaction.atomic():
+            # Delete profile
+            UserProfile.objects.filter(user=user).delete()
+            
+            # Delete reviews
+            Review.objects.filter(user=user).delete()
+            
+            # Delete cart and cart items
+            Cart.objects.filter(user=user).delete()
+            
+            # Delete password storage
+            PasswordStorage.objects.filter(user=user).delete()
+            
+            # Finally delete the user
+            user.delete()
+        
+        messages.success(request, f'Account {email} has been permanently deleted. We\'re sorry to see you go!')
+        return redirect('/')
+        
+    except Exception as e:
+        logger.exception(f"Error deleting account for user {request.user.id}: {e}")
+        messages.error(request, 'Failed to delete account. Please try again later.')
+        return redirect(f"{reverse('profile')}?tab=account-settings")

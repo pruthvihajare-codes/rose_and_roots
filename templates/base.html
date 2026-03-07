@@ -75,38 +75,39 @@
                                     <i class="bi bi-person-circle nav-icon"></i>
                                     <span class="nav-icon-text">{{ user.full_name|default:'Admin' }}</span>
                                 </a>
-                            {% else %}
+                            {% elif user.role_id == 2 %}
                                 <!-- CUSTOMER - Show all customer features -->
                                 <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
                                     <i class="bi bi-person-circle nav-icon"></i>
                                     <span class="nav-icon-text">{{ user.full_name|default:'Account' }}</span>
                                 </a>
-                                <a href="javascript:void(0);" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#wishlistModal">
+                                {% comment %} <a href="javascript:void(0);" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#wishlistModal">
                                     <i class="bi bi-heart nav-icon"></i>
                                     <span class="nav-icon-text">Wishlist</span>
-                                </a>
+                                </a> {% endcomment %}
+                                <!-- CART: Only for customers -->
                                 <a href="javascript:void(0);" class="nav-icon-item position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
                                     <i class="bi bi-cart3 nav-icon"></i>
                                     <span class="nav-icon-text">Cart</span>
-                                    <span class="cart-badge">3</span>
+                                    <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
                                 </a>
                             {% endif %}
 
                         {% else %}
-
-                            <!-- NOT LOGGED IN - Show default account icon only -->
+                            <!-- NOT LOGGED IN - Show guest options -->
                             <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
                                 <i class="bi bi-person nav-icon"></i>
                                 <span class="nav-icon-text">Account</span>
                             </a>
-                            <a href="javascript:void(0);" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#wishlistModal">
+                            {% comment %} <a href="javascript:void(0);" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#wishlistModal">
                                 <i class="bi bi-heart nav-icon"></i>
                                 <span class="nav-icon-text">Wishlist</span>
-                            </a>
+                            </a> {% endcomment %}
+                            <!-- CART: Guests can also use cart -->
                             <a href="javascript:void(0);" class="nav-icon-item position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
                                 <i class="bi bi-cart3 nav-icon"></i>
                                 <span class="nav-icon-text">Cart</span>
-                                <span class="cart-badge">3</span>
+                                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
                             </a>
                         {% endif %}
 
@@ -123,18 +124,23 @@
                                 <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
                                     <i class="bi bi-person-circle nav-icon"></i>
                                 </a>
-                            {% else %}
-                                <!-- CUSTOMER OR NOT LOGGED IN - Show both account and cart -->
+                            {% elif user.is_authenticated and user.role_id == 2 %}
+                                <!-- CUSTOMER - Show account and cart -->
                                 <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
-                                    {% if user.is_authenticated %}
                                     <i class="bi bi-person-circle nav-icon"></i>
-                                    {% else %}
-                                    <i class="bi bi-person nav-icon"></i>
-                                    {% endif %}
                                 </a>
                                 <a href="javascript:void(0);" class="nav-icon-item position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
                                     <i class="bi bi-cart3 nav-icon"></i>
-                                    <span class="cart-badge">3</span>
+                                    <span class="cart-badge" id="cartBadgeMobile" style="display: none;">0</span>
+                                </a>
+                            {% else %}
+                                <!-- GUEST - Show account and cart -->
+                                <a href="#" class="nav-icon-item" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                    <i class="bi bi-person nav-icon"></i>
+                                </a>
+                                <a href="javascript:void(0);" class="nav-icon-item position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
+                                    <i class="bi bi-cart3 nav-icon"></i>
+                                    <span class="cart-badge" id="cartBadgeMobile" style="display: none;">0</span>
                                 </a>
                             {% endif %}
                         </div>
@@ -144,6 +150,7 @@
                         </button>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
@@ -153,14 +160,20 @@
         <div class="container">
             <nav>
                 <ul class="nav-menu">
-                    <!-- Customer Menu (role_id = 2) -->
+                    <!-- Common menu items for all -->
+                    <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                    <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
+                    <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
+                    
+                    <!-- Customer Only Menu Items -->
                     {% if user.is_authenticated and user.role_id == 2 %}
-                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
-                        <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
+                        <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
+                        <li class="nav-menu-item"><a href="{% url 'checkout' %}" class="nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li>
+                    
+                    <!-- Guest Users - Show cart but not checkout -->
+                    {% elif not user.is_authenticated %}
+                        <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
                     
                     <!-- Admin Menu (role_id = 1) -->
                     {% elif user.is_authenticated and user.role_id == 1 %}
@@ -189,7 +202,7 @@
                             </ul>
                         </li>
 
-                        <!-- Vendor Dropdown - Add after Vendors or in Masters dropdown -->
+                        {% comment %} <!-- Vendors Dropdown -->
                         <li class="nav-menu-item dropdown">
                             <a href="#" class="nav-menu-link dropdown-toggle">
                                 Vendors
@@ -202,17 +215,10 @@
                                 <li><a class="dropdown-item" href="{% url 'vendor_list' %}">
                                     <i class="bi bi-list-ul"></i> Manage Vendors
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'vendor_list' %}?status=active">
-                                    <i class="bi bi-check-circle"></i> Active Vendors
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'vendor_list' %}?status=inactive">
-                                    <i class="bi bi-x-circle"></i> Inactive Vendors
-                                </a></li>
                             </ul>
-                        </li>
+                        </li> {% endcomment %}
                         
-                        <!-- Occasions Dropdown - Add after Vendors or in Masters dropdown -->
+                        <!-- Occasions Dropdown -->
                         <li class="nav-menu-item dropdown">
                             <a href="#" class="nav-menu-link dropdown-toggle">
                                 Occasions
@@ -225,17 +231,10 @@
                                 <li><a class="dropdown-item" href="{% url 'occasion_list' %}">
                                     <i class="bi bi-list-ul"></i> Manage Occasions
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'occasion_list' %}?status=active">
-                                    <i class="bi bi-check-circle"></i> Active Occasions
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'occasion_list' %}?status=inactive">
-                                    <i class="bi bi-x-circle"></i> Inactive Occasions
-                                </a></li>
                             </ul>
                         </li>
 
-                        <!-- User Management Dropdown - Add after Vendors or in Masters dropdown -->
+                        <!-- Users Dropdown -->
                         <li class="nav-menu-item dropdown">
                             <a href="#" class="nav-menu-link dropdown-toggle">
                                 Users
@@ -248,43 +247,8 @@
                                 <li><a class="dropdown-item" href="{% url 'user_list' %}">
                                     <i class="bi bi-people"></i> Manage Users
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'user_list' %}?status=active">
-                                    <i class="bi bi-check-circle"></i> Active Users
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'user_list' %}?status=inactive">
-                                    <i class="bi bi-x-circle"></i> Inactive Users
-                                </a></li>
                             </ul>
                         </li>
-
-                        <!-- Masters Dropdown -->
-                        <li class="nav-menu-item dropdown">
-                            <a href="#" class="nav-menu-link dropdown-toggle">
-                                Masters
-                                <i class="bi bi-chevron-down"></i>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">
-                                    <i class="bi bi-building"></i> Vendors
-                                </a></li>
-                                <li><a class="dropdown-item" href="#">
-                                    <i class="bi bi-flower2"></i> Flowers
-                                </a></li>
-                                <li><a class="dropdown-item" href="#">
-                                    <i class="bi bi-box"></i> Categories
-                                </a></li>
-                            </ul>
-                        </li>
-                    
-                    <!-- Not Logged In - Show default menu -->
-                    {% else %}
-                        <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
-                        <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Cart</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Checkout</a></li>
-                        <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
                     {% endif %}
                 </ul>
             </nav>
@@ -322,6 +286,41 @@
                 
                 <!-- Modal Body -->
                 <div class="modal-body account-modal-body">
+                    
+                    <!-- ===== PROFILE COMPLETION INDICATOR - MOVED HERE ===== -->
+                    {% if user.is_authenticated and user.role_id == 2 %}
+                        {% with profile=user.profile %}
+                            {% if profile.get_completion_percentage < 100 %}
+                                <div class="profile-completion-card mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="completion-label">Profile Completion</span>
+                                        <span class="completion-percentage">{{ profile.get_completion_percentage }}%</span>
+                                    </div>
+                                    <div class="progress completion-progress mb-2">
+                                        <div class="progress-bar" role="progressbar" 
+                                            style="width: {{ profile.get_completion_percentage }}%;" 
+                                            aria-valuenow="{{ profile.get_completion_percentage }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'profile' %}?tab=profile" class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="bi bi-pencil-square"></i> Complete Your Profile
+                                    </a>
+                                    <small class="text-muted d-block mt-2 text-center">
+                                        Complete your profile for faster checkout
+                                    </small>
+                                </div>
+                            {% else %}
+                                <div class="profile-complete-badge mb-4 text-center">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    <span class="ms-2">Profile 100% Complete</span>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                    <!-- ===== END PROFILE COMPLETION INDICATOR ===== -->
+                    
                     <!-- User Stats Card - Only for logged in users -->
                     {% if user.is_authenticated %}
                         <div class="user-stats-card mb-4">
@@ -354,8 +353,10 @@
                     <div class="account-menu-list">
                         {% if user.is_authenticated %}
                             {% if user.role_id == 2 %}
-                                <!-- CUSTOMER Menu Items (role_id = 2) -->
-                                <div class="account-menu-item">
+                                <!-- CUSTOMER Menu Items (role_id = 2) - Updated with proper links -->
+                                
+                                <!-- My Profile - Now a clickable link -->
+                                <a href="{% url 'profile' %}?tab=profile" class="account-menu-item">
                                     <div class="account-menu-icon">
                                         <i class="bi bi-person-circle"></i>
                                     </div>
@@ -363,9 +364,13 @@
                                         <span class="account-menu-title">My Profile</span>
                                         <span class="account-menu-desc">{{ user.email }}</span>
                                     </div>
-                                </div>
+                                    <div class="account-menu-arrow">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </div>
+                                </a>
                                 
-                                <a href="#" class="account-menu-item">
+                                <!-- My Orders - Link to orders page (when created) -->
+                                <a href="{% url 'profile' %}?tab=orders" class="account-menu-item">
                                     <div class="account-menu-icon">
                                         <i class="bi bi-box-seam"></i>
                                     </div>
@@ -378,20 +383,8 @@
                                     </div>
                                 </a>
                                 
-                                <a href="#" class="account-menu-item">
-                                    <div class="account-menu-icon">
-                                        <i class="bi bi-heart"></i>
-                                    </div>
-                                    <div class="account-menu-text">
-                                        <span class="account-menu-title">My Wishlist</span>
-                                        <span class="account-menu-desc">Your saved items</span>
-                                    </div>
-                                    <div class="account-menu-arrow">
-                                        <i class="bi bi-chevron-right"></i>
-                                    </div>
-                                </a>
-                                
-                                <a href="#" class="account-menu-item">
+                                <!-- Returns & Refunds - Link to returns page (when created) -->
+                                <a href="{% url 'profile' %}?tab=returns" class="account-menu-item">
                                     <div class="account-menu-icon">
                                         <i class="bi bi-arrow-return-left"></i>
                                     </div>
@@ -404,7 +397,8 @@
                                     </div>
                                 </a>
                                 
-                                <a href="#" class="account-menu-item">
+                                <!-- Settings - Link to account settings tab -->
+                                <a href="{% url 'profile' %}?tab=account-settings" class="account-menu-item">
                                     <div class="account-menu-icon">
                                         <i class="bi bi-gear"></i>
                                     </div>
@@ -416,7 +410,9 @@
                                         <i class="bi bi-chevron-right"></i>
                                     </div>
                                 </a>
+                                
                             {% elif user.role_id == 1 %}
+                                
                                 <!-- ADMIN Menu Items (role_id = 1) - Only Dashboard -->
                                 <a href="{% url 'admin_dashboard' %}" class="account-menu-item">
                                     <div class="account-menu-icon">
@@ -430,8 +426,10 @@
                                         <i class="bi bi-chevron-right"></i>
                                     </div>
                                 </a>
+
                             {% endif %}
                         {% else %}
+                            
                             <!-- Not Logged In Menu Items -->
                             <a href="{% url 'login' %}" class="account-menu-item">
                                 <div class="account-menu-icon">
@@ -458,18 +456,17 @@
                                     <i class="bi bi-chevron-right"></i>
                                 </div>
                             </a>
+
                         {% endif %}
                     </div>
                     
-                    <!-- Auth Buttons - Different for logged in users -->
+                    <!-- Auth Buttons -->
                     <div class="account-auth-buttons">
                         {% if user.is_authenticated %}
-                        <!-- Logged In - Sign Out Button -->
                         <form method="post" action="{% url 'logout' %}" style="display: inline; width: 100%;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-signout w-100">
-                                <i class="bi bi-box-arrow-right"></i>
-                                Sign Out
+                                <i class="bi bi-box-arrow-right"></i> Sign Out
                             </button>
                         </form>
                         {% endif %}
@@ -591,134 +588,17 @@
                 <div class="modal-header account-modal-header">
                     <div class="account-modal-title-section w-100">
                         <h5 class="modal-title account-modal-title" id="cartModalLabel">Shopping Cart</h5>
-                        <p class="account-modal-subtitle"><span id="cartItemCount">3</span> items in your cart</p>
+                        <p class="account-modal-subtitle"><span id="cartItemCount">0</span> items in your cart</p>
                     </div>
                     <button type="button" class="btn-close account-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
-                <!-- Modal Body -->
-                <div class="modal-body account-modal-body">
-
-                    {% if user.is_authenticated %}
-                        <!-- Cart Stats Card -->
-                        <div class="user-stats-card mb-4">
-                            <div class="row g-2">
-                                <div class="col-4">
-                                    <div class="stat-item text-center">
-                                        <span class="stat-value">3</span>
-                                        <span class="stat-label">Items</span>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="stat-item text-center">
-                                        <span class="stat-value">₹2,997</span>
-                                        <span class="stat-label">Subtotal</span>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="stat-item text-center">
-                                        <span class="stat-value">₹150</span>
-                                        <span class="stat-label">Shipping</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row mt-2">
-                                <div class="col-12">
-                                    <div class="stat-item text-center p-2" style="background: var(--accent-color-light); border-radius: 8px;">
-                                        <span class="stat-label">Total</span>
-                                        <span class="stat-value" style="color: var(--accent-color); font-size: 18px;">₹3,147</span>
-                                    </div>
-                                </div>
-                            </div>
+                <!-- Modal Body - This is where content will be loaded -->
+                <div class="modal-body account-modal-body" id="cartModalBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                        
-                        <!-- Cart Items -->
-                        <div class="account-menu-list">
-                            <!-- Cart Item 1 -->
-                            <div class="account-menu-item">
-                                <div class="account-menu-icon">
-                                    <img src="#" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #f5f5f5;">
-                                </div>
-                                <div class="account-menu-text">
-                                    <span class="account-menu-title">Red Rose Bouquet</span>
-                                    <span class="account-menu-desc">₹999 x 1</span>
-                                </div>
-                                <div class="account-menu-arrow">
-                                    <button class="btn btn-sm" style="color: #dc3545;" onclick="removeFromCart(1)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Cart Item 2 -->
-                            <div class="account-menu-item">
-                                <div class="account-menu-icon">
-                                    <img src="#" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #f5f5f5;">
-                                </div>
-                                <div class="account-menu-text">
-                                    <span class="account-menu-title">Tulip Delight</span>
-                                    <span class="account-menu-desc">₹1,299 x 1</span>
-                                </div>
-                                <div class="account-menu-arrow">
-                                    <button class="btn btn-sm" style="color: #dc3545;" onclick="removeFromCart(2)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Cart Item 3 -->
-                            <div class="account-menu-item">
-                                <div class="account-menu-icon">
-                                    <img src="#" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #f5f5f5;">
-                                </div>
-                                <div class="account-menu-text">
-                                    <span class="account-menu-title">Mixed Flowers</span>
-                                    <span class="account-menu-desc">₹699 x 1</span>
-                                </div>
-                                <div class="account-menu-arrow">
-                                    <button class="btn btn-sm" style="color: #dc3545;" onclick="removeFromCart(3)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Action Buttons -->
-                        <div class="d-grid gap-2 mt-4">
-                            <a href="#" class="btn" style="background: var(--accent-color); color: var(--contrast-color); border-radius: 25px; padding: 10px;">
-                                <i class="bi bi-cart-check me-2"></i>Proceed to Checkout
-                            </a>
-                            <a href="#" class="btn btn-outline-secondary rounded-pill" style="border-color: #ddd;">
-                                <i class="bi bi-arrow-left me-2"></i>Continue Shopping
-                            </a>
-                        </div>
-                        
-                    {% else %}
-                        
-                        <!-- Not Logged In State -->
-                        <div class="text-center py-4">
-                            <i class="bi bi-cart3" style="font-size: 48px; color: var(--accent-color); opacity: 0.5;"></i>
-                            <p class="mt-3 mb-2" style="color: var(--default-color); font-size: 16px;">
-                                Please login to view your cart
-                            </p>
-                            <div class="d-flex justify-content-center gap-2 mt-3">
-                                <a href="{% url 'login' %}" class="btn px-4" style="background: var(--accent-color); color: var(--contrast-color); border-radius: 25px;">
-                                    Login
-                                </a>
-                                <a href="{% url 'register' %}" class="btn btn-outline-secondary px-4 rounded-pill">
-                                    Register
-                                </a>
-                            </div>
-                        </div>
-
-                    {% endif %}
-                    
-                    <!-- Footer Note -->
-                    <div class="account-modal-footer-note mt-3">
-                        <p class="mb-0">
-                            <i class="bi bi-truck me-1"></i>
-                            Free shipping on orders above ₹999
-                        </p>
                     </div>
                 </div>
             </div>
@@ -738,21 +618,26 @@
         </div>
         
         <ul class="mobile-nav-menu">
-            <!-- Customer Menu (role_id = 2) -->
+            <!-- Common menu items for all -->
+            <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+            <li class="mobile-nav-menu-item"><a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
+            <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
+            
+            <!-- Customer Only Menu Items -->
             {% if user.is_authenticated and user.role_id == 2 %}
-
-                <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
-                <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Cart</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Checkout</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
+                <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
+                <li class="mobile-nav-menu-item"><a href="{% url 'checkout' %}" class="mobile-nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li>
+            
+            <!-- Guest Users - Show cart but not checkout -->
+            {% elif not user.is_authenticated %}
+                <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
             
             <!-- Admin Menu (role_id = 1) -->
             {% elif user.is_authenticated and user.role_id == 1 %}
                 
                 <li class="mobile-nav-menu-item">
-                        <a href="{% url 'admin_dashboard' %}" class="mobile-nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">
+                    <a href="{% url 'admin_dashboard' %}" class="mobile-nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">
                         <i class="bi bi-speedometer2 me-2"></i>Dashboard
                     </a>
                 </li>
@@ -767,15 +652,8 @@
                         <li><a href="{% url 'add_bouquet' %}" class="mobile-dropdown-item">
                             <i class="bi bi-plus-circle me-2"></i>Add Bouquet
                         </a></li>
-                        <li><a href="#" class="mobile-dropdown-item">
+                        <li><a href="{% url 'bouquet_list' %}" class="mobile-dropdown-item">
                             <i class="bi bi-list-ul me-2"></i>Manage Bouquets
-                        </a></li>
-                        <li><hr class="mobile-dropdown-divider"></li>
-                        <li><a href="#" class="mobile-dropdown-item">
-                            <i class="bi bi-tags me-2"></i>Categories
-                        </a></li>
-                        <li><a href="#" class="mobile-dropdown-item">
-                            <i class="bi bi-calendar-event me-2"></i>Occasions
                         </a></li>
                     </ul>
                 </li>
@@ -793,13 +671,6 @@
                         <li><a href="{% url 'vendor_list' %}" class="mobile-dropdown-item">
                             <i class="bi bi-list-ul me-2"></i>Manage Vendors
                         </a></li>
-                        <li><hr class="mobile-dropdown-divider"></li>
-                        <li><a href="{% url 'vendor_list' %}?status=active" class="mobile-dropdown-item">
-                            <i class="bi bi-check-circle me-2"></i>Active Vendors
-                        </a></li>
-                        <li><a href="{% url 'vendor_list' %}?status=inactive" class="mobile-dropdown-item">
-                            <i class="bi bi-x-circle me-2"></i>Inactive Vendors
-                        </a></li>
                     </ul>
                 </li>
 
@@ -815,13 +686,6 @@
                         </a></li>
                         <li><a href="{% url 'occasion_list' %}" class="mobile-dropdown-item">
                             <i class="bi bi-list-ul me-2"></i>Manage Occasions
-                        </a></li>
-                        <li><hr class="mobile-dropdown-divider"></li>
-                        <li><a href="{% url 'occasion_list' %}?status=active" class="mobile-dropdown-item">
-                            <i class="bi bi-check-circle me-2"></i>Active Occasions
-                        </a></li>
-                        <li><a href="{% url 'occasion_list' %}?status=inactive" class="mobile-dropdown-item">
-                            <i class="bi bi-x-circle me-2"></i>Inactive Occasions
                         </a></li>
                     </ul>
                 </li>
@@ -839,49 +703,10 @@
                         <li><a href="{% url 'user_list' %}" class="mobile-dropdown-item">
                             <i class="bi bi-people me-2"></i>Manage Users
                         </a></li>
-                        <li><hr class="mobile-dropdown-divider"></li>
-                        <li><a href="{% url 'user_list' %}?status=active" class="mobile-dropdown-item">
-                            <i class="bi bi-check-circle me-2"></i>Active Users
-                        </a></li>
-                        <li><a href="{% url 'user_list' %}?status=inactive" class="mobile-dropdown-item">
-                            <i class="bi bi-x-circle me-2"></i>Inactive Users
-                        </a></li>
                     </ul>
                 </li>
-
-                <!-- Masters Dropdown (Mobile) - FIXED -->
-                <li class="mobile-nav-menu-item mobile-dropdown">
-                    <a href="javascript:void(0);" class="mobile-nav-menu-link mobile-dropdown-toggle" onclick="toggleMobileDropdown(event, this)">
-                        <span><i class="bi bi-gear me-2"></i>Masters</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </a>
-                    <ul class="mobile-dropdown-menu">
-                        <li><a href="javascript:void(0);" class="mobile-dropdown-item">
-                            <i class="bi bi-building me-2"></i>Vendors
-                        </a></li>
-                        <li><a href="javascript:void(0);" class="mobile-dropdown-item">
-                            <i class="bi bi-flower1 me-2"></i>Flowers
-                        </a></li>
-                        <li><a href="javascript:void(0);" class="mobile-dropdown-item">
-                            <i class="bi bi-box me-2"></i>Categories
-                        </a></li>
-                    </ul>
-                </li>
-            
-            <!-- Not Logged In - Show default menu -->
-            {% else %}
-
-                <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">About</a></li>
-                <li class="mobile-nav-menu-item"><a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Cart</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Checkout</a></li>
-                <li class="mobile-nav-menu-item"><a href="#" class="mobile-nav-menu-link">Contact</a></li>
-
             {% endif %}
-
         </ul>
-
     </div>
 
     <!-- Main Content -->
@@ -907,11 +732,13 @@
     </footer>
 
     <!-- Scripts -->
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{% static 'js/main.js' %}"></script>
-    
+    <!-- Remove or fix main.js -->
+    <!-- <script src="{% static 'js/main.js' %}"></script> -->
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile Menu Toggle
@@ -1167,6 +994,215 @@
                 });
             });
         });
+    </script>
+
+    <script>
+        // ========== CART FUNCTIONS ==========
+    
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Update cart badge in navbar (both desktop and mobile)
+        function updateCartBadge(count) {
+            const cartBadges = document.querySelectorAll('.cart-badge');
+            cartBadges.forEach(badge => {
+                badge.textContent = count;
+                if (count === 0) {
+                    badge.style.display = 'none';
+                } else {
+                    badge.style.display = 'flex';
+                    badge.style.alignItems = 'center';
+                    badge.style.justifyContent = 'center';
+                    badge.style.animation = 'pulse 0.5s ease';
+                    setTimeout(() => {
+                        badge.style.animation = '';
+                    }, 500);
+                }
+            });
+        }
+
+        // Animate cart icon when item is added
+        function animateCartIcon() {
+            const cartIcon = document.querySelector('.bi-cart3');
+            if (cartIcon) {
+                cartIcon.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    cartIcon.style.animation = '';
+                }, 500);
+            }
+        }
+
+        // Function to load cart modal content
+        function loadCartModal() {
+            ; // <-- ADD THIS
+            console.log('loadCartModal called');
+            $('#cartModalBody').html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+            
+            $.ajax({
+                url: '/cart_modal',
+                type: 'GET',
+                success: function(data) {
+                    ; // <-- ADD THIS
+                    console.log('AJAX success, data:', data);
+                    $('#cartModalBody').html(data);
+                },
+                error: function(xhr, status, error) {
+                    ; // <-- ADD THIS
+                    console.error('Error loading cart modal:', error);
+                    console.error('Status:', status);
+                    console.error('Response:', xhr.responseText);
+                    console.error('Status Code:', xhr.status);
+                    
+                    $('#cartModalBody').html(`
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 48px; color: #dc3545; opacity: 0.5;"></i>
+                            <p class="mt-3 text-danger">Could not load your cart</p>
+                            <p class="text-muted small">Error: ${xhr.status} - ${error}</p>
+                            <a href="/cart_view" class="btn mt-2" style="background: #8c0d4f; color: white;">
+                                View Cart Page
+                            </a>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Function to remove item from cart modal
+        function removeFromCartModal(encryptedId) {
+            $.ajax({
+                url: '/remove_from_cart',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: JSON.stringify({
+                    bouquet_id: encryptedId
+                }),
+                contentType: 'application/json',
+                success: function(data) {
+                    if (data.success) {
+                        // Reload modal content
+                        loadCartModal();
+                        // Update cart badge
+                        updateCartBadge(data.cart_count);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Removed!',
+                            text: 'Item removed from cart',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error removing item:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Could not remove item'
+                    });
+                }
+            });
+        }
+
+        // DEBUG: Check if elements exist
+        $(document).ready(function() {
+            console.log('=== DEBUG START ===');
+            console.log('jQuery version:', $.fn.jquery);
+            console.log('Cart modal element:', $('#cartModal').length);
+            console.log('Cart modal body:', $('#cartModalBody').length);
+            console.log('Cart badges found:', $('.cart-badge').length);
+            console.log('=== DEBUG END ===');
+            
+            // Try a different approach - direct click handler
+            $('.nav-icon-item[data-bs-target="#cartModal"]').on('click', function(e) {
+                console.log('Cart icon clicked directly');
+                e.preventDefault();
+                $('#cartModal').modal('show');
+            });
+            
+            // Modal events
+            $('#cartModal').on('show.bs.modal', function() {
+                console.log('Modal show event triggered');
+                loadCartModal();
+            });
+            
+            $('#cartModal').on('shown.bs.modal', function() {
+                console.log('Modal shown event triggered');
+            });
+            
+            $('#cartModal').on('error', function() {
+                console.log('Modal error');
+            });
+        });
+
+        // Manual test function - call this from console
+        function testCartModal() {
+            console.log('Manual test - opening modal');
+            $('#cartModal').modal('show');
+        }
+
+        // Get initial cart count on page load
+        $(document).ready(function() {
+            ; // <-- ADD THIS
+            console.log('Getting initial cart count');
+            
+            $.ajax({
+                url: '/get_cart_count',
+                type: 'GET',
+                success: function(data) {
+                    ; // <-- ADD THIS
+                    console.log('Cart count response:', data);
+                    updateCartBadge(data.count);
+                },
+                error: function(xhr, status, error) {
+                    ; // <-- ADD THIS
+                    console.error('Error fetching cart count:', error);
+                    console.error('Status:', status);
+                    console.error('Response:', xhr.responseText);
+                }
+            });
+        });
+
+        // Add animation styles if not already present
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+            
+            @keyframes shake {
+                0% { transform: rotate(0deg); }
+                25% { transform: rotate(-10deg); }
+                50% { transform: rotate(10deg); }
+                75% { transform: rotate(-5deg); }
+                100% { transform: rotate(0deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
     </script>
     
     {% block extra_js %}{% endblock %}
