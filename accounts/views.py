@@ -13,7 +13,7 @@ from django.contrib.auth import logout as auth_logout
 from store.models import *
 from django.conf import settings
 
-def logout(request):
+def logout_user(request):
     try:
         auth_logout(request)  # correct logout
 

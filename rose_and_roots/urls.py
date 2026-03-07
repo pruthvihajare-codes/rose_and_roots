@@ -30,7 +30,7 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     
     # API endpoints
-    path('logout/', logout, name='logout'),
+    path('logout/', logout_user, name='logout'),
     
     # masters
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
