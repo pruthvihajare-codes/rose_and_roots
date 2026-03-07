@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            line-height: 1.6;
+            color: #212529;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f4f6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(140, 13, 79, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #8c0d4f, #a3125c);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 28px;
+            margin: 10px 0;
+        }
+        .content {
+            padding: 30px;
+        }
+        .order-info {
+            background: #f8f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #8c0d4f;
+        }
+        .order-number {
+            font-size: 24px;
+            color: #8c0d4f;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .table th {
+            background: #f8f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #3e0925;
+        }
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .total-row {
+            font-weight: bold;
+            font-size: 18px;
+            color: #8c0d4f;
+        }
+        .address-box {
+            background: #f8f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f4f6;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Thank You for Your Order!</h1>
+            <p style="opacity: 0.9;">Your order has been confirmed</p>
+        </div>
+        
+        <div class="content">
+            <p>Dear <strong>{{ order.first_name }}</strong>,</p>
+            <p>Thank you for shopping at LittleCraftOne. Your order has been received and is being processed.</p>
+            
+            <div class="order-info">
+                <div class="order-number">Order #{{ order.order_number }}</div>
+                <p style="margin: 5px 0 0;">
+                    <i class="bi bi-calendar"></i> 
+                    {{ order.order_date|date:"F j, Y" }} at {{ order.order_date|date:"g:i A" }}
+                </p>
+            </div>
+            
+            <h3 style="color: #3e0925; border-bottom: 2px solid #f8f4f6; padding-bottom: 10px;">
+                Order Summary
+            </h3>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr>
+                        <td>{{ item.bouquet_name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>₹{{ item.price|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div style="text-align: right;">
+                <p><strong>Subtotal:</strong> ₹{{ order.subtotal|floatformat:0 }}</p>
+                <p><strong>Shipping:</strong> 
+                    {% if order.delivery_charge > 0 %}
+                        ₹{{ order.delivery_charge|floatformat:0 }}
+                    {% else %}
+                        <span style="color: #28a745;">FREE</span>
+                    {% endif %}
+                </p>
+                <p class="total-row"><strong>Total:</strong> ₹{{ order.total|floatformat:0 }}</p>
+            </div>
+            
+            <h3 style="color: #3e0925; margin-top: 30px;">Shipping Address</h3>
+            <div class="address-box">
+                <p style="margin: 0;">
+                    {{ order.first_name }} {{ order.last_name }}<br>
+                    {{ order.address_line1 }}<br>
+                    {% if order.address_line2 %}{{ order.address_line2 }}<br>{% endif %}
+                    {% if order.landmark %}{{ order.landmark }}<br>{% endif %}
+                    {{ order.city }}, {{ order.state }} - {{ order.pincode }}<br>
+                    {{ order.country }}
+                </p>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <p><strong>Payment Method:</strong> Cash on Delivery</p>
+                <p><strong>Delivery Option:</strong> Standard Delivery (3-5 business days)</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{ year }} LittleCraftOne. All rights reserved.</p>
+            <p>Need help? Contact us at <a href="mailto:littlecraftone.support@gmail.com" style="color: #8c0d4f;">littlecraftone.support@gmail.com</a></p>
+        </div>
+    </div>
+</body>
+</html>

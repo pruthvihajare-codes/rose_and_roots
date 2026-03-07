@@ -12,6 +12,12 @@ from accounts.models import *
 from django.contrib.auth import logout as auth_logout
 from store.models import *
 from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+# Add this at the top of your views.py or in a separate utils.py
+import logging
+logger = logging.getLogger(__name__)
 
 def logout_user(request):
     try:
@@ -355,3 +361,46 @@ def home(request):
         print("Exception caught:", e)
         raise
 
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.urls import reverse
+
+def send_order_confirmation_email(order, order_items, encrypted_order_id):
+    """Send order confirmation email to customer with HTML template"""
+    try:
+        subject = f'Order Confirmation - #{order.order_number}'
+        
+        # Get the domain (you should set this in settings.py)
+        domain = settings.SITE_URL  # e.g., 'https://www.littlecraftone.com'
+        
+        # Render HTML template
+        html_content = render_to_string('emails/order_confirmation.html', {
+            'order': order,
+            'order_items': order_items,
+            'encrypted_order_id': encrypted_order_id,
+            'domain': domain,
+            'year': timezone.now().year,
+        })
+        
+        # Create plain text version from HTML
+        text_content = strip_tags(html_content)
+        
+        # Create email with both HTML and plain text versions
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,  # plain text version
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[order.email],
+        )
+        
+        # Attach HTML version
+        email.attach_alternative(html_content, "text/html")
+        
+        # Send email
+        email.send(fail_silently=False)
+        
+        logger.info(f"Order confirmation email sent for order #{order.order_number}")
+        
+    except Exception as e:
+        logger.warning(f"Failed to send confirmation email for order #{order.order_number}: {e}")

@@ -167,3 +167,16 @@ STATIC_URL = 'static/'
 #         'level': 'DEBUG',
 #     },
 # }
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Your SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'littlecraftone.support@gmail.com'  # Your real email
+EMAIL_HOST_PASSWORD = 'bpnnxxdlyacmphsp'  # Your app password
+DEFAULT_FROM_EMAIL = 'littlecraftone.support@gmail.com'
+
+# Add this to your settings.py
+SITE_URL = 'http://127.0.0.1:8000'  # For development
+# SITE_URL = 'https://www.littlecraftone.com'  # For production

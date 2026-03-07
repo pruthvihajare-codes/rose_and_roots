@@ -24,6 +24,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import F
 from store.models import *
+from accounts.views import *
 
 logger = logging.getLogger(__name__)
 
@@ -1079,8 +1080,16 @@ def place_order(request):
             if user_updated:
                 user.save()
         
-        # Encrypt order ID for redirect
+        # After creating the order successfully
         encrypted_order_id = enc(str(order.id))
+
+        # Send confirmation email
+        try:
+            send_order_confirmation_email(order, order_items_data, encrypted_order_id)
+        except Exception as email_error:
+            logger.warning(f"Failed to send confirmation email: {email_error}")
+            # Don't fail the order if email fails
+
         messages.success(request, f'Order placed successfully! Order #{order.order_number}')
         return redirect('order_confirmation', order_id=encrypted_order_id)
         
