@@ -31,10 +31,11 @@ logger = logging.getLogger(__name__)
 def shop_view(request):
     try:
         """
-        Display all bouquets with filtering by occasion and price range
+        Display all bouquets with filtering by occasion, category, and price range
         """
         # Get filter parameters
         selected_occasions_encrypted = request.GET.getlist('occasion')
+        selected_categories_encrypted = request.GET.getlist('category')  # New category filter
         min_price = request.GET.get('min_price')
         max_price = request.GET.get('max_price')
         sort_by = request.GET.get('sort', 'popular')
@@ -48,8 +49,17 @@ def shop_view(request):
             except:
                 pass
         
+        # Decrypt category IDs
+        selected_categories = []
+        for enc_id in selected_categories_encrypted:
+            try:
+                dec_id = dec(str(enc_id))
+                selected_categories.append(int(dec_id))
+            except:
+                pass
+        
         # Base queryset - only active bouquets
-        bouquets = Bouquet.objects.filter(is_active=1).prefetch_related('occasions', 'images')
+        bouquets = Bouquet.objects.filter(is_active=1).select_related('category').prefetch_related('occasions', 'images')
         
         # Get featured bouquets for homepage or sidebar
         featured_bouquets = Bouquet.objects.filter(is_active=1, is_featured=1).prefetch_related('images')[:4]
@@ -57,6 +67,10 @@ def shop_view(request):
         # Filter by occasions
         if selected_occasions:
             bouquets = bouquets.filter(occasions__id__in=selected_occasions).distinct()
+        
+        # Filter by categories - NEW
+        if selected_categories:
+            bouquets = bouquets.filter(category_id__in=selected_categories).distinct()
         
         # Filter by price range
         if min_price and max_price:
@@ -97,7 +111,6 @@ def shop_view(request):
         
         # Make sure min is less than max
         if min_price_value and max_price_value and float(min_price_value) > float(max_price_value):
-            # Swap if they're reversed
             min_price_value, max_price_value = max_price_value, min_price_value
         
         # Get all occasions for filter with encrypted IDs
@@ -106,6 +119,22 @@ def shop_view(request):
         for occasion in occasions:
             occasion.encrypted_id = enc(str(occasion.id))
             occasion_list.append(occasion)
+        
+        # Get all categories from parameter_master for filter - NEW
+        categories = parameter_master.objects.filter(
+            parameter_name='Product Categories',
+            isactive=1
+        ).order_by('parameter_value')
+
+        category_list = []
+        for category in categories:
+            category.encrypted_id = enc(str(category.parameter_id))
+            # Count bouquets in this category
+            category.bouquet_count = Bouquet.objects.filter(
+                category_id=category.parameter_id, 
+                is_active=1
+            ).count()
+            category_list.append(category)
         
         # Add encrypted ID and primary image to each bouquet
         bouquet_list = []
@@ -126,6 +155,12 @@ def shop_view(request):
             # Get occasion names for display
             bouquet.occasion_names = [occ.name for occ in bouquet.occasions.all()]
             
+            # Get category name for display
+            bouquet.category_name = bouquet.category.parameter_value if bouquet.category else 'Uncategorized'
+            
+            # Add buy_now status
+            bouquet.buy_now = bouquet.buy_now
+            
             bouquet_list.append(bouquet)
         
         # Add images to featured bouquets
@@ -136,27 +171,35 @@ def shop_view(request):
             bouquet.primary_image = primary_image.image_path if primary_image else None
             featured_list.append(bouquet)
         
+        # Get admin user's WhatsApp number
+        admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
+        admin_whatsapp = admin_user.phone if admin_user else '918805433102'
+
         # Pagination
         paginator = Paginator(bouquet_list, 12)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         
-        # Encrypt selected occasions for template
+        # Encrypt selected items for template
         selected_occasions_encrypted_list = [enc(str(id)) for id in selected_occasions]
+        selected_categories_encrypted_list = [enc(str(id)) for id in selected_categories]  # NEW
         
         context = {
             'page_obj': page_obj,
             'bouquets': page_obj.object_list,
             'featured_bouquets': featured_list,
             'occasions': occasion_list,
+            'categories': category_list,  # NEW
             'price_range': price_range,
             'selected_occasions': selected_occasions_encrypted_list,
+            'selected_categories': selected_categories_encrypted_list,  # NEW
             'min_price': min_price,
             'max_price': max_price,
             'sort_by': sort_by,
             "MEDIA_URL": settings.MEDIA_URL,
             'min_price': min_price_value,
             'max_price': max_price_value,
+            'admin_whatsapp': admin_whatsapp,
         }
         
         return render(request, 'store/shop.html', context)
@@ -164,7 +207,7 @@ def shop_view(request):
         logger.exception(f"Error in shop_view: {str(e)}")
         messages.error(request, "An error occurred while loading the shop. Please try again later.")
         return redirect('home')
-    
+
 # views.py - Add product detail view
 
 def product_detail(request):
@@ -207,7 +250,11 @@ def product_detail(request):
             primary_image = related.images.filter(is_active=1).first()
             related.primary_image = primary_image.image_path if primary_image else None
         
-        # Get all reviews
+        # Get admin user's WhatsApp number (assuming admin has role_id=1)
+        admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
+        admin_whatsapp = admin_user.phone if admin_user else '918805433102'  # Fallback number
+        
+        # Get all reviews (rest of your review code remains the same)
         all_reviews = bouquet.reviews.filter(is_active=1).select_related('user')
         
         # Check if current user has already reviewed
@@ -215,7 +262,6 @@ def product_detail(request):
         other_reviews = all_reviews
         
         if request.user.is_authenticated:
-            # Separate user's review from others
             user_review = all_reviews.filter(user=request.user).first()
             if user_review:
                 other_reviews = all_reviews.exclude(user=request.user)
@@ -226,7 +272,6 @@ def product_detail(request):
         
         # Combine with user's review first, then paginate
         if user_review:
-            # Create a list with user review first, then others
             combined_reviews = [user_review] + list(other_reviews)
         else:
             combined_reviews = list(other_reviews)
@@ -248,7 +293,8 @@ def product_detail(request):
             'page_obj': page_obj,
             'avg_rating': round(avg_rating, 1),
             'total_reviews': all_reviews.count(),
-            'user_review': user_review,  # Pass user's review to template
+            'user_review': user_review,
+            'admin_whatsapp': admin_whatsapp,  # Pass admin WhatsApp number
             "MEDIA_URL": settings.MEDIA_URL,
         }
         return render(request, 'store/product_detail.html', context)
@@ -687,7 +733,7 @@ def cart_view(request):
     cart_items = get_cart_items_details(cart)
     subtotal = sum(item['price'] for item in cart_items)
     
-    # Free shipping calculation (same as checkout)
+    # Free shipping calculation (same as checkout) - KEPT for future use
     free_shipping_threshold = 2000
     
     if subtotal >= free_shipping_threshold:
@@ -707,6 +753,10 @@ def cart_view(request):
     if not request.user.is_authenticated:
         request.session['checkout_after_login'] = True
     
+    # Get admin WhatsApp number
+    admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
+    admin_whatsapp = admin_user.phone if admin_user else '918805433102'
+    
     context = {
         'cart_items': cart_items,
         'item_count': len(cart_items),
@@ -722,6 +772,7 @@ def cart_view(request):
         'remaining_for_free_shipping': float(remaining_for_free_shipping),
         'needs_shipping': shipping > 0,
         'is_authenticated': request.user.is_authenticated,
+        'admin_whatsapp': admin_whatsapp,  # Add this
         'MEDIA_URL': settings.MEDIA_URL,
     }
     

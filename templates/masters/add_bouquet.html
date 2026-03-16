@@ -287,6 +287,51 @@
                                     <div class="invalid-feedback d-block">{{ errors.images }}</div>
                                     {% endif %}
                                 </div>
+
+                                <!-- Product Category Selection - Add this before the Status Toggle section -->
+                                <div class="form-group animate-field">
+                                    <label for="category" class="form-label">
+                                        <i class="bi bi-tags" style="margin-right: 6px; color: var(--primary-color);"></i>
+                                        Product Category <span class="required">*</span>
+                                    </label>
+                                    
+                                    <div class="category-selector-wrapper">
+                                        <select class="category-select" id="category" name="category" required>
+                                            <option value="" disabled selected>-- Select a Category --</option>
+                                            {% for category in categories %}
+                                            <option value="{{ category.encrypted_id }}" 
+                                                {% if form_data.category == category.encrypted_id %}selected{% endif %}>
+                                                {{ category.value }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="select-decoration">
+                                            <i class="bi bi-grid"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Optional: Show encryption example for debugging (remove in production) -->
+                                    {% if debug_mode %}
+                                    <div class="encryption-example">
+                                        <small>
+                                            <i class="bi bi-shield-lock"></i>
+                                            Example: enc(123) = {{ encrypted_test|default:'encrypted_value' }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="field-hint">
+                                        <i class="bi bi-info-circle"></i>
+                                        Select the appropriate category for this product from our collection
+                                    </div>
+                                    
+                                    {% if errors.category %}
+                                    <div class="invalid-feedback d-block" style="margin-top: 8px;">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        {{ errors.category }}
+                                    </div>
+                                    {% endif %}
+                                </div>
                                 
                                 <!-- Status Toggle -->
                                 <div class="form-group animate-field">
@@ -491,192 +536,259 @@
     </script>
 
     <script>
-        // ===== BEAUTIFUL OCCASION SELECTOR =====
+        // ===== FIXED OCCASION SELECTOR =====
         document.addEventListener('DOMContentLoaded', function() {
-            initializeOccasionSelector();
-        });
-
-        function initializeOccasionSelector() {
+            console.log("DOM loaded - initializing occasion selector");
+            
+            // Make sure elements exist
             const occasionCards = document.querySelectorAll('.occasion-card');
             const selectedOccasionsInput = document.getElementById('selected_occasions_input');
             const previewContainer = document.getElementById('selectedOccasionsPreview');
             
-            if (!occasionCards.length) return;
+            console.log("Found occasion cards:", occasionCards.length);
+            console.log("Selected occasions input:", selectedOccasionsInput);
             
-            // Initialize selected state from existing selections
+            if (!occasionCards.length || !selectedOccasionsInput) {
+                console.error("Required elements not found!");
+                return;
+            }
+            
+            // Initialize - get any pre-selected occasions
             let selectedIds = [];
             
-            // Check for pre-selected occasions (from form_data)
+            // Check for cards that already have 'selected' class
             occasionCards.forEach(card => {
                 if (card.classList.contains('selected')) {
                     selectedIds.push(card.dataset.id);
+                    console.log("Found pre-selected card:", card.dataset.id, card.dataset.name);
                 }
             });
             
-            // If no pre-selected, check for badge (from Django context)
-            if (selectedIds.length === 0) {
-                occasionCards.forEach(card => {
-                    const badge = card.querySelector('.occasion-badge');
-                    if (badge) {
-                        card.classList.add('selected');
-                        selectedIds.push(card.dataset.id);
-                        badge.remove(); // Remove badge after adding selected class
+            // Also check for badges (from Django context)
+            occasionCards.forEach(card => {
+                const badge = card.querySelector('.occasion-badge');
+                if (badge && !card.classList.contains('selected')) {
+                    card.classList.add('selected');
+                    selectedIds.push(card.dataset.id);
+                    badge.remove(); // Remove badge after adding selected class
+                    console.log("Added selected from badge:", card.dataset.id);
+                }
+            });
+            
+            // Update hidden input with initial selected IDs
+            selectedOccasionsInput.value = selectedIds.join(',');
+            console.log("Initial selected IDs:", selectedIds);
+            
+            // Update preview based on initial selections
+            updatePreviewFromSelected(selectedIds);
+            
+            // Add click handlers to each occasion card
+            occasionCards.forEach(card => {
+                // Remove any existing event listeners to prevent duplicates
+                card.removeEventListener('click', handleCardClick);
+                // Add fresh event listener
+                card.addEventListener('click', handleCardClick);
+                console.log("Added click handler to card:", card.dataset.name);
+            });
+            
+            // Click handler function
+            function handleCardClick(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log("Card clicked:", this.dataset.name);
+                toggleOccasion(this);
+            }
+            
+            function toggleOccasion(card) {
+                const occasionId = card.dataset.id;
+                const occasionName = card.dataset.name;
+                
+                console.log("Toggling occasion:", occasionName, "ID:", occasionId);
+                
+                // Toggle selected class
+                card.classList.toggle('selected');
+                
+                // Get current selected IDs from hidden input
+                let selectedIds = selectedOccasionsInput.value ? 
+                    selectedOccasionsInput.value.split(',').filter(id => id) : [];
+                
+                console.log("Current selected IDs before toggle:", selectedIds);
+                
+                if (card.classList.contains('selected')) {
+                    // Add to selection
+                    if (!selectedIds.includes(occasionId)) {
+                        selectedIds.push(occasionId);
+                        console.log("Added to selection:", occasionId);
+                        // Add preview tag
+                        addPreviewTag(occasionId, occasionName);
+                    }
+                } else {
+                    // Remove from selection
+                    selectedIds = selectedIds.filter(id => id !== occasionId);
+                    console.log("Removed from selection:", occasionId);
+                    // Remove preview tag
+                    removePreviewTag(occasionId);
+                }
+                
+                // Update hidden input
+                selectedOccasionsInput.value = selectedIds.join(',');
+                console.log("Updated selected IDs:", selectedIds);
+                
+                // Show/hide placeholder
+                togglePlaceholder(selectedIds.length === 0);
+            }
+            
+            function addPreviewTag(id, name) {
+                console.log("Adding preview tag for:", name);
+                const placeholder = previewContainer.querySelector('.preview-placeholder');
+                
+                // Hide placeholder
+                if (placeholder) placeholder.classList.add('d-none');
+                
+                // Check if tag already exists
+                if (document.querySelector(`.preview-tag[data-id="${id}"]`)) {
+                    console.log("Tag already exists");
+                    return;
+                }
+                
+                // Create new tag
+                const tag = document.createElement('span');
+                tag.className = 'preview-tag';
+                tag.dataset.id = id;
+                tag.innerHTML = `
+                    <i class="bi bi-check-circle-fill"></i>
+                    ${name}
+                    <i class="bi bi-x-circle-fill remove-tag" data-id="${id}"></i>
+                `;
+                
+                // Add click handler to remove icon
+                const removeIcon = tag.querySelector('.remove-tag');
+                removeIcon.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    removeOccasion(id);
+                });
+                
+                // Add animation
+                tag.style.animation = 'tagPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                
+                previewContainer.appendChild(tag);
+            }
+            
+            function removePreviewTag(id) {
+                console.log("Removing preview tag for ID:", id);
+                const tag = document.querySelector(`.preview-tag[data-id="${id}"]`);
+                if (tag) {
+                    tag.style.animation = 'fadeOut 0.2s ease';
+                    setTimeout(() => {
+                        tag.remove();
+                        togglePlaceholder();
+                    }, 150);
+                }
+            }
+            
+            function removeOccasion(id) {
+                console.log("Removing occasion:", id);
+                
+                // Remove selected class from card
+                const card = document.querySelector(`.occasion-card[data-id="${id}"]`);
+                if (card) {
+                    card.classList.remove('selected');
+                }
+                
+                // Remove from hidden input
+                let selectedIds = selectedOccasionsInput.value ? 
+                    selectedOccasionsInput.value.split(',').filter(pid => pid !== id) : [];
+                selectedOccasionsInput.value = selectedIds.join(',');
+                
+                // Remove preview tag
+                removePreviewTag(id);
+            }
+            
+            function togglePlaceholder(force) {
+                const placeholder = previewContainer.querySelector('.preview-placeholder');
+                const tags = previewContainer.querySelectorAll('.preview-tag');
+                
+                if (placeholder) {
+                    if (tags.length === 0 || force === true) {
+                        placeholder.classList.remove('d-none');
+                    } else {
+                        placeholder.classList.add('d-none');
+                    }
+                }
+            }
+            
+            function updatePreviewFromSelected(selectedIds) {
+                console.log("Updating preview from selected:", selectedIds);
+                
+                // Clear existing preview tags (except placeholder)
+                const existingTags = previewContainer.querySelectorAll('.preview-tag');
+                existingTags.forEach(tag => tag.remove());
+                
+                if (!selectedIds || selectedIds.length === 0) {
+                    togglePlaceholder(true);
+                    return;
+                }
+                
+                // Hide placeholder
+                togglePlaceholder(false);
+                
+                // Add tags for each selected ID
+                selectedIds.forEach(id => {
+                    const card = document.querySelector(`.occasion-card[data-id="${id}"]`);
+                    if (card) {
+                        const name = card.dataset.name;
+                        addPreviewTag(id, name);
                     }
                 });
             }
             
-            // Update hidden input with selected IDs
-            selectedOccasionsInput.value = selectedIds.join(',');
-            
-            // Add click handlers to occasion cards
-            occasionCards.forEach(card => {
-                card.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    toggleOccasion(this);
-                });
-            });
-            
-            // Update preview based on initial selected IDs
-            updatePreviewFromSelected(selectedIds);
-        }
+            // Make removeOccasion globally available for onclick attributes
+            window.removeOccasion = removeOccasion;
+        });
 
-        function toggleOccasion(card) {
-            const occasionId = card.dataset.id;
-            const occasionName = card.dataset.name;
-            const selectedOccasionsInput = document.getElementById('selected_occasions_input');
-            
-            // Toggle selected class
-            card.classList.toggle('selected');
-            
-            // Get current selected IDs
-            let selectedIds = selectedOccasionsInput.value ? 
-                selectedOccasionsInput.value.split(',').filter(id => id) : [];
-            
-            if (card.classList.contains('selected')) {
-                // Add to selection
-                if (!selectedIds.includes(occasionId)) {
-                    selectedIds.push(occasionId);
-                }
-                // Add visual feedback
-                addPreviewTag(occasionId, occasionName);
-            } else {
-                // Remove from selection
-                selectedIds = selectedIds.filter(id => id !== occasionId);
-                // Remove preview tag
-                removePreviewTag(occasionId);
+        // Add missing animation styles if not present
+        (function addMissingStyles() {
+            if (!document.getElementById('occasion-selector-styles')) {
+                const style = document.createElement('style');
+                style.id = 'occasion-selector-styles';
+                style.textContent = `
+                    @keyframes fadeOut {
+                        from { opacity: 1; transform: scale(1); }
+                        to { opacity: 0; transform: scale(0.8); }
+                    }
+                    @keyframes tagPopIn {
+                        from {
+                            opacity: 0;
+                            transform: scale(0.8);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: scale(1);
+                        }
+                    }
+                    .occasion-card {
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    }
+                    .occasion-card.selected {
+                        border-color: var(--primary-color);
+                        background: linear-gradient(135deg, #fef2f6, #fff9fc);
+                        box-shadow: 0 8px 16px rgba(142, 13, 79, 0.2);
+                    }
+                    .remove-tag {
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+                    .remove-tag:hover {
+                        transform: scale(1.2);
+                        color: #dc3545;
+                    }
+                `;
+                document.head.appendChild(style);
             }
-            
-            // Update hidden input
-            selectedOccasionsInput.value = selectedIds.join(',');
-            
-            // Show/hide placeholder
-            togglePlaceholder(selectedIds.length === 0);
-        }
-
-        function addPreviewTag(id, name) {
-            const previewContainer = document.getElementById('selectedOccasionsPreview');
-            const placeholder = previewContainer.querySelector('.preview-placeholder');
-            
-            // Hide placeholder
-            if (placeholder) placeholder.classList.add('d-none');
-            
-            // Check if tag already exists
-            if (document.querySelector(`.preview-tag[data-id="${id}"]`)) {
-                return;
-            }
-            
-            // Create new tag
-            const tag = document.createElement('span');
-            tag.className = 'preview-tag';
-            tag.dataset.id = id;
-            tag.innerHTML = `
-                <i class="bi bi-check-circle-fill"></i>
-                ${name}
-                <i class="bi bi-x-circle-fill" onclick="removeOccasion('${id}', event)"></i>
-            `;
-            
-            // Add animation
-            tag.style.animation = 'tagPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-            
-            previewContainer.appendChild(tag);
-        }
-
-        function removePreviewTag(id) {
-            const tag = document.querySelector(`.preview-tag[data-id="${id}"]`);
-            if (tag) {
-                tag.style.animation = 'fadeOut 0.2s ease';
-                setTimeout(() => {
-                    tag.remove();
-                    togglePlaceholder();
-                }, 150);
-            }
-        }
-
-        function removeOccasion(id, event) {
-            if (event) {
-                event.stopPropagation();
-            }
-            
-            // Remove selected class from card
-            const card = document.querySelector(`.occasion-card[data-id="${id}"]`);
-            if (card) {
-                card.classList.remove('selected');
-            }
-            
-            // Remove from hidden input
-            const selectedOccasionsInput = document.getElementById('selected_occasions_input');
-            let selectedIds = selectedOccasionsInput.value ? 
-                selectedOccasionsInput.value.split(',').filter(pid => pid !== id) : [];
-            selectedOccasionsInput.value = selectedIds.join(',');
-            
-            // Remove preview tag
-            removePreviewTag(id);
-        }
-
-        function togglePlaceholder(force) {
-            const previewContainer = document.getElementById('selectedOccasionsPreview');
-            const placeholder = previewContainer.querySelector('.preview-placeholder');
-            const tags = previewContainer.querySelectorAll('.preview-tag');
-            
-            if (placeholder) {
-                if (tags.length === 0 || force === true) {
-                    placeholder.classList.remove('d-none');
-                } else {
-                    placeholder.classList.add('d-none');
-                }
-            }
-        }
-
-        function updatePreviewFromSelected(selectedIds) {
-            if (!selectedIds || selectedIds.length === 0) {
-                togglePlaceholder(true);
-                return;
-            }
-            
-            // Clear existing preview tags (except placeholder)
-            const previewContainer = document.getElementById('selectedOccasionsPreview');
-            const existingTags = previewContainer.querySelectorAll('.preview-tag');
-            existingTags.forEach(tag => tag.remove());
-            
-            // Add tags for each selected ID
-            selectedIds.forEach(id => {
-                const card = document.querySelector(`.occasion-card[data-id="${id}"]`);
-                if (card) {
-                    const name = card.dataset.name;
-                    addPreviewTag(id, name);
-                }
-            });
-        }
-
-        // Add fadeOut animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; transform: scale(1); }
-                to { opacity: 0; transform: scale(0.8); }
-            }
-        `;
-        document.head.appendChild(style);
+        })();
     </script>
 
     <script>

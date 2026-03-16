@@ -37,7 +37,7 @@
         <!-- Search and Filter Section -->
         <div class="search-filter-card mb-4">
             <div class="row g-3">
-                <div class="col-md-5">
+                <div class="col-md-3">
                     <div class="search-box">
                         <i class="bi bi-search search-icon"></i>
                         <input type="text" class="form-control search-input" id="searchBouquet" placeholder="Search by name, occasion or price...">
@@ -51,6 +51,15 @@
                         <option value="">All Occasions</option>
                         {% for occasion in occasions %}
                         <option value="{{ occasion.id }}">{{ occasion.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Search and Filter Section - Add this after occasion filter -->
+                <div class="col-md-2">
+                    <select class="form-select filter-select" id="filterCategory">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.parameter_value }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -78,6 +87,7 @@
                             <th>ID</th>
                             <th>Image</th>
                             <th>Bouquet Name</th>
+                            <th>Category</th>  <!-- New Category Column -->
                             <th>Price</th>
                             <th>Discount</th>
                             <th>Final Price</th>
@@ -106,6 +116,12 @@
                                         <strong>{{ bouquet.name }}</strong>
                                         <small class="text-muted">{{ bouquet.short_description|truncatechars:30 }}</small>
                                     </div>
+                                </td>
+                                <td>
+                                    <span class="category-badge">
+                                        <i class="bi bi-tag-fill"></i>
+                                        {{ bouquet.category_name }}
+                                    </span>
                                 </td>
                                 <td>
                                     <span class="original-price">₹{{ bouquet.price }}</span>
@@ -150,7 +166,7 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="9" class="text-center py-5">
+                                <td colspan="10" class="text-center py-5">  <!-- Updated colspan from 9 to 10 -->
                                     <div class="empty-state">
                                         <i class="bi bi-flower2 empty-icon"></i>
                                         <h5>No Bouquets Found</h5>

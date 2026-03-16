@@ -44,6 +44,13 @@
 
             <!-- Status Badges -->
             <div class="status-section">
+                <!-- Category Badge - Add this at the beginning of status badges -->
+                {% if bouquet.category %}
+                <span class="status-badge status-category">
+                    <i class="bi bi-tag-fill me-1"></i>{{ bouquet.category.parameter_value }}
+                </span>
+                {% endif %}
+
                 {% if bouquet.is_active %}
                     <span class="status-badge status-active">
                         <i class="bi bi-check-circle me-1"></i>Active
@@ -129,6 +136,26 @@
                             <span class="detail-value price-final">₹{{ bouquet.discount_price }}</span>
                         </div>
                         {% endif %}
+                    </div>
+                </div>
+
+                <!-- Category Information - Add this new section -->
+                <div class="details-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-tags me-2"></i>Product Category
+                    </h5>
+                    <div class="details-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span class="detail-value category-value">
+                                {% if bouquet.category %}
+                                    <i class="bi bi-tag-fill me-1" style="color: #8c0d4f;"></i>
+                                    {{ bouquet.category.parameter_value }}
+                                {% else %}
+                                    <span class="text-muted">No category assigned</span>
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
                 </div>
 

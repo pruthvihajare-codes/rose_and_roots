@@ -169,7 +169,7 @@
                         <li class="nav-menu-item"><a href="#" class="nav-menu-link">About</a></li>
                         <li class="nav-menu-item"><a href="#" class="nav-menu-link">Contact</a></li>
                         <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
-                        <li class="nav-menu-item"><a href="{% url 'checkout' %}" class="nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li>
+                        {% comment %} <li class="nav-menu-item"><a href="{% url 'checkout' %}" class="nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li> {% endcomment %}
                     
                     <!-- Guest Users - Show cart but not checkout -->
                     {% elif not user.is_authenticated %}
@@ -395,7 +395,7 @@
                                     </div>
                                 </a>
                                 
-                                <!-- My Orders - Link to orders page (when created) -->
+                                {% comment %} <!-- My Orders - Link to orders page (when created) -->
                                 <a href="{% url 'profile' %}?tab=orders" class="account-menu-item">
                                     <div class="account-menu-icon">
                                         <i class="bi bi-box-seam"></i>
@@ -407,7 +407,7 @@
                                     <div class="account-menu-arrow">
                                         <i class="bi bi-chevron-right"></i>
                                     </div>
-                                </a>
+                                </a> {% endcomment %}
                                 
                                 <!-- Returns & Refunds - Link to returns page (when created) -->
                                 <a href="{% url 'profile' %}?tab=returns" class="account-menu-item">
@@ -648,7 +648,7 @@
             <!-- Customer Only Menu Items -->
             {% if user.is_authenticated and user.role_id == 2 %}
                 <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
-                <li class="mobile-nav-menu-item"><a href="{% url 'checkout' %}" class="mobile-nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li>
+                {% comment %} <li class="mobile-nav-menu-item"><a href="{% url 'checkout' %}" class="mobile-nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li> {% endcomment %}
             
             <!-- Guest Users - Show cart but not checkout -->
             {% elif not user.is_authenticated %}

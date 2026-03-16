@@ -898,3 +898,88 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Category Selector Styles */
+.category-selector-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.category-select {
+    width: 100%;
+    padding: 12px 16px 12px 45px !important;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-color: white;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238c0d4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+}
+
+.category-select:hover {
+    border-color: #8c0d4f;
+    background-color: #fff9fc;
+}
+
+.category-select:focus {
+    border-color: #8c0d4f;
+    box-shadow: 0 0 0 4px rgba(140, 13, 79, 0.1);
+    outline: none;
+}
+
+.category-select.selected {
+    border-color: #8c0d4f;
+    background-color: #fef2f6;
+}
+
+.select-decoration {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8c0d4f;
+    font-size: 1.2rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Current Category Badge */
+.current-category-info {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.current-category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #f9e6ef, #ffe5f0);
+    color: #8c0d4f;
+    border-radius: 30px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.current-category-badge i {
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .category-select {
+        padding: 10px 14px 10px 40px !important;
+        font-size: 0.95rem;
+    }
+    
+    .select-decoration {
+        font-size: 1rem;
+        left: 10px;
+    }
+}

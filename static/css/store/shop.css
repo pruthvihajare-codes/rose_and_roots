@@ -1412,3 +1412,928 @@
         font-size: 0.85rem;
     }
 }
+
+/* Category Filter Styles */
+.category-filter-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.category-filter-wrapper::-webkit-scrollbar {
+    width: 5px;
+}
+
+.category-filter-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.category-filter-wrapper::-webkit-scrollbar-thumb {
+    background: #8c0d4f;
+    border-radius: 10px;
+}
+
+.category-checkbox-item {
+    margin-bottom: 10px;
+}
+
+.category-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.category-checkbox-label:hover {
+    background: rgba(140, 13, 79, 0.05);
+}
+
+.category-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkbox-custom {
+    position: relative;
+    height: 18px;
+    width: 18px;
+    background-color: #fff;
+    border: 2px solid #dee2e6;
+    border-radius: 5px;
+    margin-right: 12px;
+    transition: all 0.2s ease;
+}
+
+/* Ensure checkboxes show as checked */
+.category-checkbox:checked ~ .checkbox-custom {
+    background-color: #8c0d4f;
+    border-color: #8c0d4f;
+}
+
+/* Fix checkbox checkmark - use Bootstrap Icons consistently */
+.category-checkbox:checked ~ .checkbox-custom::after {
+    content: '\F26E'; /* Bootstrap Icons check-circle-fill */
+    font-family: 'bootstrap-icons';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    line-height: 1;
+}
+
+/* Style for Select2 selected options */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: #8c0d4f !important;
+    color: white !important;
+    border: none !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: white !important;
+}
+
+.category-name {
+    flex: 1;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+.category-count {
+    font-size: 0.85rem;
+    color: #adb5bd;
+    margin-left: 8px;
+}
+
+/* Selected Count Badge */
+.selected-count-badge {
+    margin-top: 8px;
+    text-align: right;
+}
+
+.selected-count-badge .badge {
+    background: #8c0d4f;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+/* Price Chips */
+.price-chips {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 15px 0;
+}
+
+.price-chip {
+    background: linear-gradient(135deg, #f8f9fa, #fff);
+    border: 1px solid #dee2e6;
+    border-radius: 30px;
+    padding: 8px 15px;
+    flex: 1;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.min-chip {
+    margin-right: 10px;
+}
+
+.max-chip {
+    margin-left: 10px;
+}
+
+.chip-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #8c0d4f;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chip-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #343a40;
+}
+
+.chip-separator {
+    color: #8c0d4f;
+    font-weight: 600;
+}
+
+/* Active Filters */
+.active-filters {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 20px 0;
+    border-left: 4px solid #8c0d4f;
+}
+
+.active-filters-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.active-filters-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 30px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    color: #495057;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.active-filter-tag:hover {
+    border-color: #8c0d4f;
+    background: #fef2f6;
+}
+
+.active-filter-tag button {
+    background: none;
+    border: none;
+    padding: 0 0 0 8px;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.active-filter-tag button:hover {
+    color: #dc3545;
+    transform: scale(1.2);
+}
+
+/* Filter Count Badge */
+.filter-count {
+    background: white;
+    color: #8c0d4f;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+/* Apply Filters Button */
+.btn-apply-filters {
+    background: linear-gradient(135deg, #8c0d4f, #a3125c);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(140, 13, 79, 0.2);
+}
+
+.btn-apply-filters:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(140, 13, 79, 0.3);
+    background: linear-gradient(135deg, #a3125c, #8c0d4f);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .price-chips {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .min-chip, .max-chip {
+        margin: 0;
+        width: 100%;
+    }
+    
+    .chip-separator {
+        display: none;
+    }
+}
+
+/* ===== COMPACT FILTER SIDEBAR ===== */
+.filter-sidebar {
+    padding: 15px !important;
+}
+
+.filter-header {
+    margin-bottom: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+.filter-section {
+    margin-bottom: 15px !important;
+}
+
+.filter-title {
+    margin-bottom: 8px !important;
+    font-size: 0.95rem !important;
+}
+
+.filter-content {
+    padding: 0 0 5px 0 !important;
+}
+
+/* Compact Category List */
+.category-filter-wrapper {
+    max-height: 200px !important; /* Reduced from 300px */
+}
+
+.category-checkbox-item {
+    margin-bottom: 5px !important;
+}
+
+.category-checkbox-label {
+    padding: 4px 8px !important;
+}
+
+.category-name {
+    font-size: 0.85rem !important;
+}
+
+.category-count {
+    font-size: 0.75rem !important;
+}
+
+/* Compact Select2 */
+.select2-container--default .select2-selection--multiple {
+    min-height: 38px !important;
+    padding: 3px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    padding: 2px 8px !important;
+    font-size: 0.8rem !important;
+}
+
+/* Compact Price Section */
+.price-range-wrapper {
+    padding: 0 !important;
+}
+
+.price-slider {
+    margin: 10px 0 15px !important;
+}
+
+.price-chips {
+    margin: 5px 0 0 !important;
+}
+
+.price-chip {
+    padding: 4px 10px !important;
+}
+
+.chip-label {
+    font-size: 0.6rem !important;
+}
+
+.chip-value {
+    font-size: 0.9rem !important;
+}
+
+/* Compact Active Filters */
+.active-filters {
+    padding: 10px !important;
+    margin: 10px 0 !important;
+}
+
+.active-filters-title {
+    font-size: 0.75rem !important;
+    margin-bottom: 5px !important;
+}
+
+.active-filter-tag {
+    padding: 2px 8px !important;
+    font-size: 0.75rem !important;
+}
+
+/* Compact Apply Button */
+.btn-apply-filters {
+    padding: 8px !important;
+    font-size: 0.9rem !important;
+    margin-top: 5px !important;
+}
+
+/* Remove extra spacing */
+.selected-count-badge {
+    margin-top: 3px !important;
+}
+
+.selected-count-badge .badge {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+/* Hide unnecessary text */
+.filter-content small.text-muted {
+    font-size: 0.7rem !important;
+    margin-top: 3px !important;
+}
+
+/* Make filter header more compact */
+.filter-header h5 {
+    font-size: 1rem !important;
+}
+
+.clear-all {
+    font-size: 0.8rem !important;
+    padding: 3px 8px !important;
+}
+
+/* Remove extra gaps */
+.row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+.col-xl-3, .col-lg-4, .col-md-5 {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+}
+
+/* Add this for the price apply button */
+.btn-price-apply {
+    background: white;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.btn-price-apply:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Fix Select2 dropdown z-index */
+.select2-container--open {
+    z-index: 9999 !important;
+}
+
+.select2-container--open.select2-container--below {
+    z-index: 1060 !important;
+}
+
+/* Improve active filter tags */
+.active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    background: white;
+    border: 1px solid var(--accent-color);
+    border-radius: 30px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    color: var(--accent-color);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(140, 13, 79, 0.1);
+}
+
+.active-filter-tag button {
+    background: none;
+    border: none;
+    padding: 0 0 0 6px;
+    color: var(--accent-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.active-filter-tag button:hover {
+    color: var(--danger-color);
+    transform: scale(1.2);
+}
+
+/* Smooth transitions for filter sections */
+.filter-content {
+    display: none;
+    padding: 5px 0 5px;
+    transition: all 0.3s ease;
+}
+
+.filter-content.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fix product grid on mobile */
+@media (max-width: 576px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr); /* Force 2 columns on small mobile */
+        gap: 8px;
+    }
+    
+    .product-card {
+        margin-bottom: 0;
+    }
+    
+    .product-info {
+        padding: 8px;
+    }
+    
+    .product-title {
+        font-size: 0.85rem;
+        height: 36px;
+        margin-bottom: 4px;
+    }
+    
+    .current-price {
+        font-size: 1rem;
+    }
+    
+    .btn-view-details {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Loading state for filters */
+.filter-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.filter-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 10;
+}
+
+/* Ensure Clear All button is always clickable */
+.clear-all {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(140, 13, 79, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.clear-all:hover {
+    background: var(--accent-color);
+    color: white;
+    text-decoration: none;
+}
+
+/* Price Input Styles */
+.price-input-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.price-input-field {
+    flex: 1;
+}
+
+.price-input-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #6c757d;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.price-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.price-currency {
+    position: absolute;
+    left: 10px;
+    color: var(--accent-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    z-index: 1;
+}
+
+.price-input {
+    width: 100%;
+    padding: 8px 8px 8px 25px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.price-input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(140, 13, 79, 0.1);
+}
+
+.price-input:hover {
+    border-color: var(--accent-color);
+}
+
+.price-apply-btn {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 0;
+}
+
+.price-apply-btn:hover {
+    background: #6b0a3c;
+    transform: scale(1.05);
+}
+
+.price-apply-btn i {
+    font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .price-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .price-apply-btn {
+        width: 100%;
+        margin-top: 5px;
+    }
+}
+
+/* ===== EMPTY STATE STYLES ===== */
+.empty-state-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 20px;
+}
+
+.empty-state-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 30px;
+    max-width: 550px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(140, 13, 79, 0.1);
+    border: 1px solid rgba(140, 13, 79, 0.1);
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.empty-state-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #f9e6ef, #ffe5f0);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    border: 3px solid white;
+    box-shadow: 0 5px 15px rgba(140, 13, 79, 0.2);
+}
+
+.empty-state-icon i {
+    font-size: 48px;
+    color: var(--accent-color);
+    opacity: 0.8;
+}
+
+.empty-state-title {
+    font-family: var(--heading-font);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 12px;
+}
+
+.empty-state-message {
+    color: #6c757d;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-state-suggestions {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.empty-state-suggestions span {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.suggestion-chip {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.suggestion-chip:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(140, 13, 79, 0.2);
+}
+
+.suggestion-chip i {
+    font-size: 0.9rem;
+}
+
+.btn-clear-filters {
+    background: linear-gradient(135deg, var(--accent-color), #a3125c);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(140, 13, 79, 0.3);
+}
+
+.btn-clear-filters:hover {
+    background: linear-gradient(135deg, #6b0a3c, var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(140, 13, 79, 0.4);
+}
+
+.btn-clear-filters i {
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .empty-state-card {
+        padding: 30px 20px;
+    }
+    
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .empty-state-icon i {
+        font-size: 38px;
+    }
+    
+    .empty-state-title {
+        font-size: 1.5rem;
+    }
+    
+    .suggestion-chips {
+        flex-direction: column;
+    }
+    
+    .suggestion-chip {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .empty-state-wrapper {
+        min-height: 300px;
+    }
+    
+    .empty-state-card {
+        padding: 25px 15px;
+    }
+    
+    .empty-state-message {
+        font-size: 0.9rem;
+    }
+    
+    .btn-clear-filters {
+        max-width: 100%;
+    }
+}
+
+/* Fix for empty state in grid */
+.products-grid .empty-state-wrapper {
+    grid-column: 1 / -1; /* This makes it span all columns */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Fix for modal overlay issues on shop page */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* Ensure the account modal is above everything */
+#accountModal {
+    z-index: 1060 !important;
+}
+
+/* Fix for any potential overlay elements */
+.select2-container--open {
+    z-index: 9999 !important;
+}
+
+/* Make sure the modal content is clickable */
+.modal-content {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1070 !important;
+}
+
+/* Fix for the filter sidebar which might be overlaying */
+.filter-sidebar {
+    z-index: 1;
+    position: relative;
+}
+
+/* Ensure the modal backdrop doesn't block clicks on the modal itself */
+.modal {
+    pointer-events: none;
+}
+
+.modal-dialog {
+    pointer-events: auto;
+}
+
+/* WhatsApp Card Button */
+.btn-whatsapp-card {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    text-decoration: none;
+}
+
+.btn-whatsapp-card:hover {
+    background: #128C7E;
+    color: white;
+}
+
+.btn-whatsapp-card i {
+    font-size: 1rem;
+}

@@ -122,6 +122,9 @@
                                 <span>Subtotal ({{ item_count }} items)</span>
                                 <span>₹{{ subtotal|floatformat:0 }}</span>
                             </div>
+                            
+                            {% comment %} 
+                            ===== SHIPPING CALCULATION - COMMENTED FOR FUTURE USE =====
                             <div class="summary-row">
                                 <span>Shipping</span>
                                 {% if free_shipping_qualified %}
@@ -139,13 +142,17 @@
                                     <i class="bi bi-check-circle-fill"></i> You've qualified for FREE shipping!
                                 </div>
                             {% endif %}
+                            ===== END COMMENTED SECTION =====
+                            {% endcomment %}
+
                             <div class="summary-row total">
                                 <span>Total</span>
                                 <span class="total-amount">₹{{ total|floatformat:0 }}</span>
                             </div>
                         </div>
 
-                        <!-- Free Shipping Progress Bar -->
+                        {% comment %}
+                        ===== FREE SHIPPING PROGRESS - COMMENTED FOR FUTURE USE =====
                         {% if not free_shipping_qualified %}
                         <div class="free-shipping-progress mt-3 mb-3">
                             <div class="progress" style="height: 8px;">
@@ -156,12 +163,40 @@
                                      aria-valuemax="2000">
                                 </div>
                             </div>
-                            {% comment %} <small class="text-muted mt-1 d-block">
-                                ₹{{ subtotal|floatformat:0 }} of ₹2000
-                            </small> {% endcomment %}
                         </div>
                         {% endif %}
+                        ===== END COMMENTED SECTION =====
+                        {% endcomment %}
 
+                        <!-- WhatsApp Inquiry Button - ACTIVE -->
+                        <!-- WhatsApp Inquiry Section - Enhanced -->
+                        <div class="whatsapp-inquiry-section">
+                            <span class="whatsapp-badge">NEW</span>
+                            <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to place an order for the following items:%0A%0A'|urlencode }}{% for item in cart_items %}• {{ item.name|urlencode }} - ₹{{ item.price|floatformat:0|urlencode }}%0A{% endfor %}%0A{{ 'Total: ₹'|urlencode }}{{ subtotal|floatformat:0|urlencode }}%0A%0A{{ 'Please share payment and delivery details.'|urlencode }}" 
+                            target="_blank" 
+                            class="btn-whatsapp-checkout">
+                                <i class="bi bi-whatsapp"></i> 
+                                <span>Inquire via WhatsApp</span>
+                                <i class="bi bi-arrow-right-short"></i>
+                            </a>
+                            <div class="whatsapp-note">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <span>Click to send your cart items via WhatsApp. Our team will assist you with the order.</span>
+                            </div>
+                        </div>
+
+                        <!-- Add More Items Button - Enhanced -->
+                        <div class="continue-shopping-cart">
+                            <a href="{% url 'shop' %}" class="btn-continue-shopping">
+                                <i class="bi bi-arrow-left"></i> 
+                                <span>Add More Items</span>
+                                <span style="margin-left: auto; opacity: 0.7;">{{ remaining_slots }} slots left</span>
+                            </a>
+                        </div>
+
+                        {% comment %}
+                        ===== CHECKOUT BUTTONS - COMMENTED FOR FUTURE USE =====
+                        
                         <!-- Checkout Button with Role-Based Access -->
                         {% if user.is_authenticated and user.role_id == 2 %}
                             <!-- Customer logged in -->
@@ -196,6 +231,9 @@
                                 <i class="bi bi-google"></i>
                             </div>
                         </div>
+                        
+                        ===== END COMMENTED SECTION =====
+                        {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -240,5 +278,96 @@
     {% endif %}
 
     <script src="{% static 'js/store/cart.js' %}"></script>
+
+    <script>
+        // ========== CART FUNCTIONS ==========
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function removeFromCart(encryptedId) {
+            if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                return;
+            }
+            
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btn.disabled = true;
+            
+            $.ajax({
+                url: '/remove_from_cart',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: JSON.stringify({
+                    bouquet_id: encryptedId
+                }),
+                contentType: 'application/json',
+                success: function(data) {
+                    if (data.success) {
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Removed!',
+                            text: 'Item removed from cart',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            // Reload page to update cart
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error removing item:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Could not remove item. Please try again.'
+                    }).then(() => {
+                        location.reload();
+                    });
+                },
+                complete: function() {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        {% comment %}
+        // ===== FUTURE CHECKOUT FUNCTIONS - COMMENTED FOR LATER USE =====
+        function proceedToCheckout() {
+            // Checkout logic here
+            window.location.href = "{% url 'checkout' %}";
+        }
+        
+        function applyCoupon() {
+            // Coupon logic here
+        }
+        ===== END COMMENTED SECTION =====
+        {% endcomment %}
+    </script>
 
 {% endblock %}

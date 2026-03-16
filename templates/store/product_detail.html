@@ -39,11 +39,21 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Sticky Header Add to Cart Button -->
+                        <!-- Sticky Header Actions -->
                         <div class="sticky-actions">
+                            <!-- KEEP THIS - Add to Cart in sticky header -->
                             <button class="sticky-add-to-cart" onclick="addToCart('{{ encrypted_id }}')">
                                 <i class="bi bi-cart-plus"></i> Add to Cart
                             </button>
+                            
+                            <!-- WhatsApp button in sticky header for quick inquiry -->
+                            {% if bouquet.buy_now == 0 %}
+                                <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
+                                target="_blank" 
+                                class="sticky-whatsapp-btn">
+                                    <i class="bi bi-whatsapp"></i>
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -162,32 +172,29 @@
 
                             <!-- Quantity and Actions -->
                             <div class="main-product-actions">
-                                <!-- In the action-buttons section, modify for non-logged in users -->
                                 <div class="action-buttons">
-                                    {% if user.is_authenticated and user.role_id == 2 %}
-                                        
-                                        <!-- Main Add to Cart Button -->
-                                        <button class="btn-add-to-cart" onclick="addToCart('{{ encrypted_id }}')">
-                                            <i class="bi bi-cart-plus"></i> Add to Cart
-                                        </button>
-
-                                        <!-- Buy Now Button - for logged in users -->
-                                        <button class="btn-buy-now" onclick="buyNow('{{ encrypted_id }}')">
-                                            <i class="bi bi-lightning-charge"></i> Buy Now
-                                        </button>
-                                        
+                                    <!-- KEEP THIS - Add to Cart Button (always visible) -->
+                                    <button class="btn-add-to-cart" onclick="addToCart('{{ encrypted_id }}')">
+                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </button>
+                                    {% if bouquet.buy_now == 0 %}
+                                        <!-- WhatsApp Inquiry Button -->
+                                        <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}%20(ID:%20{{ bouquet.id|urlencode }})%0A%0A{{ 'Please share more details about this product including:'|urlencode }}%0A- {{ 'Availability'|urlencode }}%0A- {{ 'Delivery options'|urlencode }}%0A- {{ 'Customization possibilities'|urlencode }}" 
+                                            target="_blank" 
+                                            class="btn-whatsapp-inquiry">
+                                                <i class="bi bi-whatsapp"></i> Wanna Buy? Talk to Us
+                                        </a>
                                     {% else %}
-                                        {% comment %} <a href="{% url 'login' %}?next={% url 'product_detail' %}?id={{ encrypted_id|urlencode }}" class="btn-add-to-cart">
-                                            <i class="bi bi-box-arrow-in-right"></i> Login to Buy
-                                        </a>
-                                        <a href="{% url 'register' %}?next={% url 'product_detail' %}?id={{ encrypted_id }}" class="btn-wishlist" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
-                                            <i class="bi bi-person-plus"></i>
-                                        </a> {% endcomment %}
-
-                                        <!-- For non-logged in users, modify the login button -->
-                                        <a href="{% url 'login' %}?next={% url 'checkout' %}?buy_now={{ encrypted_id|urlencode }}" class="btn-buy-now" style="text-decoration: none;">
-                                            <i class="bi bi-lightning-charge"></i> Buy Now
-                                        </a>
+                                        <!-- Normal Add to Cart / Buy Now for future use -->
+                                        {% if user.is_authenticated and user.role_id == 2 %}
+                                            <button class="btn-buy-now" onclick="buyNow('{{ encrypted_id }}')">
+                                                <i class="bi bi-lightning-charge"></i> Buy Now
+                                            </button>
+                                        {% else %}
+                                            <a href="{% url 'login' %}?next={% url 'checkout' %}?buy_now={{ encrypted_id|urlencode }}" class="btn-buy-now" style="text-decoration: none;">
+                                                <i class="bi bi-lightning-charge"></i> Buy Now
+                                            </a>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
@@ -479,10 +486,11 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Added to Cart!',
-                            text: data.message,
+                            text: 'Item added to your cart',
                             showConfirmButton: false,
                             timer: 1500
                         });
+                        // Update cart badge if you're still showing it
                         if (typeof updateCartBadge === 'function') {
                             updateCartBadge(data.cart_count);
                         }
@@ -490,18 +498,15 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Cannot Add to Cart',
-                            text: data.message,
-                            confirmButtonColor: '#8c0d4f'
+                            text: data.message
                         });
                     }
                 },
-                error: function(xhr) {
-                    console.error('Error:', xhr);
+                error: function() {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Something went wrong',
-                        confirmButtonColor: '#8c0d4f'
+                        text: 'Something went wrong'
                     });
                 },
                 complete: function() {

@@ -38,12 +38,25 @@ class Bouquet(models.Model):
     same_day_available = models.IntegerField(default=0)
     is_featured = models.IntegerField(default=0)
     is_active = models.IntegerField(default=1)
+    
+    buy_now = models.IntegerField(default=0, help_text='0: WhatsApp Inquiry, 1: Normal Buy Now')
 
     occasions = models.ManyToManyField(
         Occasion,
         through='BouquetOccasion',
         related_name='bouquets',
         blank=True
+    )
+    
+    # Add category field - ForeignKey to parameter_master
+    category = models.ForeignKey(
+        'parameter_master',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bouquets',
+        db_column='category_id',
+        help_text='Product category from parameter_master'
     )
 
     created_at = models.DateTimeField(null=True, blank=True, auto_now_add=True)
@@ -146,3 +159,18 @@ class DeliveryPincode(models.Model):
 
     def __str__(self):
         return f"{self.pincode} - {self.place_name}"
+
+class parameter_master(models.Model):
+    parameter_id = models.AutoField(primary_key=True)
+    parameter_name =models.TextField(null=True,blank=True)
+    parameter_value =models.TextField(null=True,blank=True)
+    isactive = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    created_by = models.CharField(max_length=50, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    updated_by = models.CharField(max_length=50, null=True, blank=True)
+    
+    class Meta:
+        db_table = 'parameter_master'
+    def __str__(self):
+        return self.parameter_name

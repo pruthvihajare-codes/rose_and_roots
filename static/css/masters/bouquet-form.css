@@ -1342,3 +1342,238 @@ textarea.form-control:focus {
     color: var(--danger-color);
     font-weight: 600;
 }
+
+/* ===== PRODUCT CATEGORY SELECTOR ===== */
+.category-selector-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.category-select {
+    width: 100%;
+    padding: 14px 20px 14px 50px !important;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-family: var(--body-font);
+    font-size: 1rem;
+    color: var(--dark-color);
+    background-color: white;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238c0d4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+}
+
+.category-select:hover {
+    border-color: var(--primary-color);
+    background-color: #fff9fc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(142, 13, 79, 0.1);
+}
+
+.category-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(140, 13, 79, 0.1);
+    outline: none;
+    background-color: white;
+}
+
+.category-select:active {
+    transform: translateY(0);
+}
+
+.select-decoration {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    pointer-events: none;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.category-select:hover + .select-decoration {
+    transform: translateY(-50%) scale(1.1);
+    color: var(--primary-dark);
+}
+
+/* Dropdown options styling */
+.category-select option {
+    padding: 12px 15px;
+    font-family: var(--body-font);
+    font-size: 0.95rem;
+    background-color: white;
+    color: var(--dark-color);
+}
+
+.category-select option:hover,
+.category-select option:focus,
+.category-select option:checked {
+    background: linear-gradient(135deg, var(--primary-light) 0%, #ffe5f0 100%);
+    color: var(--primary-dark);
+}
+
+/* Style for the select when opened */
+.category-select:focus option:checked {
+    background: linear-gradient(135deg, var(--primary-light) 0%, #ffe5f0 100%);
+    color: var(--primary-dark);
+}
+
+/* Custom dropdown arrow animation */
+.category-select-wrapper::after {
+    display: none; /* Hide default arrow since we're using background-image */
+}
+
+/* Animation for the select */
+.category-select {
+    animation: slideDownFade 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Field hint specific to category */
+.field-hint i.bi-grid {
+    color: var(--primary-color);
+}
+
+/* Error state for category select */
+.category-select.error {
+    border-color: var(--danger-color);
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+.category-select.error:focus {
+    box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1);
+}
+
+/* Success state for category select */
+.category-select.success {
+    border-color: var(--success-color);
+}
+
+.category-select.success:focus {
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+}
+
+/* Disabled state */
+.category-select:disabled {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: var(--secondary-color);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.category-select:disabled + .select-decoration {
+    color: var(--secondary-color);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .category-select {
+        padding: 12px 16px 12px 45px !important;
+        font-size: 0.95rem;
+        background-position: right 12px center;
+        background-size: 14px;
+    }
+    
+    .select-decoration {
+        left: 12px;
+        font-size: 1.2rem;
+    }
+}
+
+/* Loading state for category select */
+.category-select.loading {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238c0d4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='12' y1='2' x2='12' y2='6'%3E%3C/animate%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Category select with value selected */
+.category-select:not([value=""]):valid {
+    border-color: var(--primary-color);
+    background-color: #fff9fc;
+}
+
+/* Category group styling if you want to group options later */
+.category-select optgroup {
+    font-family: var(--heading-font);
+    font-weight: 600;
+    color: var(--primary-dark);
+    background-color: var(--primary-light);
+    padding: 8px 12px;
+}
+
+.category-select optgroup option {
+    padding-left: 20px;
+    font-weight: normal;
+}
+
+/* Encryption example tooltip style (if you want to keep it) */
+.encryption-example {
+    font-size: 0.75rem;
+    color: var(--secondary-color);
+    margin-top: 5px;
+    padding: 4px 8px;
+    background: rgba(108, 117, 125, 0.05);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.encryption-example small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.encryption-example i {
+    color: var(--primary-color);
+    font-size: 0.7rem;
+}
+
+/* Category preview in summary (if you add it to the summary section) */
+.summary-category {
+    background: linear-gradient(135deg, var(--primary-light), white);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-category i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.summary-category span {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+/* Animation delay for category field */
+.form-group:nth-child(6) { animation-delay: 0.6s; } /* Adjust based on your form structure */

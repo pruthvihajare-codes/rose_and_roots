@@ -246,6 +246,54 @@
                     <div class="image-preview-grid" id="imagePreviewGrid"></div>
                 </div>
 
+                <!-- Add this after the Pricing section and before Occasion Selection -->
+                <div class="form-section">
+                    <h5 class="section-title">
+                        <i class="bi bi-tags me-2"></i>Product Category <span class="required">*</span>
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="category" class="form-label">
+                                    Select Category <span class="required">*</span>
+                                </label>
+                                <div class="category-selector-wrapper">
+                                    <select class="form-control category-select" id="category" name="category" required>
+                                        <option value="" disabled>-- Select a Category --</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.encrypted_id }}" 
+                                            {% if category.encrypted_id == selected_category_id %}selected="selected"{% endif %}>
+                                            {{ category.value }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="select-decoration">
+                                        <i class="bi bi-grid"></i>
+                                    </div>
+                                </div>
+                                <div class="field-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    Select the appropriate category for this product
+                                </div>
+                                {% if errors.category %}
+                                <div class="invalid-feedback d-block">{{ errors.category }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {% if bouquet.category %}
+                            <div class="current-category-info">
+                                <label class="form-label">Current Category</label>
+                                <div class="current-category-badge">
+                                    <i class="bi bi-tag-fill"></i>
+                                    {{ bouquet.category.parameter_value }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Status -->
                 <div class="form-section">
                     <h5 class="section-title">
@@ -449,4 +497,52 @@
         }
     }
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize category select with custom styling
+        const categorySelect = document.getElementById('category');
+        
+        if (categorySelect) {
+            // Add change event for visual feedback
+            categorySelect.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('selected');
+                    // Update preview if needed
+                    updateCategoryPreview(this.options[this.selectedIndex].text);
+                } else {
+                    this.classList.remove('selected');
+                }
+            });
+            
+            // Trigger change if already selected
+            if (categorySelect.value) {
+                categorySelect.classList.add('selected');
+            }
+        }
+        
+        // Function to update category in preview
+        function updateCategoryPreview(categoryName) {
+            const previewCategory = document.getElementById('previewCategory');
+            if (previewCategory) {
+                previewCategory.textContent = categoryName;
+            }
+        }
+        
+        // Update preview modal to include category
+        const originalUpdatePreview = updatePreview;
+        window.updatePreview = function() {
+            originalUpdatePreview();
+            const categorySelect = document.getElementById('category');
+            if (categorySelect) {
+                const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+                const previewCategory = document.getElementById('previewCategory');
+                if (previewCategory && selectedOption) {
+                    previewCategory.textContent = selectedOption.text;
+                }
+            }
+        };
+    });
+</script>
+
 {% endblock %}

@@ -117,15 +117,33 @@ def add_bouquet(request):
             # Get all active vendors
             vendors = Vendor.objects.filter(is_active=1).order_by('vendor_name')
             
+            # Get all product categories from parameter_master
+            categories = parameter_master.objects.filter(
+                parameter_name='Product Categories',
+                isactive=1
+            ).order_by('parameter_value')
+            
+            # Create a list with encrypted IDs
+            encrypted_categories = []
+            for category in categories:
+                encrypted_id = enc(str(category.parameter_id))
+                if encrypted_id:
+                    encrypted_categories.append({
+                        'encrypted_id': encrypted_id,
+                        'value': category.parameter_value,
+                    })
+            
             context = {
                 'occasions': occasions,
                 'vendors': vendors,
                 'selected_occasions': [],  # Empty list for new form
+                'categories': encrypted_categories,
             }
             return render(request, 'masters/add_bouquet.html', context)
         
         if request.method == 'POST':
-
+            
+            # Get form data
             bouquet_name = request.POST.get('bouquet_name', '').strip()
             short_description = request.POST.get('short_description', '').strip()
             description = request.POST.get('description', '').strip()
@@ -134,6 +152,16 @@ def add_bouquet(request):
             price = request.POST.get('price', 0)
             discount = request.POST.get('discount', 0)
             vendor_id = request.POST.get('vendor')
+            
+            # Get and decrypt category ID
+            encrypted_category_id = request.POST.get('category', '')
+            category_id = None
+            if encrypted_category_id:
+                category_id = dec(str(encrypted_category_id))
+                if not category_id:
+                    messages.error(request, 'Invalid category selection. Please try again.')
+                    return redirect('add_bouquet')
+            
             occasion_ids_str = request.POST.get('occasions', '')
             occasion_ids = [id for id in occasion_ids_str.split(',') if id]
             is_active = request.POST.get('is_active', '1')
@@ -150,6 +178,10 @@ def add_bouquet(request):
 
             if not description:
                 errors['description'] = 'Full description is required.'
+            
+            # Validate category
+            if not category_id:
+                errors['category'] = 'Please select a product category.'
 
             try:
                 price_decimal = Decimal(price)
@@ -176,9 +208,35 @@ def add_bouquet(request):
                 errors['images'] = 'Maximum 5 images allowed.'
 
             if errors:
-                for error in errors.values():
+                for field, error in errors.items():
                     messages.error(request, error)
-                return render(request, 'masters/add_bouquet.html')
+                
+                # Re-fetch data for form re-render
+                occasions = Occasion.objects.filter(is_active=1).order_by('name')
+                vendors = Vendor.objects.filter(is_active=1).order_by('vendor_name')
+                categories = parameter_master.objects.filter(
+                    parameter_name='Product Categories',
+                    isactive=1
+                ).order_by('parameter_value')
+                
+                encrypted_categories = []
+                for category in categories:
+                    enc_id = enc(str(category.parameter_id))
+                    if enc_id:
+                        encrypted_categories.append({
+                            'encrypted_id': enc_id,
+                            'value': category.parameter_value,
+                        })
+                
+                context = {
+                    'occasions': occasions,
+                    'vendors': vendors,
+                    'categories': encrypted_categories,
+                    'form_data': request.POST,
+                    'selected_occasions': occasion_ids,
+                    'errors': errors,
+                }
+                return render(request, 'masters/add_bouquet.html', context)
 
             # ---------------- SAVE DATA ---------------- #
 
@@ -198,7 +256,7 @@ def add_bouquet(request):
                         slug = f"{base_slug}-{counter}"
                         counter += 1
 
-                    # Create bouquet
+                    # Create bouquet with category
                     bouquet = Bouquet.objects.create(
                         name=bouquet_name,
                         slug=slug,
@@ -209,6 +267,7 @@ def add_bouquet(request):
                         price=price_decimal,
                         discount_percent=discount_int,
                         discount_price=discount_price,
+                        category_id=category_id,  # Add the category
                         is_active=1 if is_active == '1' else 0,
                         same_day_available=0,
                         is_featured=0
@@ -268,9 +327,35 @@ def add_bouquet(request):
 
             except Exception as e:
                 logger.exception(str(e))
-                messages.error(request, "Something went wrong.")
-                return render(request, 'masters/add_bouquet.html')
-
+                messages.error(request, f"Something went wrong: {str(e)}")
+                
+                # Re-fetch data for form re-render
+                occasions = Occasion.objects.filter(is_active=1).order_by('name')
+                vendors = Vendor.objects.filter(is_active=1).order_by('vendor_name')
+                categories = parameter_master.objects.filter(
+                    parameter_name='Product Categories',
+                    isactive=1
+                ).order_by('parameter_value')
+                
+                encrypted_categories = []
+                for category in categories:
+                    enc_id = enc(str(category.parameter_id))
+                    if enc_id:
+                        encrypted_categories.append({
+                            'encrypted_id': enc_id,
+                            'value': category.parameter_value,
+                        })
+                
+                context = {
+                    'occasions': occasions,
+                    'vendors': vendors,
+                    'categories': encrypted_categories,
+                    'form_data': request.POST,
+                    'selected_occasions': occasion_ids,
+                    'errors': errors,
+                }
+                return render(request, 'masters/add_bouquet.html', context)
+        
     except Exception as e:
         logger.exception(f"Unexpected error in add_bouquet: {str(e)}")
         messages.error(request, 'Something went wrong. Please try again later.')
@@ -293,13 +378,19 @@ def bouquet_list(request):
             messages.error(request, 'You do not have permission to access this page.')
             return redirect('/')
         
-        # Get all bouquets with related data
-        bouquets = Bouquet.objects.all().order_by('-created_at').select_related().prefetch_related('occasions', 'images')
+        # Get all bouquets with related data including category
+        bouquets = Bouquet.objects.all().order_by('-created_at').select_related('category').prefetch_related('occasions', 'images')
         
         # Get all active occasions for the filter dropdown
         occasions = Occasion.objects.filter(is_active=1).order_by('name')
         
-        # Add encrypted IDs
+        # Get all categories from parameter_master for the filter dropdown
+        categories = parameter_master.objects.filter(
+            parameter_name='Product Categories',
+            isactive=1
+        ).order_by('parameter_value')
+        
+        # Add encrypted IDs and additional data
         bouquet_list = []
         for bouquet in bouquets:
             bouquet.encrypted_id = enc(str(bouquet.id))
@@ -313,12 +404,18 @@ def bouquet_list(request):
             bouquet.occasion_list = ', '.join(occasion_names[:3])  # Show first 3 occasions
             if len(occasion_names) > 3:
                 bouquet.occasion_list += f' +{len(occasion_names)-3} more'
+            
+            # Add category name and ID for filtering
+            bouquet.category_name = bouquet.category.parameter_value if bouquet.category else 'Uncategorized'
+            bouquet.category_id = bouquet.category.parameter_id if bouquet.category else None
                 
             bouquet_list.append(bouquet)
         
         context = {
             'bouquets': bouquet_list,
-            'occasions': occasions,  # ← This was missing!
+            'occasions': occasions,
+            'categories': categories,  # Add categories to context
+            "MEDIA_URL": settings.MEDIA_URL,
         }
         return render(request, 'masters/bouquet_list.html', context)
         
@@ -353,9 +450,9 @@ def view_bouquet(request):
         # Decrypt the bouquet ID
         decrypted_id = dec(str(encrypted_id))
         
-        # Get bouquet with related data
+        # Get bouquet with related data including category
         bouquet = get_object_or_404(
-            Bouquet.objects.prefetch_related('occasions', 'images'), 
+            Bouquet.objects.select_related('category').prefetch_related('occasions', 'images'), 
             id=decrypted_id
         )
         
@@ -370,6 +467,8 @@ def view_bouquet(request):
             'occasions': occasions,
             'images': images,
             'encrypted_id': encrypted_id,
+            'category': bouquet.category,  # Add category to context
+            "MEDIA_URL": settings.MEDIA_URL,
         }
         return render(request, 'masters/view_bouquet.html', context)
         
@@ -414,6 +513,23 @@ def edit_bouquet(request):
         # Get all active occasions for selection
         occasions = Occasion.objects.filter(is_active=1).order_by('name')
         
+        # Get all product categories from parameter_master
+        categories = parameter_master.objects.filter(
+            parameter_name='Product Categories',
+            isactive=1
+        ).order_by('parameter_value')
+        
+        # Encrypt category IDs for safe HTML output
+        encrypted_categories = []
+        for category in categories:
+            enc_id = enc(str(category.parameter_id))
+            if enc_id:
+                encrypted_categories.append({
+                    'encrypted_id': enc_id,
+                    'value': category.parameter_value,
+                    'original_id': category.parameter_id  # For debugging
+                })
+        
         # Get selected occasion IDs
         selected_occasion_ids = list(bouquet.occasions.values_list('id', flat=True))
         
@@ -425,9 +541,12 @@ def edit_bouquet(request):
             context = {
                 'bouquet': bouquet,
                 'occasions': occasions,
-                'selected_occasions': [str(id) for id in selected_occasion_ids],
+                'categories': encrypted_categories,
+                'selected_occasions': [str(id) for id in selected_occasion_ids],  # Changed from selected_occasion_ids to selected_occasions
+                'selected_category_id': enc(str(bouquet.category_id)) if bouquet.category_id else None,
                 'images': images,
                 'encrypted_id': encrypted_id,
+                "MEDIA_URL": settings.MEDIA_URL,
             }
             return render(request, 'masters/edit_bouquet.html', context)
         
@@ -441,9 +560,18 @@ def edit_bouquet(request):
             instruction_text = request.POST.get('instruction_text', '').strip()
             price = request.POST.get('price', 0)
             discount = request.POST.get('discount', 0)
+            
+            # Get and decrypt category ID
+            encrypted_category_id = request.POST.get('category', '')
+            category_id = None
+            if encrypted_category_id:
+                category_id = dec(str(encrypted_category_id))
+            
             occasion_ids_str = request.POST.get('occasions', '')
             occasion_ids = [id for id in occasion_ids_str.split(',') if id]
             is_active = request.POST.get('is_active', '1')
+            is_featured = request.POST.get('is_featured', '0')
+            images_to_delete = request.POST.get('images_to_delete', '')
             
             errors = {}
             
@@ -457,6 +585,9 @@ def edit_bouquet(request):
             
             if not description:
                 errors['description'] = 'Full description is required.'
+            
+            if not category_id:
+                errors['category'] = 'Please select a product category.'
             
             try:
                 price_decimal = Decimal(price)
@@ -509,9 +640,19 @@ def edit_bouquet(request):
                     bouquet.price = price_decimal
                     bouquet.discount_percent = discount_int
                     bouquet.discount_price = discount_price
+                    bouquet.category_id = category_id  # Update category
                     bouquet.is_active = 1 if is_active == '1' else 0
+                    bouquet.is_featured = 1 if is_featured == '1' else 0
                     
                     bouquet.save()
+                    
+                    # ---------------- DELETE MARKED IMAGES ---------------- #
+                    if images_to_delete:
+                        delete_ids = [int(id) for id in images_to_delete.split(',') if id]
+                        BouquetImage.objects.filter(
+                            id__in=delete_ids,
+                            bouquet=bouquet
+                        ).delete()
                     
                     # ---------------- UPDATE OCCASIONS ---------------- #
                     
@@ -581,7 +722,7 @@ def edit_bouquet(request):
                 logger.exception(str(e))
                 messages.error(request, "Something went wrong while updating.")
                 return redirect(f'{request.path}?bouquet_id={encrypted_id}')
-                
+             
     except Exception as e:
         logger.exception(f"Unexpected error in edit_bouquet: {str(e)}")
         messages.error(request, 'Something went wrong. Please try again later.')
