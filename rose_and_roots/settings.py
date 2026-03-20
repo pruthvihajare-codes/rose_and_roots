@@ -20,7 +20,6 @@ from cryptography.fernet import Fernet
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -30,11 +29,9 @@ SECRET_KEY = 'django-insecure--h)%86%!jheg&fhm(lp6zk14=&1hg4%5@&ovq-a(2xh27^!fmz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ 'localhost', '127.0.0.1' ]
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'yourdomain.com', 'www.yourdomain.com']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -47,6 +44,8 @@ INSTALLED_APPS = [
     'store',
 ]
 
+# rose_and_roots/settings.py
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -55,6 +54,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'store.middleware.SessionValidationMiddleware',  # Add this FIRST
+    'store.middleware.ProductAccessMiddleware',     # Add this SECOND
+    'store.middleware.PageOriginMiddleware',        # Add this THIRD
 ]
 
 ROOT_URLCONF = 'rose_and_roots.urls'
@@ -62,13 +64,15 @@ ROOT_URLCONF = 'rose_and_roots.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # 👈 add this
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -80,14 +84,13 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # For production
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'D:/Python Project/Documents/')
 
 WSGI_APPLICATION = 'rose_and_roots.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -109,21 +112,57 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 # Authentication settings
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = '/login/'
+
+# ============================================
+# SECURITY & SESSION SETTINGS
+# ============================================
 
 # Session settings
-SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 1800  # 30 minutes (reduced for security)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session expires when browser closes
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on each request
+
+# CSRF settings
+CSRF_COOKIE_SECURE = False  # Set to True in production
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://yourdomain.com',
+]
+
+# Security headers
+SECURE_BROWSER_XSS_FILTER = True  # XSS protection
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME type sniffing
+X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking
+
+# HSTS (HTTP Strict Transport Security) - Enable in production
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# SSL/HTTPS settings (enable in production)
+SECURE_SSL_REDIRECT = False  # Set to True in production
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Referrer policy
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 # Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -133,50 +172,225 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Rate limiting for login attempts (requires django-ratelimit or similar)
+# Add this to prevent brute force attacks
+# pip install django-ratelimit
+# Add 'django_ratelimit' to INSTALLED_APPS
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
+# ============================================
+# CACHING SETTINGS (Performance)
+# ============================================
 
-LANGUAGE_CODE = 'en-us'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 300,  # 5 minutes
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}
 
-TIME_ZONE = 'Asia/Kolkata'
+# Optional: Use Redis for production (faster)
+# pip install django-redis
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
 
-USE_I18N = True
+# ============================================
+# SECURITY MIDDLEWARE - ADDITIONAL HEADERS
+# ============================================
 
-USE_TZ = True
+# Custom security headers middleware
+class SecurityHeadersMiddleware:
+    """
+    Middleware to add additional security headers
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
 
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        # Content Security Policy (CSP) - Adjust as needed
+        response['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://code.jquery.com https://cdnjs.cloudflare.com https://unpkg.com; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
+            "img-src 'self' data: https:; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "form-action 'self'; "
+            "base-uri 'self'; "
+        )
+        
+        # Additional security headers
+        response['X-Content-Type-Options'] = 'nosniff'
+        response['X-Frame-Options'] = 'DENY'
+        response['X-XSS-Protection'] = '1; mode=block'
+        response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response['Permissions-Policy'] = (
+            "geolocation=(), "
+            "microphone=(), "
+            "camera=(), "
+            "payment=(), "
+            "usb=()"
+        )
+        
+        # Remove Server header to hide technology
+        if 'Server' in response:
+            del response['Server']
+        
+        return response
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+# Add the security headers middleware to MIDDLEWARE
+MIDDLEWARE.insert(0, 'rose_and_roots.settings.SecurityHeadersMiddleware')
 
-STATIC_URL = 'static/'
+# ============================================
+# EMAIL SETTINGS
+# ============================================
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'littlecraftone.support@gmail.com'
+EMAIL_HOST_PASSWORD = 'bpnnxxdlyacmphsp'  # App password
+DEFAULT_FROM_EMAIL = 'LittleCraftOne <littlecraftone.support@gmail.com>'
+EMAIL_TIMEOUT = 30  # Timeout in seconds
+
+# ============================================
+# LOGGING CONFIGURATION
+# ============================================
 
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,
-
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+#             'style': '{',
+#         },
+#         'simple': {
+#             'format': '{levelname} {asctime} {message}',
+#             'style': '{',
+#         },
+#     },
 #     'handlers': {
 #         'console': {
 #             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#         },
+#         'file': {
+#             'class': 'logging.FileHandler',
+#             'filename': BASE_DIR / 'logs/debug.log',
+#             'formatter': 'verbose',
+#         },
+#         'error_file': {
+#             'class': 'logging.FileHandler',
+#             'filename': BASE_DIR / 'logs/errors.log',
+#             'level': 'ERROR',
+#             'formatter': 'verbose',
 #         },
 #     },
-
-#     'root': {
-#         'handlers': ['console'],
-#         'level': 'DEBUG',
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console', 'file'],
+#             'level': 'INFO',
+#         },
+#         'django.request': {
+#             'handlers': ['error_file'],
+#             'level': 'ERROR',
+#             'propagate': False,
+#         },
+#         'store': {
+#             'handlers': ['console', 'file'],
+#             'level': 'DEBUG',
+#         },
+#         'accounts': {
+#             'handlers': ['console', 'file'],
+#             'level': 'DEBUG',
+#         },
 #     },
 # }
 
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Your SMTP server
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'littlecraftone.support@gmail.com'  # Your real email
-EMAIL_HOST_PASSWORD = 'bpnnxxdlyacmphsp'  # Your app password
-DEFAULT_FROM_EMAIL = 'littlecraftone.support@gmail.com'
+# Create logs directory if it doesn't exist
+LOGS_DIR = BASE_DIR / 'logs'
+if not LOGS_DIR.exists():
+    LOGS_DIR.mkdir()
 
-# Add this to your settings.py
+# ============================================
+# FILE UPLOAD SETTINGS
+# ============================================
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+
+# ============================================
+# INTERNATIONALIZATION
+# ============================================
+
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'Asia/Kolkata'
+USE_I18N = True
+USE_TZ = True
+
+# ============================================
+# STATIC & MEDIA FILES
+# ============================================
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# ============================================
+# SITE URL
+# ============================================
+
 SITE_URL = 'http://127.0.0.1:8000'  # For development
 # SITE_URL = 'https://www.littlecraftone.com'  # For production
+
+# ============================================
+# DEFAULT AUTO FIELD
+# ============================================
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ============================================
+# ADDITIONAL SECURITY SETTINGS
+# ============================================
+
+# Disable browsable API in production (for Django REST Framework)
+# If you're using DRF, uncomment these
+# REST_FRAMEWORK = {
+#     'DEFAULT_RENDERER_CLASSES': (
+#         'rest_framework.renderers.JSONRenderer',
+#     ),
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.SessionAuthentication',
+#     ),
+# }
+
+# Rate limiting (requires django-ratelimit)
+# Install: pip install django-ratelimit
+# Add 'django_ratelimit' to INSTALLED_APPS
+
+# ============================================
+# CORS SETTINGS (if needed for API)
+# ============================================
+# If you need CORS for API access, uncomment and install django-cors-headers
+# pip install django-cors-headers
+# INSTALLED_APPS += ['corsheaders']
+# MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]

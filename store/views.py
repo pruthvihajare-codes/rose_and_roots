@@ -210,6 +210,8 @@ def shop_view(request):
 
 # views.py - Add product detail view
 
+# store/views.py
+
 def product_detail(request):
     """
     Display single product details with reviews
@@ -219,6 +221,32 @@ def product_detail(request):
     if not encrypted_id:
         messages.error(request, 'Product ID is required.')
         return redirect('shop')
+    
+    # ========== ADD ACCESS VALIDATION ==========
+    # Check if this is a valid access (not direct)
+    referer = request.META.get('HTTP_REFERER')
+    
+    # Skip validation for admin (optional)
+    if request.user.is_authenticated and hasattr(request.user, 'role_id') and request.user.role_id == 1:
+        pass  # Admin can bypass
+    else:
+        # Check if there's a valid referrer
+        if not referer:
+            messages.warning(request, 'Please browse products from our shop page.')
+            return redirect('shop')
+        
+        # Check if referrer is from shop, home, or previous product
+        valid_referrers = ['/shop/', '/', '/product-detail/']
+        is_valid = False
+        for valid in valid_referrers:
+            if valid in referer:
+                is_valid = True
+                break
+        
+        if not is_valid:
+            messages.warning(request, 'Please browse products from our shop page.')
+            return redirect('shop')
+    # ==========================================
     
     try:
         # Decrypt the ID
@@ -254,7 +282,6 @@ def product_detail(request):
         admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
         admin_whatsapp = admin_user.phone if admin_user else '918805433102'
         
-        # ========== FIX: Get ALL reviews ==========
         # Get all active reviews for this bouquet
         all_reviews = bouquet.reviews.filter(is_active=1).select_related('user')
         
@@ -264,7 +291,6 @@ def product_detail(request):
             user_review = all_reviews.filter(user=request.user).first()
         
         # Get ALL reviews (including user's review) for pagination
-        # Don't filter out other reviews - show all of them
         combined_reviews = list(all_reviews.order_by('-created_at'))
         
         # Paginate all reviews
@@ -285,7 +311,7 @@ def product_detail(request):
             'page_obj': page_obj,
             'avg_rating': round(avg_rating, 1),
             'total_reviews': total_reviews,
-            'user_review': user_review,  # Pass this to highlight user's review
+            'user_review': user_review,
             'admin_whatsapp': admin_whatsapp,
             "MEDIA_URL": settings.MEDIA_URL,
         }

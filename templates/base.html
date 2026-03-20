@@ -1360,6 +1360,124 @@
         document.head.appendChild(style);
 
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ========== ENHANCED DIRECT ACCESS DETECTION WITH REDIRECT ==========
+            function checkDirectAccess() {
+                // Pages that should not be accessed directly
+                const restrictedPages = [
+                    '/shop/', '/cart_view/', '/checkout/', 
+                    '/profile/', '/wishlist/'
+                ];
+                
+                const currentPath = window.location.pathname;
+                
+                // Check if current page is restricted
+                if (restrictedPages.includes(currentPath)) {
+                    // Check if there's a referrer
+                    if (!document.referrer || document.referrer === '') {
+                        // Direct access detected
+                        console.log('Direct URL access detected for:', currentPath);
+                        
+                        // Clear session via AJAX before redirect
+                        fetch('/clear-session/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Session cleared:', data);
+                            
+                            // Show warning and redirect to home
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Access Denied',
+                                text: 'Direct URL access is not allowed. Redirecting to home page...',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#8c0d4f',
+                                allowOutsideClick: false,
+                                timer: 2000,
+                                timerProgressBar: true
+                            }).then(() => {
+                                window.location.href = '/';
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error clearing session:', error);
+                            // Still redirect even if session clear fails
+                            window.location.href = '/';
+                        });
+                    }
+                }
+            }
+            
+            // ========== SESSION VALIDATION CHECK ==========
+            function validateSession() {
+                // Skip for public pages
+                const publicPages = ['/', '/login/', '/register/', '/about-us/', '/contact-us/', '/shop/'];
+                const currentPath = window.location.pathname;
+                
+                if (!publicPages.includes(currentPath)) {
+                    // Check session validity for protected pages
+                    fetch('/check-session-validity/', {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.valid) {
+                            console.log('Invalid session detected');
+                            // Clear local session and redirect to login
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Session Expired',
+                                text: 'Your session has expired. Please login again.',
+                                confirmButtonText: 'Login',
+                                confirmButtonColor: '#8c0d4f',
+                                allowOutsideClick: false
+                            }).then(() => {
+                                window.location.href = '/login/?next=' + encodeURIComponent(currentPath);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Session validation error:', error);
+                    });
+                }
+            }
+            
+            // Helper function to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            // Run checks
+            checkDirectAccess();
+            validateSession();
+            
+            // Optional: Check session periodically (every 30 seconds)
+            setInterval(validateSession, 30000);
+        });
+    </script>
+    
     
     {% block extra_js %}{% endblock %}
 

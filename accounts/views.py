@@ -15,7 +15,12 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.debug import sensitive_post_parameters
 # Add this at the top of your views.py or in a separate utils.py
+import time
+import uuid
 import logging
 logger = logging.getLogger(__name__)
 
@@ -33,9 +38,12 @@ def logout_user(request):
         return redirect('home')
 
 # Regular view functions for rendering templates
-
+@sensitive_post_parameters()
+@csrf_protect
+@never_cache
 def login_view(request):
     try:
+        # If user is already logged in, redirect based on role
         if request.user.is_authenticated:
             if hasattr(request.user, 'role_id'):
                 if request.user.role_id == 1:
@@ -46,15 +54,16 @@ def login_view(request):
         
         if request.method == 'GET':
             next_url = request.GET.get('next')
-            print(f"Next URL received in GET: {next_url}")
+            logger.info(f"Login page accessed with next URL: {next_url}")
             return render(request, 'account/login.html', {'next': next_url})
         
         if request.method == 'POST':
             try:
-                email = request.POST.get('email', '').strip()
+                email = request.POST.get('email', '').strip().lower()
                 password = request.POST.get('password', '')
                 remember_me = request.POST.get('remember_me')
                 
+                # Validation
                 if not email:
                     messages.error(request, 'Email is required.')
                     return render(request, 'account/login.html', {'email': email})
@@ -63,28 +72,51 @@ def login_view(request):
                     messages.error(request, 'Password is required.')
                     return render(request, 'account/login.html', {'email': email})
                 
+                # Rate limiting check (optional - add if you have django-ratelimit)
+                # from django_ratelimit.decorators import ratelimit
+                # Add rate limiting to prevent brute force
+                
                 # Authenticate user
                 user = authenticate(request, username=email, password=password)
                 
                 if user is not None:
-                    # CRITICAL: Store the OLD session key BEFORE login
+                    # Check if user is active
+                    if not user.is_active:
+                        messages.error(request, 'Your account has been deactivated. Please contact support.')
+                        return render(request, 'account/login.html', {'email': email})
+                    
+                    # Store the OLD session key BEFORE login
                     old_session_key = request.session.session_key
-                    print(f"OLD session key before login: {old_session_key}")  # Debug
+                    logger.debug(f"OLD session key before login: {old_session_key}")
                     
                     # Perform login (this will change the session key)
                     login(request, user)
                     
+                    # ========== SESSION SECURITY SETUP ==========
+                    # Set session markers for security tracking
+                    request.session['session_created_at'] = time.time()
+                    request.session['session_id'] = str(uuid.uuid4())
+                    request.session['ip_address'] = request.META.get('REMOTE_ADDR')
+                    request.session['user_agent'] = request.META.get('HTTP_USER_AGENT', 'Unknown')[:255]
+                    request.session['login_timestamp'] = time.time()
+                    request.session['login_email'] = user.email
+                    request.session['session_validated'] = True
+                    
                     # Handle remember me
                     if not remember_me:
+                        # Session expires when browser closes
                         request.session.set_expiry(0)
+                        logger.debug(f"Session set to expire on browser close for user: {user.email}")
                     else:
-                        request.session.set_expiry(1209600)
+                        # Session expires in 30 days (2,592,000 seconds)
+                        request.session.set_expiry(2592000)
+                        logger.debug(f"Session set to expire in 30 days for user: {user.email}")
                     
                     # NEW session key after login
                     new_session_key = request.session.session_key
-                    print(f"NEW session key after login: {new_session_key}")  # Debug
+                    logger.debug(f"NEW session key after login: {new_session_key}")
                     
-                    # ---------- CART MERGE LOGIC ----------
+                    # ========== CART MERGE LOGIC ==========
                     if old_session_key:
                         try:
                             from store.views import merge_carts_on_login
@@ -92,8 +124,8 @@ def login_view(request):
                             # Pass the old session key to the merge function
                             result = merge_carts_on_login(request, old_session_key)
                             
-                            if result['merged'] > 0:
-                                if result['skipped'] > 0:
+                            if result.get('merged', 0) > 0:
+                                if result.get('skipped', 0) > 0:
                                     messages.warning(
                                         request, 
                                         f'Welcome back! We merged {result["merged"]} item(s) from your guest cart. '
@@ -105,14 +137,16 @@ def login_view(request):
                                         f'Welcome back! We merged {result["merged"]} item(s) from your guest cart.'
                                     )
                         except Exception as cart_error:
-                            print(f"Cart merge error: {cart_error}")
-                    # --------------------------------------
+                            logger.error(f"Cart merge error: {cart_error}")
+                    # ======================================
                     
+                    # Success message
                     messages.success(request, f'Welcome back, {user.full_name or user.email}!')
                     
+                    # Handle redirect
                     next_url = request.POST.get('next')
-                    print(f"Next URL received in POST: {next_url}")
-
+                    logger.debug(f"Next URL received in POST: {next_url}")
+                    
                     if next_url:
                         return redirect(next_url)
                     
@@ -120,6 +154,7 @@ def login_view(request):
                         if user.role_id == 1:
                             return redirect('admin_dashboard')
                         elif user.role_id == 2:
+                            # Check for checkout redirect
                             checkout_redirect = request.session.pop('checkout_after_login', None)
                             if checkout_redirect:
                                 return redirect('checkout')
@@ -127,19 +162,21 @@ def login_view(request):
                     
                     return redirect('/')
                 else:
+                    # Failed login attempt
+                    logger.warning(f"Failed login attempt for email: {email} from IP: {request.META.get('REMOTE_ADDR')}")
                     messages.error(request, 'Invalid email or password.')
                     return render(request, 'account/login.html', {'email': email})
                     
             except Exception as post_error:
-                print(f"Login POST error: {post_error}")
+                logger.error(f"Login POST error: {post_error}")
                 messages.error(request, 'An error occurred. Please try again.')
                 return render(request, 'account/login.html')
                 
     except Exception as e:
-        print(f"Login view unexpected error: {e}")
+        logger.error(f"Login view unexpected error: {e}")
         messages.error(request, 'Something went wrong. Please try again later.')
         return render(request, 'account/login.html')
-    
+
 # In your cart/views.py, update the merge function to handle imports properly
 
 def merge_carts_on_login(request):
