@@ -27,9 +27,202 @@
                 <p class="shop-subtitle">Handcrafted with love for every special moment</p>
             </div> {% endcomment %}
 
+            <!-- Mobile Filter Accordion -->
+            <div class="d-md-none mb-3">
+                <div class="accordion" id="mobileFilterAccordion">
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-white rounded-3 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" style="background: white; border: 1px solid rgba(140, 13, 79, 0.2); padding: 12px 16px;">
+                                <span class="d-flex align-items-center justify-content-between w-100">
+                                    <span>
+                                        <i class="bi bi-funnel me-2" style="color: var(--accent-color);"></i>
+                                        Filter & Sort
+                                    </span>
+                                    <span class="filter-active-count" id="mobileFilterCount">
+                                        {% if selected_occasions|length > 0 or selected_categories|length > 0 or min_price or max_price %}
+                                            <span class="badge bg-danger ms-2">{{ total_active_filters }}</span>
+                                        {% endif %}
+                                    </span>
+                                </span>
+                            </button>
+                        </h2>
+                        <div id="filterCollapse" class="accordion-collapse collapse" data-bs-parent="#mobileFilterAccordion">
+                            <div class="accordion-body p-0 mt-3">
+                                <div class="filter-sidebar-mobile">
+                                    <!-- Close Button at Top -->
+                                    <div class="mobile-filter-close d-flex justify-content-end mb-2">
+                                        <button type="button" class="btn-close-filter" id="closeMobileFilterBtn" aria-label="Close">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="filter-header d-flex justify-content-between align-items-center mb-2 pb-2">
+                                        <h5 class="mb-0"><i class="bi bi-sliders2 me-2"></i>Filter</h5>
+                                        <a href="{% url 'shop' %}" class="clear-all small">Clear All</a>
+                                    </div>
+
+                                    <!-- Filter Form -->
+                                    <form method="get" action="{% url 'shop' %}" id="filterFormMobile">
+                                        <!-- Category Filter -->
+                                        <div class="filter-section mb-3">
+                                            <h6 class="filter-title d-flex justify-content-between align-items-center mb-2">
+                                                <span><i class="bi bi-tags me-2"></i>Category</span>
+                                                <span class="toggle-icon"><i class="bi bi-chevron-up"></i></span>
+                                            </h6>
+                                            <div class="filter-content show">
+                                                <div class="category-filter-wrapper" style="max-height: 180px;">
+                                                    {% for category in categories %}
+                                                    <div class="category-checkbox-item mb-1">
+                                                        <label class="category-checkbox-label d-flex align-items-center">
+                                                            <input type="checkbox" 
+                                                                name="category" 
+                                                                value="{{ category.encrypted_id }}"
+                                                                class="category-checkbox"
+                                                                {% if category.encrypted_id in selected_categories %}checked{% endif %}>
+                                                            <span class="checkbox-custom"></span>
+                                                            <span class="category-name flex-grow-1 small">{{ category.parameter_value }}</span>
+                                                            <span class="category-count small text-muted">({{ category.bouquet_count|default:0 }})</span>
+                                                        </label>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Occasion Filter -->
+                                        <div class="filter-section mb-3">
+                                            <h6 class="filter-title d-flex justify-content-between align-items-center mb-2">
+                                                <span><i class="bi bi-calendar-event me-2"></i>Occasion</span>
+                                                <span class="toggle-icon"><i class="bi bi-chevron-up"></i></span>
+                                            </h6>
+                                            <div class="filter-content show">
+                                                <select class="form-select occasion-select" name="occasion" multiple="multiple" style="width: 100%;">
+                                                    {% for occasion in occasions %}
+                                                    <option value="{{ occasion.encrypted_id }}" 
+                                                        {% if occasion.encrypted_id in selected_occasions %}selected{% endif %}>
+                                                        {{ occasion.name }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <div class="selected-count-badge text-end mt-1" id="selectedOccasionCountMobile">
+                                                    {% if selected_occasions|length > 0 %}
+                                                        <span class="badge bg-primary">{{ selected_occasions|length }} selected</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Price Range Filter -->
+                                        <div class="filter-section mb-3">
+                                            <h6 class="filter-title d-flex justify-content-between align-items-center mb-2">
+                                                <span><i class="bi bi-currency-rupee me-2"></i>Price</span>
+                                                <span class="toggle-icon"><i class="bi bi-chevron-up"></i></span>
+                                            </h6>
+                                            <div class="filter-content show">
+                                                <div class="price-range-wrapper">
+                                                    <div id="priceSliderMobile" class="price-slider" style="height: 4px; margin: 15px 0 20px;"></div>
+                                                    
+                                                    <div class="price-input-group">
+                                                        <div class="price-input-field">
+                                                            <label class="price-input-label">Min</label>
+                                                            <div class="price-input-wrapper">
+                                                                <span class="price-currency">₹</span>
+                                                                <input type="number" 
+                                                                    class="price-input" 
+                                                                    id="minPriceInputMobile" 
+                                                                    placeholder="Min" 
+                                                                    min="{{ price_range.min_price|floatformat:0 }}" 
+                                                                    max="{{ price_range.max_price|floatformat:0 }}"
+                                                                    value="{{ min_price|default:price_range.min_price|floatformat:0 }}">
+                                                            </div>
+                                                        </div>
+                                                        <div class="price-input-field">
+                                                            <label class="price-input-label">Max</label>
+                                                            <div class="price-input-wrapper">
+                                                                <span class="price-currency">₹</span>
+                                                                <input type="number" 
+                                                                    class="price-input" 
+                                                                    id="maxPriceInputMobile" 
+                                                                    placeholder="Max" 
+                                                                    min="{{ price_range.min_price|floatformat:0 }}" 
+                                                                    max="{{ price_range.max_price|floatformat:0 }}"
+                                                                    value="{{ max_price|default:price_range.max_price|floatformat:0 }}">
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" class="price-apply-btn" id="applyPriceBtnMobile">
+                                                            <i class="bi bi-check-lg"></i>
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                                        <span class="badge bg-light text-dark px-3 py-2">₹<span id="displayMinPriceMobile">{{ min_price|default:price_range.min_price|floatformat:0 }}</span></span>
+                                                        <span class="text-muted small fw-bold">to</span>
+                                                        <span class="badge bg-light text-dark px-3 py-2">₹<span id="displayMaxPriceMobile">{{ max_price|default:price_range.max_price|floatformat:0 }}</span></span>
+                                                    </div>
+                                                    
+                                                    <input type="hidden" id="minPriceMobile" name="min_price" value="{{ min_price|default:price_range.min_price|floatformat:0 }}">
+                                                    <input type="hidden" id="maxPriceMobile" name="max_price" value="{{ max_price|default:price_range.max_price|floatformat:0 }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <input type="hidden" name="sort" id="sortFieldMobile" value="{{ sort_by }}">
+                                        
+                                        <!-- Active Filters -->
+                                        {% if selected_occasions|length > 0 or selected_categories|length > 0 or min_price or max_price %}
+                                        <div class="active-filters bg-light p-2 rounded mb-2" style="border-left: 3px solid #8c0d4f;">
+                                            <div class="small fw-bold text-muted mb-1">Active Filters</div>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% for enc_id in selected_categories %}
+                                                    {% for category in categories %}
+                                                        {% if category.encrypted_id == enc_id %}
+                                                            <span class="badge bg-white border text-dark px-2 py-1 d-inline-flex align-items-center">
+                                                                {{ category.parameter_value }}
+                                                                <button type="button" class="btn-close btn-close-sm ms-1" style="font-size: 0.5rem;" onclick="removeFilter('category', '{{ enc_id }}')"></button>
+                                                            </span>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endfor %}
+                                                
+                                                {% for enc_id in selected_occasions %}
+                                                    {% for occasion in occasions %}
+                                                        {% if occasion.encrypted_id == enc_id %}
+                                                            <span class="badge bg-white border text-dark px-2 py-1 d-inline-flex align-items-center">
+                                                                {{ occasion.name }}
+                                                                <button type="button" class="btn-close btn-close-sm ms-1" style="font-size: 0.5rem;" onclick="removeFilter('occasion', '{{ enc_id }}')"></button>
+                                                            </span>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endfor %}
+                                                
+                                                {% if min_price or max_price %}
+                                                    <span class="badge bg-white border text-dark px-2 py-1 d-inline-flex align-items-center">
+                                                        ₹{{ min_price|default:price_range.min_price|floatformat:0 }} - ₹{{ max_price|default:price_range.max_price|floatformat:0 }}
+                                                        <button type="button" class="btn-close btn-close-sm ms-1" style="font-size: 0.5rem;" onclick="clearPriceFilter()"></button>
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <button type="submit" class="btn btn-apply-filters w-100 py-2 mt-2">
+                                            <i class="bi bi-funnel me-2"></i>Apply Filters
+                                            {% if selected_occasions|length > 0 or selected_categories|length > 0 or min_price or max_price %}
+                                                <span class="badge bg-white text-dark ms-2">{{ total_active_filters }}</span>
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
-                <!-- Sidebar Filters (Left Side) -->
-                <div class="col-xl-3 col-lg-4 col-md-5 mb-4">
+                
+                <!-- Sidebar Filters (Left Side) - Added collapse for mobile -->
+                <div class="col-xl-3 col-lg-4 col-md-5 mb-4" id="filterSidebar">
                     <div class="filter-sidebar p-3">
                         <div class="filter-header d-flex justify-content-between align-items-center mb-2 pb-2">
                             <h5 class="mb-0"><i class="bi bi-sliders2 me-2"></i>Filter</h5>
@@ -184,7 +377,7 @@
                             </div>
                             {% endif %}
                             
-                            <button type="submit" class="btn btn-apply-filters w-100 py-2 mt-2" style="background: #8c0d4f; color: white; border: none; border-radius: 8px;">
+                            <button type="submit" class="btn btn-apply-filters w-100 py-2 mt-2">
                                 <i class="bi bi-funnel me-2"></i>Apply Filters
                                 {% if selected_occasions|length > 0 or selected_categories|length > 0 or min_price or max_price %}
                                     <span class="badge bg-white text-dark ms-2">{{ total_active_filters }}</span>
@@ -423,11 +616,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="row">
+                        <div class="row g-0">
                             <div class="col-md-6">
                                 <div class="quick-view-image">
                                     {% if bouquet.primary_image %}
-                                        <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}" class="img-fluid">
+                                        <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}">
                                     {% else %}
                                         <div class="no-image-large">
                                             <i class="bi bi-flower2"></i>
@@ -438,43 +631,38 @@
                             <div class="col-md-6">
                                 <div class="quick-view-details">
                                     <h2>{{ bouquet.name }}</h2>
-                                    <!-- In quick view modal -->
+                                    
                                     <div class="quick-view-price">
                                         {% if bouquet.discount_price %}
                                             <span class="current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
                                             <span class="original-price">₹{{ bouquet.price|floatformat:0 }}</span>
-                                            <span class="discount-badge-price">-{{ bouquet.discount_percent }}%</span>
+                                            <span class="discount-badge">-{{ bouquet.discount_percent }}%</span>
                                         {% else %}
                                             <span class="current-price">₹{{ bouquet.price|floatformat:0 }}</span>
                                         {% endif %}
                                     </div>
                                     
-                                    <div class="quick-view-occasions mt-3">
+                                    <div class="quick-view-occasions">
                                         <h6>Occasions:</h6>
                                         {% for occasion in bouquet.occasion_names %}
-                                        <span class="occasion-badge">{{ occasion }}</span>
+                                            <span class="occasion-badge">{{ occasion }}</span>
                                         {% endfor %}
                                     </div>
                                     
-                                    <p class="mt-3">{{ bouquet.short_description }}</p>
+                                    <p>{{ bouquet.short_description }}</p>
                                     
-                                    {% if bouquet.delivery_info %}
-                                    <div class="delivery-info mt-3">
-                                        <i class="bi bi-truck"></i> {{ bouquet.delivery_info|truncatechars:50 }}
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <div class="quick-view-actions mt-4">
-                                        <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}" class="btn btn-primary">View Details</a>
-                                        <!-- Action Button based on buy_now status -->
+                                    <div class="quick-view-actions">
+                                        <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}" class="btn btn-primary">
+                                            View Details
+                                        </a>
                                         {% if bouquet.buy_now == 0 %}
                                             <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
                                                 target="_blank" 
-                                                class="btn-whatsapp-card">
-                                                    <i class="bi bi-whatsapp"></i> Inquiry
+                                                class="btn-whatsapp-card btn">
+                                                <i class="bi bi-whatsapp"></i> Inquiry
                                             </a>
                                         {% else %}
-                                            <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                                            <button class="btn btn-outline-primary" onclick="addToCart('{{ bouquet.encrypted_id }}')">
                                                 <i class="bi bi-cart-plus"></i> Add to Cart
                                             </button>
                                         {% endif %}
@@ -595,6 +783,7 @@
                 
                 // Highlight apply button
                 highlightApplyButton();
+                if (window.updateFilterCount) window.updateFilterCount();
             };
 
             window.clearPriceFilter = function() {
@@ -620,6 +809,7 @@
                 
                 // Highlight apply button
                 highlightApplyButton();
+                if (window.updateFilterCount) window.updateFilterCount();
             };
 
             // ========== PRICE INPUT HANDLING ==========
@@ -1013,6 +1203,212 @@
             });
 
         })(jQuery);
+    </script>
+
+    <script>
+        // Add scroll shadow effect to sidebar
+        function handleSidebarScroll() {
+            const sidebar = document.querySelector('.filter-sidebar');
+            if (!sidebar) return;
+            
+            if (window.scrollY > 50) {
+                sidebar.classList.add('sticky-shadow');
+            } else {
+                sidebar.classList.remove('sticky-shadow');
+            }
+            
+            // Check if sidebar content overflows (is scrollable)
+            if (sidebar.scrollHeight > sidebar.clientHeight) {
+                sidebar.classList.add('scrollable');
+            } else {
+                sidebar.classList.remove('scrollable');
+            }
+        }
+
+        // Add scroll event listener
+        window.addEventListener('scroll', handleSidebarScroll);
+
+        // Also check on resize
+        window.addEventListener('resize', handleSidebarScroll);
+
+        // Initial check
+        setTimeout(handleSidebarScroll, 100);
+
+        // Handle internal scrolling to show/hide the gradient indicator
+        const sidebar = document.querySelector('.filter-sidebar');
+        if (sidebar) {
+            sidebar.addEventListener('scroll', function() {
+                const isAtBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + 10;
+                if (isAtBottom) {
+                    this.classList.remove('scrollable');
+                } else {
+                    this.classList.add('scrollable');
+                }
+            });
+        }
+    </script>
+
+    <script>
+        // Keep this one for mobile form submission
+        $(document).ready(function() {
+            // Handle mobile filter form submission
+            $('#filterFormMobile').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Get all form data
+                const formData = new FormData(this);
+                const params = new URLSearchParams();
+                
+                // Build query parameters
+                for (let pair of formData.entries()) {
+                    if (pair[1]) {
+                        // Handle multiple values (like checkboxes)
+                        if (params.has(pair[0])) {
+                            params.append(pair[0], pair[1]);
+                        } else {
+                            params.append(pair[0], pair[1]);
+                        }
+                    }
+                }
+                
+                // Redirect with filters
+                window.location.href = window.location.pathname + '?' + params.toString();
+            });
+            
+            // Update mobile filter count badge
+            function updateMobileFilterCount() {
+                const activeFilters = $('.active-filters .badge:not(.bg-white)').length;
+                const mobileBadge = $('#mobileFilterCount');
+                if (activeFilters > 0) {
+                    mobileBadge.html(`<span class="badge bg-danger ms-2">${activeFilters}</span>`);
+                } else {
+                    mobileBadge.empty();
+                }
+            }
+            
+            updateMobileFilterCount();
+            
+            // Watch for filter changes in mobile form
+            $('#filterFormMobile .category-checkbox, #filterFormMobile .occasion-select').on('change', function() {
+                setTimeout(updateMobileFilterCount, 100);
+            });
+        });
+    </script>
+
+    <script>
+        // Keep scroll shadow effect script
+        function handleSidebarScroll() {
+            const sidebar = document.querySelector('.filter-sidebar');
+            if (!sidebar) return;
+            
+            if (window.scrollY > 50) {
+                sidebar.classList.add('sticky-shadow');
+            } else {
+                sidebar.classList.remove('sticky-shadow');
+            }
+            
+            if (sidebar.scrollHeight > sidebar.clientHeight) {
+                sidebar.classList.add('scrollable');
+            } else {
+                sidebar.classList.remove('scrollable');
+            }
+        }
+
+        window.addEventListener('scroll', handleSidebarScroll);
+        window.addEventListener('resize', handleSidebarScroll);
+        setTimeout(handleSidebarScroll, 100);
+
+        const sidebar = document.querySelector('.filter-sidebar');
+        if (sidebar) {
+            sidebar.addEventListener('scroll', function() {
+                const isAtBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + 10;
+                if (isAtBottom) {
+                    this.classList.remove('scrollable');
+                } else {
+                    this.classList.add('scrollable');
+                }
+            });
+        }
+    </script>
+
+    <script>
+        // Mobile filter close handlers
+        $(document).ready(function() {
+            // Close when X button is clicked
+            $('#closeMobileFilterBtn').on('click', function() {
+                $('#filterCollapse').collapse('hide');
+            });
+            
+            // Close when clicking outside the filter
+            $(document).on('click', function(e) {
+                // Only on mobile
+                if (window.innerWidth >= 768) return;
+                
+                const filterCollapse = $('#filterCollapse');
+                const accordionButton = $('.accordion-button');
+                
+                // Check if filter is open
+                if (!filterCollapse.hasClass('show')) return;
+                
+                // Check if click is inside the filter content or on the accordion button
+                const isClickInside = filterCollapse.is(e.target) || 
+                                    filterCollapse.has(e.target).length > 0 ||
+                                    accordionButton.is(e.target) ||
+                                    accordionButton.has(e.target).length > 0 ||
+                                    $('#closeMobileFilterBtn').is(e.target) ||
+                                    $('#closeMobileFilterBtn').has(e.target).length > 0;
+                
+                // Also check if click is on select2 dropdown
+                const isClickOnSelect2 = $(e.target).closest('.select2-container').length > 0;
+                
+                if (!isClickInside && !isClickOnSelect2) {
+                    // Close the accordion
+                    filterCollapse.collapse('hide');
+                }
+            });
+            
+            // Handle mobile filter form submission
+            $('#filterFormMobile').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Get all form data
+                const formData = new FormData(this);
+                const params = new URLSearchParams();
+                
+                // Build query parameters
+                for (let pair of formData.entries()) {
+                    if (pair[1]) {
+                        // Handle multiple values (like checkboxes)
+                        if (params.has(pair[0])) {
+                            params.append(pair[0], pair[1]);
+                        } else {
+                            params.append(pair[0], pair[1]);
+                        }
+                    }
+                }
+                
+                // Redirect with filters
+                window.location.href = window.location.pathname + '?' + params.toString();
+            });
+            
+            // Update mobile filter count badge
+            function updateMobileFilterCount() {
+                const activeFilters = $('.active-filters .badge:not(.bg-white)').length;
+                const mobileBadge = $('#mobileFilterCount');
+                if (activeFilters > 0) {
+                    mobileBadge.html(`<span class="badge bg-danger ms-2">${activeFilters}</span>`);
+                } else {
+                    mobileBadge.empty();
+                }
+            }
+            
+            updateMobileFilterCount();
+            
+            // Watch for filter changes in mobile form
+            $('#filterFormMobile .category-checkbox, #filterFormMobile .occasion-select').on('change', function() {
+                setTimeout(updateMobileFilterCount, 100);
+            });
+        });
     </script>
 
     <!-- Add animation styles -->

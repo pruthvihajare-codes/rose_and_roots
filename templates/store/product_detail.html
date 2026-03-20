@@ -131,13 +131,31 @@
                             <!-- Ratings (Placeholder) -->
                             <div class="product-ratings">
                                 <div class="stars">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-half"></i>
+                                    {% if avg_rating > 0 %}
+                                        {% with full_stars=avg_rating|floatformat:0|add:0 %}
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= full_stars %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% elif forloop.counter <= avg_rating|add:0.5 %}
+                                                    <i class="bi bi-star-half"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    {% else %}
+                                        {% for i in "12345"|make_list %}
+                                            <i class="bi bi-star"></i>
+                                        {% endfor %}
+                                    {% endif %}
                                 </div>
-                                <span class="rating-count">(24 reviews)</span>
+                                <span class="rating-count">
+                                    {% if total_reviews > 0 %}
+                                        {{ total_reviews }} review{{ total_reviews|pluralize }}
+                                    {% else %}
+                                        No reviews yet
+                                    {% endif %}
+                                </span>
                             </div>
 
                             <!-- Price -->
@@ -245,7 +263,43 @@
 
             <!-- Reviews Section -->
             <div class="reviews-section mt-5">  
-                <h2 class="section-title">Customer Reviews</h2>
+                <div class="reviews-header">
+                    <h2 class="section-title">Customer Reviews</h2>
+                    
+                    <!-- Compact Reviews Summary -->
+                    <div class="reviews-summary-compact">
+                        {% if total_reviews > 0 %}
+                            <div class="summary-stats">
+                                <div class="avg-rating">
+                                    <span class="rating-number">{{ avg_rating|floatformat:1 }}</span>
+                                    <span class="rating-outof">/5</span>
+                                    <div class="stars-inline">
+                                        {% with full_stars=avg_rating|floatformat:0|add:0 %}
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= full_stars %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% elif forloop.counter <= avg_rating|add:0.5 %}
+                                                    <i class="bi bi-star-half"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <div class="review-count">
+                                    <i class="bi bi-chat-dots"></i>
+                                    <span>{{ total_reviews }} review{{ total_reviews|pluralize }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="no-reviews-badge">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>No reviews yet</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
                 
                 <!-- Review Form - Only for logged in users who haven't reviewed yet -->
                 {% if user.is_authenticated and user.role_id == 2 %}
@@ -300,66 +354,69 @@
                     </div>
                 {% endif %}
                 
-                <!-- Reviews List -->
+                <!-- Reviews List - Dynamic from database -->
                 <div class="reviews-list" id="reviewsList">
-                    {% for review in page_obj %}
-                        {% if user_review and review.id == user_review.id %}
-                            <!-- This is the current user's review - highlight it -->
-                            <div class="review-item current-user-review">
-                                <div class="review-header">
-                                    <div class="reviewer-info">
-                                        <span class="reviewer-name">
-                                            {{ review.user.full_name|default:review.user.email }}
-                                            <span class="your-review-badge">Your Review</span>
-                                        </span>
-                                        <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                    {% if page_obj %}
+                        {% for review in page_obj %}
+                            {% if user_review and review.id == user_review.id %}
+                                <!-- This is the current user's review - highlight it -->
+                                <div class="review-item current-user-review">
+                                    <div class="review-header">
+                                        <div class="reviewer-info">
+                                            <span class="reviewer-name">
+                                                {{ review.user.full_name|default:review.user.email }}
+                                                <span class="your-review-badge">Your Review</span>
+                                            </span>
+                                            <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                                        </div>
+                                        <div class="review-rating">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
                                     </div>
-                                    <div class="review-rating">
-                                        {% for i in "12345"|make_list %}
-                                            {% if forloop.counter <= review.rating %}
-                                                <i class="bi bi-star-fill"></i>
-                                            {% else %}
-                                                <i class="bi bi-star"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                <div class="review-content">
-                                    <p>{{ review.comment }}</p>
-                                </div>
-                            </div>
-                        {% else %}
-                            <!-- Regular review -->
-                            <div class="review-item">
-                                <div class="review-header">
-                                    <div class="reviewer-info">
-                                        <span class="reviewer-name">{{ review.user.full_name|default:review.user.email }}</span>
-                                        <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
-                                    </div>
-                                    <div class="review-rating">
-                                        {% for i in "12345"|make_list %}
-                                            {% if forloop.counter <= review.rating %}
-                                                <i class="bi bi-star-fill"></i>
-                                            {% else %}
-                                                <i class="bi bi-star"></i>
-                                            {% endif %}
-                                        {% endfor %}
+                                    <div class="review-content">
+                                        <p>{{ review.comment }}</p>
                                     </div>
                                 </div>
-                                <div class="review-content">
-                                    <p>{{ review.comment }}</p>
+                            {% else %}
+                                <!-- Regular review -->
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div class="reviewer-info">
+                                            <span class="reviewer-name">{{ review.user.full_name|default:review.user.email }}</span>
+                                            <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                                        </div>
+                                        <div class="review-rating">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="review-content">
+                                        <p>{{ review.comment }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        {% endif %}
-                    {% empty %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
                         <div class="no-reviews">
-                            <p>No reviews yet. Be the first to review this product!</p>
+                            <i class="bi bi-chat-dots" style="font-size: 3rem; color: #ccc;"></i>
+                            <p class="mt-3">No reviews yet. Be the first to review this product!</p>
                         </div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
                 
                 <!-- Pagination -->
-                {% if page_obj.paginator.num_pages > 1 %}
+                {% if page_obj and page_obj.paginator.num_pages > 1 %}
                     <div class="reviews-pagination">
                         <nav aria-label="Reviews pagination">
                             <ul class="pagination justify-content-center">

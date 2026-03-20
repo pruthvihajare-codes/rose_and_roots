@@ -1,0 +1,860 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* About Us Page Styles - Artistic & Craft Inspired */
+    .about-hero {
+        background: linear-gradient(135deg, rgba(62, 9, 37, 0.92), rgba(140, 13, 79, 0.88)), 
+                    url('{% static "images/LogoLittlecraftone.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        padding: 120px 0;
+        margin-bottom: 60px;
+        position: relative;
+        color: white;
+        overflow: hidden;
+    }
+    
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 20s infinite linear;
+    }
+    
+    .about-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 15s infinite reverse;
+    }
+    
+    @keyframes float {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(30px, 20px) rotate(180deg); }
+        100% { transform: translate(0, 0) rotate(360deg); }
+    }
+    
+    .about-hero-content {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .about-hero h1 {
+        font-family: var(--heading-font);
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.8s ease;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .about-hero p {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        animation: fadeInUp 0.8s ease 0.2s both;
+        font-weight: 300;
+    }
+    
+    .craft-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        padding: 8px 20px;
+        border-radius: 50px;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        animation: fadeInUp 0.8s ease;
+    }
+    
+    .story-section {
+        padding: 80px 0;
+        background: white;
+        position: relative;
+    }
+    
+    .story-section::before {
+        content: '✿';
+        position: absolute;
+        top: 30px;
+        left: 30px;
+        font-size: 60px;
+        color: rgba(140, 13, 79, 0.05);
+        font-family: monospace;
+    }
+    
+    .story-section::after {
+        content: '✿';
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+        font-size: 60px;
+        color: rgba(140, 13, 79, 0.05);
+        font-family: monospace;
+    }
+    
+    .story-content {
+        padding-right: 40px;
+    }
+    
+    .story-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--accent-color), #a3125c);
+        color: white;
+        padding: 5px 20px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+    }
+    
+    .story-content h2 {
+        font-family: var(--heading-font);
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 20px;
+        line-height: 1.2;
+    }
+    
+    .story-content .lead {
+        font-size: 1.2rem;
+        color: var(--accent-color);
+        margin-bottom: 20px;
+        font-weight: 500;
+        font-style: italic;
+    }
+    
+    .story-content p {
+        color: var(--default-color);
+        line-height: 1.8;
+        margin-bottom: 20px;
+    }
+    
+    .story-image {
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 0 25px 45px rgba(140, 13, 79, 0.15);
+        position: relative;
+    }
+    
+    .story-image::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 20px;
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .story-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .story-image:hover img {
+        transform: scale(1.05);
+    }
+    
+    .stats-section {
+        background: linear-gradient(135deg, #fef5f8, #ffe9f0);
+        padding: 80px 0;
+        margin: 60px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-section .container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 35px 25px;
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 15px 35px rgba(140, 13, 79, 0.08);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-color), #ff6b9d);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+    
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 45px rgba(140, 13, 79, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--accent-color);
+        font-family: var(--heading-font);
+        margin-bottom: 10px;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        color: var(--default-color);
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    
+    .stat-icon {
+        font-size: 2.8rem;
+        color: var(--accent-color);
+        margin-bottom: 15px;
+        opacity: 0.7;
+    }
+    
+    .values-section {
+        padding: 80px 0;
+        background: white;
+    }
+    
+    .values-section h2 {
+        font-family: var(--heading-font);
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .values-subtitle {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 50px;
+        font-size: 1.1rem;
+    }
+    
+    .value-card {
+        text-align: center;
+        padding: 35px 25px;
+        background: var(--light-background);
+        border-radius: 30px;
+        transition: all 0.4s ease;
+        height: 100%;
+        border: 1px solid rgba(140, 13, 79, 0.08);
+        position: relative;
+    }
+    
+    .value-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(140, 13, 79, 0.1);
+        border-color: var(--accent-color);
+    }
+    
+    .value-icon {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, var(--accent-color), #a3125c);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        position: relative;
+    }
+    
+    .value-icon::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(140,13,79,0.3), rgba(163,18,92,0.3));
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .value-card:hover .value-icon::before {
+        opacity: 1;
+    }
+    
+    .value-icon i {
+        font-size: 2.5rem;
+        color: white;
+    }
+    
+    .value-card h3 {
+        font-family: var(--heading-font);
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--heading-color);
+        margin-bottom: 15px;
+    }
+    
+    .value-card p {
+        color: var(--default-color);
+        line-height: 1.7;
+    }
+    
+    .journey-section {
+        background: linear-gradient(135deg, var(--accent-color), #a3125c);
+        padding: 100px 0;
+        margin: 60px 0;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .journey-section .floating-art {
+        position: absolute;
+        font-size: 100px;
+        opacity: 0.1;
+        animation: floatSlow 20s infinite linear;
+    }
+    
+    @keyframes floatSlow {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(50px, 30px) rotate(180deg); }
+        100% { transform: translate(0, 0) rotate(360deg); }
+    }
+    
+    .journey-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .journey-content h2 {
+        font-family: var(--heading-font);
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+    }
+    
+    .journey-content p {
+        font-size: 1.2rem;
+        margin-bottom: 40px;
+        opacity: 0.95;
+        line-height: 1.8;
+    }
+    
+    .journey-stats {
+        display: flex;
+        justify-content: center;
+        gap: 60px;
+        margin-top: 50px;
+        flex-wrap: wrap;
+    }
+    
+    .journey-stat {
+        text-align: center;
+        position: relative;
+    }
+    
+    .journey-stat .number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        display: block;
+        font-family: var(--heading-font);
+    }
+    
+    .journey-stat .label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    
+    .contact-info-section {
+        padding: 80px 0;
+        background: white;
+    }
+    
+    .contact-info-section h2 {
+        font-family: var(--heading-font);
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .contact-subtitle {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 50px;
+        font-size: 1.1rem;
+    }
+    
+    .contact-card {
+        background: var(--light-background);
+        border-radius: 30px;
+        padding: 35px 25px;
+        text-align: center;
+        transition: all 0.4s ease;
+        height: 100%;
+        border: 1px solid rgba(140, 13, 79, 0.08);
+    }
+    
+    .contact-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(140, 13, 79, 0.1);
+    }
+    
+    .contact-icon {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .contact-card:hover .contact-icon {
+        transform: scale(1.1);
+        box-shadow: 0 15px 30px rgba(140, 13, 79, 0.15);
+    }
+    
+    .contact-icon i {
+        font-size: 2.2rem;
+        color: var(--accent-color);
+    }
+    
+    .contact-card h3 {
+        font-family: var(--heading-font);
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--heading-color);
+        margin-bottom: 15px;
+    }
+    
+    .contact-card p {
+        color: var(--default-color);
+        margin-bottom: 5px;
+    }
+    
+    .contact-card a {
+        color: var(--accent-color);
+        text-decoration: none;
+        transition: color 0.2s ease;
+        font-weight: 500;
+    }
+    
+    .contact-card a:hover {
+        color: #a3125c;
+        text-decoration: underline;
+    }
+    
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .social-link {
+        width: 45px;
+        height: 45px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-color);
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+    }
+    
+    .social-link:hover {
+        background: var(--accent-color);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(140, 13, 79, 0.2);
+    }
+    
+    .cta-section {
+        background: linear-gradient(135deg, #fef5f8, #ffe9f0);
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-section h2 {
+        font-family: var(--heading-font);
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 20px;
+    }
+    
+    .cta-section p {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-bottom: 30px;
+    }
+    
+    .btn-craft {
+        background: linear-gradient(135deg, var(--accent-color), #a3125c);
+        color: white;
+        border: none;
+        padding: 14px 45px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+    
+    .btn-craft:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(140, 13, 79, 0.3);
+        color: white;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .about-hero {
+            padding: 80px 0;
+            background-attachment: scroll;
+        }
+        
+        .about-hero h1 {
+            font-size: 2.5rem;
+        }
+        
+        .about-hero p {
+            font-size: 1.1rem;
+        }
+        
+        .story-content {
+            padding-right: 0;
+            margin-bottom: 30px;
+        }
+        
+        .story-content h2 {
+            font-size: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+        }
+        
+        .journey-content h2 {
+            font-size: 2rem;
+        }
+        
+        .journey-stats {
+            gap: 30px;
+        }
+        
+        .values-section h2,
+        .contact-info-section h2 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <!-- Hero Section -->
+    <div class="about-hero">
+        <div class="container">
+            <div class="about-hero-content">
+                <div class="craft-badge">
+                    <i class="bi bi-stars"></i> Handcrafted with Love <i class="bi bi-stars"></i>
+                </div>
+                <h1>Crafting Your Curiosity</h1>
+                <p>Where imagination meets artistry — each piece tells a unique story</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Our Story Section -->
+    <div class="story-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="story-content">
+                        <span class="story-badge">Our Story</span>
+                        <h2>A Journey of Creativity & Passion</h2>
+                        <p class="lead">"Every creation begins with a spark of inspiration"</p>
+                        <p>LittleCraftOne was born from a simple love for crafting — the joy of transforming raw materials into something beautiful, meaningful, and uniquely personal. What started as a creative outlet soon blossomed into a mission: to share the magic of handmade artistry with those who appreciate the extraordinary.</p>
+                        <p>Every piece we create carries a piece of our heart. From the initial sketch to the final finishing touch, we pour our creativity, dedication, and attention to detail into each product. The warmth of handmade creations, the beauty of unique designs, and the smiles they bring — this is what drives us every day.</p>
+                        <p>Today, we're proud to have completed over <strong>500+ orders</strong> and built a beautiful community of craft lovers who value quality, creativity, and the personal touch that only handmade items can offer. Each order is a new story, and we're honored to be part of your special moments.</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="story-image">
+                        <img src="{% static 'images/LogoLittlecraftone.jpg' %}" alt="LittleCraftOne Crafting" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-flower2"></i>
+                        </div>
+                        <div class="stat-number">2020</div>
+                        <div class="stat-label">The Beginning</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Happy Creations</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-emoji-smile"></i>
+                        </div>
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Love & Care</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-handcraft"></i>
+                        </div>
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Handcrafted</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Our Values Section -->
+    <div class="values-section">
+        <div class="container">
+            <h2>What Makes Us Unique</h2>
+            <div class="values-subtitle">The heart and soul behind every creation</div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="bi bi-heart-fill"></i>
+                        </div>
+                        <h3>Made with Love</h3>
+                        <p>Each piece is crafted with genuine care and affection, making every creation special and meaningful.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <h3>Uniquely Yours</h3>
+                        <p>No two pieces are exactly alike — each creation has its own personality and character.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="bi bi-gem"></i>
+                        </div>
+                        <h3>Premium Quality</h3>
+                        <p>We use only the finest materials to ensure your treasures last a lifetime.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="bi bi-palette"></i>
+                        </div>
+                        <h3>Artistic Freedom</h3>
+                        <p>Creativity knows no bounds — we love experimenting with colors, textures, and designs.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="bi bi-chat-heart"></i>
+                        </div>
+                        <h3>Personal Connection</h3>
+                        <p>We value every interaction and take pride in bringing your ideas to life.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="bi bi-tree-fill"></i>
+                        </div>
+                        <h3>Sustainable Craft</h3>
+                        <p>Mindful of our planet, we embrace eco-friendly practices and materials.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Journey Section -->
+    <div class="journey-section">
+        <div class="floating-art" style="top: 10%; left: 5%;">✿</div>
+        <div class="floating-art" style="bottom: 10%; right: 8%;">✦</div>
+        <div class="floating-art" style="top: 50%; left: 15%;">❀</div>
+        <div class="container">
+            <div class="journey-content">
+                <h2>From Dream to Reality</h2>
+                <p>What began as a creative spark has grown into a vibrant community of art lovers. Every creation we craft carries the joy, passion, and dedication that defines who we are. We believe in the magic of handmade — the unique imperfections that make each piece perfect, the hours of dedicated craftsmanship, and the love woven into every detail.</p>
+                <div class="journey-stats">
+                    <div class="journey-stat">
+                        <span class="number">✿ 2020 ✿</span>
+                        <span class="label">The Creative Spark</span>
+                    </div>
+                    <div class="journey-stat">
+                        <span class="number">500+</span>
+                        <span class="label">Stories Told</span>
+                    </div>
+                    <div class="journey-stat">
+                        <span class="number">∞</span>
+                        <span class="label">Passion Unlimited</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect Section -->
+    <div class="contact-info-section">
+        <div class="container">
+            <h2>Let's Create Together</h2>
+            <div class="contact-subtitle">We'd love to hear your ideas and bring them to life</div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="bi bi-instagram"></i>
+                        </div>
+                        <h3>Visual Stories</h3>
+                        <p>Follow our creative journey on Instagram</p>
+                        <div class="social-links">
+                            <a href="https://www.instagram.com/littlecraftone" target="_blank" class="social-link">
+                                <i class="bi bi-instagram"></i>
+                            </a>
+                        </div>
+                        <p class="mt-3">
+                            <a href="https://www.instagram.com/littlecraftone" target="_blank">
+                                @littlecraftone
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="bi bi-whatsapp"></i>
+                        </div>
+                        <h3>Quick Connect</h3>
+                        <p>Chat with us on WhatsApp for inquiries</p>
+                        <p class="mt-3">
+                            <a href="https://wa.me/918805433102" target="_blank" style="font-size: 1.2rem; font-weight: 600;">
+                                +91 88054 33102
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <h3>Email Us</h3>
+                        <p>For collaborations & custom orders</p>
+                        <p class="mt-3">
+                            <a href="mailto:littlecraftone.support@gmail.com">
+                                littlecraftone.support@gmail.com
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="cta-section">
+        <div class="container">
+            <h2>Ready to Discover Something Beautiful?</h2>
+            <p>Explore our collection of handcrafted treasures, each with its own story to tell</p>
+            <a href="{% url 'shop' %}" class="btn-craft">
+                <i class="bi bi-shop"></i> Explore Our Creations
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

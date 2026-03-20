@@ -1,5 +1,6 @@
 import uuid
 import os
+import re
 import json
 import logging
 from decimal import Decimal, InvalidOperation
@@ -26,7 +27,254 @@ from django.db import IntegrityError
 # views.py
 from django.contrib.auth import logout
 
+from django.core.mail import send_mail, BadHeaderError
+from django.views.decorators.csrf import csrf_protect
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
 logger = logging.getLogger(__name__)
+
+def about_us(request):
+    return render(request, 'about_us.html')
+
+def contact_us(request):
+    """Contact Us page view"""
+    return render(request, 'contact_us.html')
+
+@csrf_protect
+def send_contact_email(request):
+    """Handle contact form submission with enhanced security"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+    
+    try:
+        # Get and sanitize form data
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        order_id = request.POST.get('order_id', '').strip()
+        message = request.POST.get('message', '').strip()
+        
+        # Validate required fields
+        if not name or not email or not message or not subject:
+            return JsonResponse({
+                'success': False,
+                'message': 'Please fill in all required fields.'
+            })
+        
+        # Validate name (only letters and spaces, 2-50 chars)
+        if not re.match(r'^[A-Za-z\s]{2,50}$', name):
+            return JsonResponse({
+                'success': False,
+                'message': 'Please enter a valid name (2-50 characters, letters only).'
+            })
+        
+        # Validate email
+        try:
+            validate_email(email)
+        except ValidationError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Please enter a valid email address.'
+            })
+        
+        # Validate phone if provided
+        if phone and not re.match(r'^[0-9+\-\s]{10,15}$', phone):
+            return JsonResponse({
+                'success': False,
+                'message': 'Please enter a valid phone number.'
+            })
+        
+        # Validate message length
+        if len(message) < 10:
+            return JsonResponse({
+                'success': False,
+                'message': 'Message must be at least 10 characters long.'
+            })
+        
+        if len(message) > 1000:
+            return JsonResponse({
+                'success': False,
+                'message': 'Message cannot exceed 1000 characters.'
+            })
+        
+        # Sanitize inputs to prevent XSS
+        name = re.sub(r'[<>]', '', name)
+        email = re.sub(r'[<>]', '', email)
+        phone = re.sub(r'[<>]', '', phone)
+        subject = re.sub(r'[<>]', '', subject)
+        order_id = re.sub(r'[<>]', '', order_id)
+        message = re.sub(r'[<>]', '', message)
+        
+        # Prepare email content with HTML support
+        email_subject = f"[LittleCraftOne] {subject} - from {name}"
+        
+        email_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #8c0d4f, #a3125c); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .content {{ background: #fef5f8; padding: 30px; border-radius: 0 0 10px 10px; }}
+                .field {{ margin-bottom: 15px; }}
+                .label {{ font-weight: bold; color: #8c0d4f; }}
+                .message {{ background: white; padding: 15px; border-radius: 8px; margin-top: 10px; }}
+                .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>✨ New Contact Form Submission ✨</h2>
+                </div>
+                <div class="content">
+                    <div class="field">
+                        <span class="label">👤 Name:</span> {name}
+                    </div>
+                    <div class="field">
+                        <span class="label">📧 Email:</span> {email}
+                    </div>
+                    <div class="field">
+                        <span class="label">📞 Phone:</span> {phone if phone else 'Not provided'}
+                    </div>
+                    <div class="field">
+                        <span class="label">📋 Subject:</span> {subject}
+                    </div>
+                    <div class="field">
+                        <span class="label">🆔 Order ID:</span> {order_id if order_id else 'Not provided'}
+                    </div>
+                    <div class="field">
+                        <span class="label">💬 Message:</span>
+                        <div class="message">
+                            {message.replace(chr(10), '<br>')}
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>This message was sent from the LittleCraftOne contact form.</p>
+                    <p>✨ Crafting Your Curiosity ✨</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        email_text = f"""
+        New Contact Form Submission
+        
+        Name: {name}
+        Email: {email}
+        Phone: {phone if phone else 'Not provided'}
+        Subject: {subject}
+        Order ID: {order_id if order_id else 'Not provided'}
+        
+        Message:
+        {message}
+        
+        ---
+        This message was sent from the LittleCraftOne contact form.
+        """
+        
+        # Send email to admin
+        try:
+            send_mail(
+                subject=email_subject,
+                message=email_text,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=['littlecraftone.support@gmail.com'],
+                html_message=email_html,
+                fail_silently=False,
+            )
+        except BadHeaderError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid header found.'
+            })
+        except Exception as e:
+            logger.error(f"Email sending error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Unable to send message. Please try again or contact us on WhatsApp.'
+            })
+        
+        # Send auto-reply to customer
+        auto_reply_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #8c0d4f, #a3125c); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .content {{ background: #fef5f8; padding: 30px; border-radius: 0 0 10px 10px; }}
+                .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+                .highlight {{ color: #8c0d4f; font-weight: bold; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>✨ Thank You for Reaching Out! ✨</h2>
+                </div>
+                <div class="content">
+                    <p>Dear <strong>{name}</strong>,</p>
+                    <p>Thank you for contacting <span class="highlight">LittleCraftOne</span>! We have received your message and will get back to you within <strong>24 hours</strong>.</p>
+                    
+                    <p><strong>Here's a summary of your inquiry:</strong></p>
+                    <ul>
+                        <li><strong>Subject:</strong> {subject}</li>
+                        <li><strong>Message:</strong> {message[:100]}{'...' if len(message) > 100 else ''}</li>
+                    </ul>
+                    
+                    <p>For urgent matters, please feel free to WhatsApp us at <strong>+91 88054 33102</strong> for a quicker response.</p>
+                    
+                    <p>In the meantime, you can:</p>
+                    <ul>
+                        <li>📦 Check our <a href="https://yourdomain.com/shop">Shop</a> for more beautiful creations</li>
+                        <li>✨ Follow us on <a href="https://instagram.com/littlecraftone">Instagram</a> for daily inspiration</li>
+                        <li>💬 Read our <a href="https://yourdomain.com/faq">FAQ</a> for quick answers</li>
+                    </ul>
+                    
+                    <p>We look forward to connecting with you!</p>
+                    
+                    <p>Warm regards,<br>
+                    <strong>LittleCraftOne Team</strong><br>
+                    ✿ Crafting Your Curiosity ✿</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated response. Please do not reply to this email.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        try:
+            send_mail(
+                subject="Thank you for contacting LittleCraftOne! ✨",
+                message=f"Thank you for contacting LittleCraftOne! We'll get back to you within 24 hours.\n\nYour message: {message[:100]}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                html_message=auto_reply_html,
+                fail_silently=True,  # Don't fail if auto-reply fails
+            )
+        except Exception as e:
+            logger.warning(f"Auto-reply failed: {str(e)}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Thank you for reaching out! We\'ll get back to you within 24 hours. Check your email for confirmation.'
+        })
+        
+    except Exception as e:
+        logger.error(f"Contact form error: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Something went wrong. Please try again or contact us on WhatsApp.'
+        })
 
 @no_direct_access
 @login_required

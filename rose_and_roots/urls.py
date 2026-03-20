@@ -103,6 +103,13 @@ urlpatterns = [
     
     # order confirmation
     path('order-confirmation/<str:order_id>/', order_confirmation, name='order_confirmation'),
+    
+    # about us
+    path('about_us/', about_us, name='about_us'),
+    
+    # contact us
+    path('contact-us/', contact_us, name='contact_us'),
+    path('send-contact-email/', send_contact_email, name='send_contact_email'),
 
     # urls.py - Add these patterns
 

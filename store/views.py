@@ -250,39 +250,31 @@ def product_detail(request):
             primary_image = related.images.filter(is_active=1).first()
             related.primary_image = primary_image.image_path if primary_image else None
         
-        # Get admin user's WhatsApp number (assuming admin has role_id=1)
+        # Get admin user's WhatsApp number
         admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
-        admin_whatsapp = admin_user.phone if admin_user else '918805433102'  # Fallback number
+        admin_whatsapp = admin_user.phone if admin_user else '918805433102'
         
-        # Get all reviews (rest of your review code remains the same)
+        # ========== FIX: Get ALL reviews ==========
+        # Get all active reviews for this bouquet
         all_reviews = bouquet.reviews.filter(is_active=1).select_related('user')
         
         # Check if current user has already reviewed
         user_review = None
-        other_reviews = all_reviews
-        
         if request.user.is_authenticated:
             user_review = all_reviews.filter(user=request.user).first()
-            if user_review:
-                other_reviews = all_reviews.exclude(user=request.user)
-            else:
-                other_reviews = all_reviews
-        else:
-            other_reviews = all_reviews
         
-        # Combine with user's review first, then paginate
-        if user_review:
-            combined_reviews = [user_review] + list(other_reviews)
-        else:
-            combined_reviews = list(other_reviews)
+        # Get ALL reviews (including user's review) for pagination
+        # Don't filter out other reviews - show all of them
+        combined_reviews = list(all_reviews.order_by('-created_at'))
         
-        # Paginate the combined list
+        # Paginate all reviews
         paginator = Paginator(combined_reviews, 5)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         
         # Calculate average rating
         avg_rating = all_reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        total_reviews = all_reviews.count()
         
         context = {
             'bouquet': bouquet,
@@ -292,9 +284,9 @@ def product_detail(request):
             'reviews': page_obj,
             'page_obj': page_obj,
             'avg_rating': round(avg_rating, 1),
-            'total_reviews': all_reviews.count(),
-            'user_review': user_review,
-            'admin_whatsapp': admin_whatsapp,  # Pass admin WhatsApp number
+            'total_reviews': total_reviews,
+            'user_review': user_review,  # Pass this to highlight user's review
+            'admin_whatsapp': admin_whatsapp,
             "MEDIA_URL": settings.MEDIA_URL,
         }
         return render(request, 'store/product_detail.html', context)

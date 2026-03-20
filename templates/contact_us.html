@@ -1,0 +1,1151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Same CSS as before - keeping it consistent */
+    .contact-hero {
+        background: linear-gradient(135deg, rgba(62, 9, 37, 0.95), rgba(140, 13, 79, 0.9)), 
+                    url('{% static "images/LogoLittlecraftone.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        padding: 100px 0;
+        position: relative;
+        color: white;
+        text-align: center;
+        overflow: hidden;
+    }
+    
+    .contact-hero::before {
+        content: '✿';
+        position: absolute;
+        top: 20%;
+        left: 10%;
+        font-size: 80px;
+        opacity: 0.1;
+        animation: floatArt 15s infinite linear;
+    }
+    
+    .contact-hero::after {
+        content: '✦';
+        position: absolute;
+        bottom: 20%;
+        right: 10%;
+        font-size: 80px;
+        opacity: 0.1;
+        animation: floatArt 12s infinite reverse;
+    }
+    
+    @keyframes floatArt {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(30px, 20px) rotate(180deg); }
+        100% { transform: translate(0, 0) rotate(360deg); }
+    }
+    
+    .contact-hero h1 {
+        font-family: var(--heading-font);
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.8s ease;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .contact-hero p {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        animation: fadeInUp 0.8s ease 0.2s both;
+    }
+    
+    .craft-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        padding: 8px 25px;
+        border-radius: 50px;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+    }
+    
+    /* Contact Cards */
+    .contact-section {
+        padding: 80px 0;
+        background: linear-gradient(135deg, #fff 0%, #fef5f8 100%);
+        position: relative;
+    }
+    
+    .contact-info-card {
+        background: white;
+        border-radius: 30px;
+        padding: 35px 25px;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(140, 13, 79, 0.1);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .contact-info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-color), #ff6b9d, var(--accent-color));
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+    
+    .contact-info-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .contact-info-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 45px rgba(140, 13, 79, 0.15);
+    }
+    
+    .contact-icon {
+        width: 85px;
+        height: 85px;
+        background: linear-gradient(135deg, var(--light-background), white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        box-shadow: 0 10px 25px rgba(140, 13, 79, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .contact-info-card:hover .contact-icon {
+        transform: scale(1.1);
+        box-shadow: 0 15px 35px rgba(140, 13, 79, 0.2);
+    }
+    
+    .contact-icon i {
+        font-size: 2.5rem;
+        color: var(--accent-color);
+    }
+    
+    .whatsapp-btn-large {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #25D366;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .whatsapp-btn-large:hover {
+        background: #128C7E;
+        transform: translateY(-2px);
+        color: white;
+        box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+    }
+    
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .social-link {
+        width: 40px;
+        height: 40px;
+        background: var(--light-background);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-color);
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .social-link:hover {
+        background: var(--accent-color);
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    /* Form Styles */
+    .contact-form-wrapper {
+        background: white;
+        border-radius: 30px;
+        padding: 45px;
+        box-shadow: 0 20px 45px rgba(140, 13, 79, 0.08);
+        border: 1px solid rgba(140, 13, 79, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .contact-form-wrapper::before {
+        content: '✿';
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        font-size: 120px;
+        opacity: 0.03;
+        font-family: monospace;
+        pointer-events: none;
+    }
+    
+    .contact-form-wrapper h2 {
+        font-family: var(--heading-font);
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 10px;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .contact-form-wrapper h2::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-color), #ff6b9d);
+        border-radius: 3px;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: var(--heading-color);
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+    }
+    
+    .form-group .required {
+        color: var(--danger-color);
+        font-size: 1.2rem;
+        margin-left: 3px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px 18px;
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        background: white;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 4px rgba(140, 13, 79, 0.1);
+    }
+    
+    .form-control.error {
+        border-color: var(--danger-color);
+        background: rgba(220, 53, 69, 0.02);
+    }
+    
+    .form-control.success {
+        border-color: var(--success-color);
+        background: rgba(40, 167, 69, 0.02);
+    }
+    
+    .error-message {
+        color: var(--danger-color);
+        font-size: 0.75rem;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .success-message {
+        color: var(--success-color);
+        font-size: 0.75rem;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    .input-icon {
+        position: relative;
+    }
+    
+    .input-icon i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent-color);
+        opacity: 0.6;
+        z-index: 1;
+    }
+    
+    .input-icon input,
+    .input-icon select,
+    .input-icon textarea {
+        padding-left: 45px;
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .input-icon textarea + i {
+        top: 22px;
+        transform: none;
+    }
+    
+    /* Button Styles */
+    .btn-submit {
+        background: linear-gradient(135deg, var(--accent-color), #a3125c);
+        color: white;
+        border: none;
+        padding: 14px 35px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-submit:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(140, 13, 79, 0.3);
+    }
+    
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Response Badge */
+    .response-badge {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(40, 167, 69, 0.1));
+        border: 1px solid var(--success-color);
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .response-badge:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(40, 167, 69, 0.1);
+    }
+    
+    /* FAQ Section */
+    .faq-section {
+        padding: 80px 0 40px 0;
+        background: linear-gradient(135deg, #fef5f8, #fff);
+        position: relative;
+    }
+    
+    .faq-section h2 {
+        font-family: var(--heading-font);
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .faq-subtitle {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 50px;
+        font-size: 1.1rem;
+    }
+    
+    .faq-item {
+        background: white;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(140, 13, 79, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
+    
+    .faq-item:hover {
+        box-shadow: 0 10px 30px rgba(140, 13, 79, 0.08);
+    }
+    
+    .faq-question {
+        padding: 22px 28px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        color: var(--heading-color);
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .faq-question:hover {
+        background: rgba(140, 13, 79, 0.02);
+    }
+    
+    .faq-question i {
+        color: var(--accent-color);
+        transition: transform 0.3s ease;
+        font-size: 1.2rem;
+    }
+    
+    .faq-item.active .faq-question i {
+        transform: rotate(180deg);
+    }
+    
+    .faq-answer {
+        padding: 0 28px;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        color: var(--default-color);
+        line-height: 1.7;
+        background: white;
+    }
+    
+    .faq-item.active .faq-answer {
+        padding: 0 28px 25px 28px;
+        max-height: 500px;
+    }
+    
+    /* Live Chat Button */
+    .live-chat-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+        animation: pulse 2s infinite;
+    }
+    
+    .live-chat-btn a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        color: white;
+        padding: 14px 28px;
+        border-radius: 60px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+        transition: all 0.3s ease;
+    }
+    
+    .live-chat-btn a:hover {
+        transform: scale(1.05) translateY(-3px);
+        box-shadow: 0 15px 35px rgba(37, 211, 102, 0.5);
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Character Counter */
+    .char-counter {
+        text-align: right;
+        font-size: 0.75rem;
+        margin-top: 5px;
+    }
+    
+    .char-counter .count {
+        font-weight: 600;
+        color: var(--accent-color);
+    }
+    
+    .char-counter .warning {
+        color: var(--warning-color);
+    }
+    
+    .char-counter .danger {
+        color: var(--danger-color);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .contact-hero h1 {
+            font-size: 2.5rem;
+        }
+        
+        .contact-hero p {
+            font-size: 1.1rem;
+        }
+        
+        .contact-form-wrapper {
+            padding: 30px 20px;
+        }
+        
+        .faq-section h2 {
+            font-size: 2rem;
+        }
+        
+        .live-chat-btn {
+            bottom: 20px;
+            right: 20px;
+        }
+        
+        .live-chat-btn a {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+        
+        .faq-question {
+            padding: 18px 20px;
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-page">
+    <!-- Hero Section -->
+    <div class="contact-hero">
+        <div class="container">
+            <div class="contact-hero-content">
+                <div class="craft-badge">
+                    <i class="bi bi-stars"></i> We'd Love to Hear From You <i class="bi bi-stars"></i>
+                </div>
+                <h1>Let's Create Something<br>Beautiful Together</h1>
+                <p>Have a question or a custom order idea? We're just a message away!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Cards Section -->
+    <div class="contact-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="contact-info-card">
+                        <div class="contact-icon">
+                            <i class="bi bi-whatsapp"></i>
+                        </div>
+                        <h3>WhatsApp Us</h3>
+                        <p>Quickest way to reach us</p>
+                        <p><strong style="font-size: 1.1rem;">+91 88054 33102</strong></p>
+                        <a href="https://wa.me/918805433102?text=Hi%21%20I%20would%20like%20to%20know%20more%20about%20your%20beautiful%20creations." target="_blank" class="whatsapp-btn-large">
+                            <i class="bi bi-whatsapp"></i> Start Chat
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="contact-info-card">
+                        <div class="contact-icon">
+                            <i class="bi bi-envelope-paper-heart"></i>
+                        </div>
+                        <h3>Email Us</h3>
+                        <p>For detailed inquiries</p>
+                        <a href="mailto:littlecraftone.support@gmail.com" style="font-size: 0.9rem; word-break: break-all;">
+                            littlecraftone.support@gmail.com
+                        </a>
+                        <p class="mt-3 small text-muted">
+                            <i class="bi bi-clock"></i> Response within 24 hours
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="contact-info-card">
+                        <div class="contact-icon">
+                            <i class="bi bi-instagram"></i>
+                        </div>
+                        <h3>Follow Our Journey</h3>
+                        <p>See our latest creations & behind the scenes</p>
+                        <div class="mt-3">
+                            <a href="https://www.instagram.com/littlecraftone" target="_blank" style="font-size: 1.1rem; font-weight: 600;">
+                                @littlecraftone
+                            </a>
+                        </div>
+                        <div class="social-links mt-3">
+                            <a href="https://www.instagram.com/littlecraftone" target="_blank" class="social-link">
+                                <i class="bi bi-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form Section -->
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-lg-7">
+                <div class="contact-form-wrapper">
+                    <h2>Send us a Message</h2>
+                    <p class="text-muted mb-4">We'll get back to you within 24 hours</p>
+                    
+                    <form id="contactForm" method="post" action="{% url 'send_contact_email' %}" novalidate>
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Your Name <span class="required">*</span></label>
+                                    <div class="input-icon">
+                                        <i class="bi bi-person"></i>
+                                        <input type="text" class="form-control" name="name" id="name" 
+                                               required placeholder="Enter your full name"
+                                               maxlength="50">
+                                    </div>
+                                    <div class="error-message" id="nameError"></div>
+                                    <div class="success-message" id="nameSuccess"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Email Address <span class="required">*</span></label>
+                                    <div class="input-icon">
+                                        <i class="bi bi-envelope"></i>
+                                        <input type="email" class="form-control" name="email" id="email" 
+                                               required placeholder="your@email.com"
+                                               maxlength="100">
+                                    </div>
+                                    <div class="error-message" id="emailError"></div>
+                                    <div class="success-message" id="emailSuccess"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Phone Number <span class="required">*</span></label>
+                                    <div class="input-icon">
+                                        <i class="bi bi-phone"></i>
+                                        <input type="tel" class="form-control" name="phone" id="phone" 
+                                               required placeholder="9876543210"
+                                               maxlength="10">
+                                    </div>
+                                    <div class="error-message" id="phoneError"></div>
+                                    <div class="success-message" id="phoneSuccess"></div>
+                                    <small class="text-muted">Enter 10-digit mobile number</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Subject <span class="required">*</span></label>
+                                    <div class="input-icon">
+                                        <i class="bi bi-tag"></i>
+                                        <select class="form-control" name="subject" id="subject" required>
+                                            <option value="">Select a subject</option>
+                                            <option value="Product Inquiry">✨ Product Inquiry</option>
+                                            <option value="Custom Order">🎨 Custom Order Request</option>
+                                            <option value="Order Status">📦 Order Status</option>
+                                            <option value="Bulk Order">🤝 Bulk Order / Wholesale</option>
+                                            <option value="Collaboration">💝 Collaboration / Partnership</option>
+                                            <option value="Feedback">💭 Feedback / Suggestion</option>
+                                            <option value="Other">📝 Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="error-message" id="subjectError"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Order ID (Optional)</label>
+                            <div class="input-icon">
+                                <i class="bi bi-upc-scan"></i>
+                                <input type="text" class="form-control" name="order_id" id="orderId" 
+                                       placeholder="If you have an existing order, enter the Order ID here"
+                                       maxlength="20">
+                            </div>
+                            <div class="error-message" id="orderIdError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Your Message <span class="required">*</span></label>
+                            <div class="input-icon">
+                                <i class="bi bi-chat-text"></i>
+                                <textarea class="form-control" name="message" id="message" rows="5" 
+                                          required placeholder="Tell us how we can help you..."
+                                          maxlength="1000"></textarea>
+                            </div>
+                            <div class="error-message" id="messageError"></div>
+                            <div class="char-counter" id="messageCounter">
+                                <span id="charCount">0</span>/1000 characters
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <i class="bi bi-send-fill"></i> Send Message
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-5">
+                <div class="response-badge">
+                    <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                    <strong style="display: block; margin-top: 10px;">Response Time Promise</strong>
+                    <p class="mt-2 mb-0">We respond to all inquiries within <strong>24 hours</strong> on business days. For urgent matters, please reach out via WhatsApp for a quicker response!</p>
+                </div>
+                
+                <div class="mt-4 p-4" style="background: linear-gradient(135deg, var(--light-background), white); border-radius: 24px; border: 1px solid rgba(140, 13, 79, 0.1);">
+                    <h4 style="font-family: var(--heading-font); color: var(--heading-color); margin-bottom: 20px;">
+                        <i class="bi bi-chat-heart-fill" style="color: var(--accent-color);"></i> Before You Message Us
+                    </h4>
+                    <ul class="mt-3" style="list-style: none; padding-left: 0;">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> 
+                            <strong>Check our FAQ</strong> - Quick answers to common questions
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> 
+                            <strong>Order Status?</strong> - Have your Order ID ready
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> 
+                            <strong>Custom Orders</strong> - Typically take 7-10 days for completion
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i> 
+                            <strong>Urgent Queries</strong> - WhatsApp is the fastest way
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+        <div class="container">
+            <h2>✨ Frequently Asked Questions ✨</h2>
+            <div class="faq-subtitle">Everything you need to know about our products and services</div>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> How long does it take to receive my order?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Standard delivery takes <strong>3-5 business days</strong> depending on your location. We also offer express delivery options for urgent orders. Once your order is shipped, you'll receive a tracking number via email or WhatsApp.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> Do you accept custom orders?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p><strong>Absolutely!</strong> We love bringing your ideas to life. Whether it's a specific color scheme, personalization, or a completely unique design, we'd be happy to discuss your custom order. Please reach out via WhatsApp or email with your requirements, and we'll provide a quote and timeline (typically 7-10 days).</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> What is your return policy?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We take great care in packaging every item to ensure it reaches you in perfect condition. If you receive a <strong>damaged product</strong>, please contact us within 48 hours with photos, and we'll arrange a replacement or refund. Custom orders are non-returnable unless damaged during transit.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> Can I track my order?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p><strong>Yes!</strong> Once your order is shipped, you'll receive a tracking number via email and WhatsApp. You can track your order directly on our website by visiting your account dashboard or clicking the tracking link sent to you.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> Do you offer bulk orders for events or corporate gifting?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p><strong>Yes!</strong> We specialize in bulk orders for weddings, corporate events, festivals, and special occasions. We offer special discounts for bulk orders. Please contact us with your requirements, and we'll create a customized quote for you.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> What payment methods do you accept?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We accept all major <strong>credit/debit cards, UPI (Google Pay, PhonePe, Paytm), and net banking</strong>. For bulk orders, we also accept bank transfers. All payments are processed securely through our payment gateway.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> Do you ship internationally?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Currently, we ship within <strong>India only</strong>. However, we're working on expanding our shipping capabilities. For international inquiries, please contact us directly, and we'll see if we can accommodate your order.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span><i class="bi bi-question-circle me-2" style="color: var(--accent-color);"></i> How should I care for my handmade craft items?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Each product comes with specific care instructions. Generally, we recommend keeping items away from <strong>direct sunlight, moisture, and dust</strong>. For resin items, clean with a soft, dry cloth. For flower arrangements, keep in a cool, dry place away from direct heat.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call to Action -->
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div style="background: linear-gradient(135deg, var(--light-background), white); border-radius: 40px; padding: 10px 30px;">
+                    <i class="bi bi-chat-heart-fill" style="font-size: 3rem; color: var(--accent-color); opacity: 0.7;"></i>
+                    <h3 style="font-family: var(--heading-font); color: var(--heading-color); margin-top: 20px;">Still have questions?</h3>
+                    <p class="mb-4">We're here to help! Reach out to us via WhatsApp for the fastest response.</p>
+                    <a href="https://wa.me/918805433102?text=Hi%21%20I%20have%20a%20question%20about%20your%20products.%20Can%20you%20help%20me%3F" target="_blank" class="btn-craft" style="background: linear-gradient(135deg, #25D366, #128C7E); color: white; display: inline-flex; align-items: center; gap: 10px; padding: 14px 35px; border-radius: 50px; text-decoration: none; font-weight: 600;">
+                        <i class="bi bi-whatsapp"></i> Chat with us on WhatsApp
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle FAQ items
+    function toggleFAQ(element) {
+        const faqItem = element.closest('.faq-item');
+        faqItem.classList.toggle('active');
+    }
+    
+    // Enhanced validation functions
+    function validateName(name) {
+        const nameRegex = /^[A-Za-z\s]{2,50}$/;
+        if (!name.trim()) return 'Name is required';
+        if (!nameRegex.test(name)) return 'Name should only contain letters and spaces (2-50 characters)';
+        return '';
+    }
+    
+    function validateEmail(email) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!email.trim()) return 'Email is required';
+        if (!emailRegex.test(email)) return 'Please enter a valid email address (e.g., name@example.com)';
+        return '';
+    }
+    
+    function validatePhone(phone) {
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phone.trim()) return 'Phone number is required';
+        if (!phoneRegex.test(phone)) return 'Please enter a valid 10-digit mobile number';
+        return '';
+    }
+    
+    function validateSubject(subject) {
+        if (!subject) return 'Please select a subject';
+        return '';
+    }
+    
+    function validateMessage(message) {
+        if (!message.trim()) return 'Message is required';
+        if (message.length < 10) return 'Message must be at least 10 characters';
+        if (message.length > 1000) return 'Message cannot exceed 1000 characters';
+        return '';
+    }
+    
+    // Real-time validation with visual feedback
+    function showFieldStatus(field, errorMsg, successMsg = '') {
+        const errorDiv = document.getElementById(field.id + 'Error');
+        const successDiv = document.getElementById(field.id + 'Success');
+        
+        if (errorMsg) {
+            field.classList.add('error');
+            field.classList.remove('success');
+            if (errorDiv) errorDiv.textContent = errorMsg;
+            if (successDiv) successDiv.textContent = '';
+        } else if (successMsg) {
+            field.classList.remove('error');
+            field.classList.add('success');
+            if (errorDiv) errorDiv.textContent = '';
+            if (successDiv) successDiv.textContent = successMsg;
+        } else {
+            field.classList.remove('error', 'success');
+            if (errorDiv) errorDiv.textContent = '';
+            if (successDiv) successDiv.textContent = '';
+        }
+    }
+    
+    // Name validation
+    document.getElementById('name')?.addEventListener('input', function() {
+        const error = validateName(this.value);
+        if (!error && this.value.trim()) {
+            showFieldStatus(this, '', '✓ Valid name');
+        } else {
+            showFieldStatus(this, error);
+        }
+    });
+    
+    // Email validation
+    document.getElementById('email')?.addEventListener('input', function() {
+        const error = validateEmail(this.value);
+        if (!error && this.value.trim()) {
+            showFieldStatus(this, '', '✓ Valid email address');
+        } else {
+            showFieldStatus(this, error);
+        }
+    });
+    
+    // Phone validation - only 10 digits
+    document.getElementById('phone')?.addEventListener('input', function() {
+        // Remove any non-digit characters
+        let value = this.value.replace(/[^0-9]/g, '');
+        if (value.length > 10) {
+            value = value.slice(0, 10);
+        }
+        this.value = value;
+        
+        const error = validatePhone(this.value);
+        if (!error && this.value.length === 10) {
+            showFieldStatus(this, '', '✓ Valid 10-digit number');
+        } else {
+            showFieldStatus(this, error);
+        }
+    });
+    
+    // Subject validation
+    document.getElementById('subject')?.addEventListener('change', function() {
+        const error = validateSubject(this.value);
+        showFieldStatus(this, error);
+    });
+    
+    // Message validation with character counter
+    const messageField = document.getElementById('message');
+    const charCountSpan = document.getElementById('charCount');
+    
+    function updateCharCounter() {
+        if (messageField && charCountSpan) {
+            const length = messageField.value.length;
+            charCountSpan.textContent = length;
+            
+            const counterDiv = document.getElementById('messageCounter');
+            if (length > 900) {
+                counterDiv.classList.add('warning');
+                if (length > 950) counterDiv.classList.add('danger');
+            } else {
+                counterDiv.classList.remove('warning', 'danger');
+            }
+        }
+    }
+    
+    messageField?.addEventListener('input', function() {
+        updateCharCounter();
+        const error = validateMessage(this.value);
+        if (!error && this.value.trim()) {
+            showFieldStatus(this, '', '✓ Valid message');
+        } else {
+            showFieldStatus(this, error);
+        }
+    });
+    
+    // Form submission with comprehensive validation
+    document.getElementById('contactForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get field values
+        const name = document.getElementById('name');
+        const email = document.getElementById('email');
+        const phone = document.getElementById('phone');
+        const subject = document.getElementById('subject');
+        const message = document.getElementById('message');
+        
+        // Validate all fields
+        const nameError = validateName(name.value);
+        const emailError = validateEmail(email.value);
+        const phoneError = validatePhone(phone.value);
+        const subjectError = validateSubject(subject.value);
+        const messageError = validateMessage(message.value);
+        
+        // Show validation errors
+        showFieldStatus(name, nameError);
+        showFieldStatus(email, emailError);
+        showFieldStatus(phone, phoneError);
+        showFieldStatus(subject, subjectError);
+        showFieldStatus(message, messageError);
+        
+        // Check if any errors exist
+        if (nameError || emailError || phoneError || subjectError || messageError) {
+            // Scroll to first error
+            const firstError = document.querySelector('.form-control.error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please check the form for errors and try again.',
+                confirmButtonColor: '#8c0d4f'
+            });
+            return;
+        }
+        
+        // Submit form
+        const form = this;
+        const submitBtn = form.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        
+        // Show loading state
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+        submitBtn.disabled = true;
+        
+        // Get form data
+        const formData = new FormData(form);
+        
+        // Send AJAX request
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '✨ Message Sent! ✨',
+                    html: data.message,
+                    confirmButtonColor: '#8c0d4f',
+                    confirmButtonText: 'Wonderful!',
+                    background: '#fff',
+                    backdrop: true,
+                    customClass: {
+                        popup: 'rounded-4'
+                    }
+                }).then(() => {
+                    form.reset();
+                    // Remove all validation classes
+                    document.querySelectorAll('.form-control').forEach(field => {
+                        field.classList.remove('error', 'success');
+                    });
+                    updateCharCounter();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: data.message || 'Something went wrong. Please try again or contact us on WhatsApp.',
+                    confirmButtonColor: '#8c0d4f',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Connection Error',
+                text: 'Unable to send message. Please try again or contact us on WhatsApp.',
+                confirmButtonColor: '#8c0d4f',
+                confirmButtonText: 'Okay'
+            });
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Open first FAQ item by default
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstFaq = document.querySelector('.faq-item');
+        if (firstFaq) {
+            firstFaq.classList.add('active');
+        }
+        updateCharCounter();
+        
+        // Auto-format phone number as user types
+        const phoneInput = document.getElementById('phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('keypress', function(e) {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

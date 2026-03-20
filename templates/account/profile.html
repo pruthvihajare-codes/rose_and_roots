@@ -81,10 +81,10 @@
                                 <i class="bi bi-person-circle me-2"></i> My Profile
                             </button>
                             
-                            <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}" 
+                            {% comment %} <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}" 
                                     onclick="location.href='?tab=orders'">
                                 <i class="bi bi-box-seam me-2"></i> My Orders
-                            </button>
+                            </button> {% endcomment %}
                             
                             <button class="nav-link {% if active_tab == 'address' %}active{% endif %}" 
                                     onclick="location.href='?tab=address'">
