@@ -1,0 +1,13 @@
+WARNING 2026-03-23 17:50:25,098 middleware_backforward 25044 23436 Back/forward navigation detected - Expected: /dashboard/, Actual: /product/?id=Z0FBQUFBQnB3VEFBVFh4MG41dURLNnpmX19fVW5Lcjh1cGJNS0xzZTFkZWhMbEpGUEhZZWtSTW4yeGhpWkNfaWVHcDZsdC1wLU54MENZZFppa1M4dzVfemJrelZ4YVlOU1E9PQ==, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 17:50:32,267 middleware_backforward 25044 27960 Back/forward navigation detected - Expected: /dashboard/, Actual: /check-session/, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 17:50:32,271 middleware_backforward 25044 23436 Back/forward navigation detected - Expected: /dashboard/, Actual: /get_cart_count, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 18:00:25,627 views 11636 9088 Failed login attempt for email: panjak29@gmail.com from IP: 127.0.0.1
+WARNING 2026-03-23 18:00:29,550 middleware_backforward 11636 11168 Back/forward navigation detected - Expected: /dashboard/, Actual: /check-session/, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 18:00:29,560 middleware_backforward 11636 9088 Back/forward navigation detected - Expected: /dashboard/, Actual: /get_cart_count, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 18:00:40,882 middleware_backforward 11636 9088 Back/forward navigation detected - Expected: /dashboard/, Actual: /check-session/, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 18:00:40,887 middleware_backforward 11636 11168 Back/forward navigation detected - Expected: /dashboard/, Actual: /get_cart_count, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 18:01:21,358 middleware_backforward 11636 6692 Back/forward navigation detected - Expected: /dashboard/, Actual: /check-session/, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 18:01:21,363 middleware_backforward 11636 2224 Back/forward navigation detected - Expected: /dashboard/, Actual: /get_cart_count, User: hajareofficial1997@gmail.com
+WARNING 2026-03-23 18:25:58,955 middleware 500 26608 ACCESS BLOCKED - User: hajareofficial1997@gmail.com, Path: /cart_view, IP: 127.0.0.1, User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+WARNING 2026-03-23 18:26:30,568 middleware 500 17108 ACCESS BLOCKED - User: hajareofficial1997@gmail.com, Path: /, IP: 127.0.0.1, User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36
+WARNING 2026-03-23 18:28:49,340 middleware 3112 12008 ACCESS BLOCKED - User: hajareofficial1997@gmail.com, Path: /product/, IP: 127.0.0.1, User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36

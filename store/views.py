@@ -28,6 +28,68 @@ from accounts.views import *
 
 logger = logging.getLogger(__name__)
 
+# accounts/views.py
+import time
+import logging
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+logger = logging.getLogger(__name__)
+
+def check_session_validity(request):
+    """
+    Check if user session is valid
+    Used by JavaScript to detect back/forward navigation
+    """
+    try:
+        # Always return a response, don't require authentication
+        if request.user.is_authenticated:
+            # Check if session flags are present
+            auth_flow = request.session.get('auth_flow_completed', False)
+            logout_completed = request.session.get('logout_completed', False)
+            
+            # If logout was completed, session is invalid
+            if logout_completed:
+                return JsonResponse({
+                    'valid': False,
+                    'authenticated': False,
+                    'message': 'Session expired'
+                })
+            
+            # Check if session is still valid (not expired)
+            session_created = request.session.get('session_created_at')
+            if session_created:
+                current_time = time.time()
+                # Session older than 30 minutes?
+                if current_time - session_created > 1800:  # 30 minutes
+                    return JsonResponse({
+                        'valid': False,
+                        'authenticated': False,
+                        'message': 'Session expired'
+                    })
+            
+            return JsonResponse({
+                'valid': True,
+                'authenticated': True,
+                'auth_flow_completed': auth_flow,
+                'role_id': request.session.get('role_id')
+            })
+        else:
+            # User is not authenticated - this is valid for login page
+            return JsonResponse({
+                'valid': False,
+                'authenticated': False,
+                'message': 'Not authenticated',
+                'redirect_to_login': False  # Don't auto-redirect
+            })
+    except Exception as e:
+        logger.error(f"Session check error: {e}")
+        return JsonResponse({
+            'valid': False,
+            'authenticated': False,
+            'message': 'Error checking session'
+        })
+
 def shop_view(request):
     try:
         """
@@ -207,10 +269,6 @@ def shop_view(request):
         logger.exception(f"Error in shop_view: {str(e)}")
         messages.error(request, "An error occurred while loading the shop. Please try again later.")
         return redirect('home')
-
-# views.py - Add product detail view
-
-# store/views.py
 
 def product_detail(request):
     """

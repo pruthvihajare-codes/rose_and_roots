@@ -22,22 +22,43 @@ from django.views.decorators.debug import sensitive_post_parameters
 import time
 import uuid
 import logging
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.urls import reverse
 logger = logging.getLogger(__name__)
+
+# accounts/views.py
 
 def logout_user(request):
     try:
-        auth_logout(request)  # correct logout
-
+        if request.user.is_authenticated:
+            user_email = request.user.email
+            
+            # Set logout flag BEFORE logout
+            request.session['logout_completed'] = True
+            request.session['auth_flow_completed'] = False
+            
+            # Clear expected_next_url
+            if 'expected_next_url' in request.session:
+                del request.session['expected_next_url']
+            
+            logger.info(f"User {user_email} logged out. Flags set: logout_completed=True")
+        
+        logout(request)
+        request.session.flush()
+        
         messages.success(request, "You have been successfully logged out.")
-
         return redirect('home')
-
+        
     except Exception as e:
-        print(f"Logout error: {e}")
-        messages.error(request, "Something went wrong. Please try again later.")
+        logger.error(f"Logout error: {e}")
+        messages.error(request, "Something went wrong.")
         return redirect('home')
 
 # Regular view functions for rendering templates
+# accounts/views.py
+
 @sensitive_post_parameters()
 @csrf_protect
 @never_cache
@@ -45,6 +66,17 @@ def login_view(request):
     try:
         # If user is already logged in, redirect based on role
         if request.user.is_authenticated:
+            # Check if this is a back/forward navigation attempt
+            if request.session.get('logout_completed', False):
+                # Clear the logout flag and redirect to home
+                if 'logout_completed' in request.session:
+                    del request.session['logout_completed']
+                messages.warning(request, '🔒 Session expired. Please login again.')
+                logout(request)
+                request.session.flush()
+                return redirect('home')
+            
+            # Normal redirect for already logged in users
             if hasattr(request.user, 'role_id'):
                 if request.user.role_id == 1:
                     return redirect('admin_dashboard')
@@ -54,6 +86,12 @@ def login_view(request):
         
         if request.method == 'GET':
             next_url = request.GET.get('next')
+            # Clear any stale session flags on login page access
+            if 'logout_completed' in request.session:
+                del request.session['logout_completed']
+            if 'auth_flow_completed' in request.session:
+                del request.session['auth_flow_completed']
+            
             logger.info(f"Login page accessed with next URL: {next_url}")
             return render(request, 'account/login.html', {'next': next_url})
         
@@ -72,10 +110,6 @@ def login_view(request):
                     messages.error(request, 'Password is required.')
                     return render(request, 'account/login.html', {'email': email})
                 
-                # Rate limiting check (optional - add if you have django-ratelimit)
-                # from django_ratelimit.decorators import ratelimit
-                # Add rate limiting to prevent brute force
-                
                 # Authenticate user
                 user = authenticate(request, username=email, password=password)
                 
@@ -89,10 +123,39 @@ def login_view(request):
                     old_session_key = request.session.session_key
                     logger.debug(f"OLD session key before login: {old_session_key}")
                     
+                    # ========== CLEAN UP OLD SESSION FLAGS ==========
+                    # Clear any existing session flags before login
+                    session_keys_to_clear = [
+                        'auth_flow_completed', 'logout_completed', 'expected_next_url',
+                        'last_visited_url', 'session_validated', 'login_timestamp'
+                    ]
+                    for key in session_keys_to_clear:
+                        if key in request.session:
+                            del request.session[key]
+                    
                     # Perform login (this will change the session key)
                     login(request, user)
                     
+                    # ========== SET NEW SESSION FLAGS FOR AUTH FLOW ==========
+                    request.session['auth_flow_completed'] = True
+                    request.session['role_id'] = user.role_id
+                    request.session['logout_completed'] = False
+                    
+                    # Set expected next URL based on role
+                    if user.role_id == 1:  # Admin
+                        request.session['expected_next_url'] = '/admin-dashboard/'
+                    elif user.role_id == 2:  # Customer
+                        request.session['expected_next_url'] = '/dashboard/'
+                    
+                    # Clear any previous navigation flags
+                    if 'expected_next_url' in request.session:
+                        # Already set above
+                        pass
+                    
                     # ========== SESSION SECURITY SETUP ==========
+                    import time
+                    import uuid
+                    
                     # Set session markers for security tracking
                     request.session['session_created_at'] = time.time()
                     request.session['session_id'] = str(uuid.uuid4())
@@ -176,8 +239,6 @@ def login_view(request):
         logger.error(f"Login view unexpected error: {e}")
         messages.error(request, 'Something went wrong. Please try again later.')
         return render(request, 'account/login.html')
-
-# In your cart/views.py, update the merge function to handle imports properly
 
 def merge_carts_on_login(request):
     """
@@ -397,11 +458,6 @@ def home(request):
     except Exception as e:
         print("Exception caught:", e)
         raise
-
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.urls import reverse
 
 def send_order_confirmation_email(order, order_items, encrypted_order_id):
     """Send order confirmation email to customer with HTML template"""
