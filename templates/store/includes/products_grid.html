@@ -1,0 +1,114 @@
+{% load static %}
+
+{% for bouquet in bouquets %}
+    <!-- Use a data attribute for the modal trigger instead of complex ID -->
+    <div class="product-card" data-bouquet-id="{{ bouquet.encrypted_id }}">
+        <div class="product-image">
+            {% if bouquet.primary_image %}
+                <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}" class="img-fluid">
+            {% else %}
+                <div class="no-image">
+                    <i class="bi bi-flower2"></i>
+                </div>
+            {% endif %}
+            
+            <!-- Badges -->
+            <div class="product-badges">
+                {% if bouquet.is_featured %}
+                <span class="badge-featured">Featured</span>
+                {% endif %}
+                {% if bouquet.same_day_available %}
+                <span class="badge-sameday">Same Day</span>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="product-actions always-visible">
+                {% if bouquet.buy_now == 0 %}
+                    <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
+                    target="_blank" 
+                    class="action-btn" 
+                    title="Inquire on WhatsApp">
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+                {% endif %}
+                <button class="action-btn quick-view-btn" title="Quick View" data-bouquet='{"id": "{{ bouquet.encrypted_id }}", "name": "{{ bouquet.name|escapejs }}", "price": "{{ bouquet.discount_price|default:bouquet.price|floatformat:0 }}", "original_price": "{{ bouquet.price|floatformat:0 }}", "discount_percent": "{{ bouquet.discount_percent|default:0 }}", "image": "{% if bouquet.primary_image %}{{ MEDIA_URL }}{{ bouquet.primary_image }}{% endif %}", "description": "{{ bouquet.short_description|escapejs }}", "occasions": [{% for occ in bouquet.occasion_names %}"{{ occ|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}], "buy_now": {{ bouquet.buy_now }} }'>
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+
+            <!-- Add to Cart Button -->
+            {% if bouquet.buy_now == 0 %}
+                <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
+                    target="_blank" 
+                    class="btn-whatsapp-card">
+                        <i class="bi bi-whatsapp"></i> Inquiry
+                </a>
+        
+                <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+            {% else %}
+                <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="product-info">
+            <!-- Occasion Tags -->
+            <div class="product-occasions">
+                {% for occasion in bouquet.occasion_names|slice:":2" %}
+                <span class="occasion-tag">{{ occasion }}</span>
+                {% endfor %}
+                {% if bouquet.occasion_names|length > 2 %}
+                <span class="occasion-tag more">+{{ bouquet.occasion_names|length|add:"-2" }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Product Name -->
+            <h3 class="product-title">
+                <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}">{{ bouquet.name }}</a>
+            </h3>
+
+            <!-- Short Description -->
+            <p class="product-description">{{ bouquet.short_description|truncatechars:60 }}</p>
+
+            <!-- Price -->
+            <div class="product-price">
+                {% if bouquet.discount_price %}
+                    <span class="current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
+                    <span class="original-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                    <span class="discount-badge-price">-{{ bouquet.discount_percent }}%</span>
+                {% else %}
+                    <span class="current-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- View Details Button -->
+            <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}" class="btn-view-details">
+                View Details <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+{% endfor %}
+
+{% if not bouquets %}
+    <div class="empty-state-wrapper">
+        <div class="empty-state-card">
+            <div class="empty-state-icon">
+                <i class="bi bi-flower2"></i>
+            </div>
+            <h2 class="empty-state-title">No Bouquets Found</h2>
+            <p class="empty-state-message">
+                We couldn't find any bouquets matching your current filters. 
+                Try adjusting your search criteria or explore our other categories.
+            </p>
+            <button class="btn-clear-filters" onclick="clearAllFilters()">
+                <i class="bi bi-x-circle me-2"></i>Clear All Filters
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+

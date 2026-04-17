@@ -1,0 +1,35 @@
+{% if selected_categories|length > 0 or selected_occasions|length > 0 or min_price or max_price %}
+<div class="active-filters bg-light p-2 rounded mb-2" style="border-left: 3px solid #8c0d4f;">
+    <div class="small fw-bold text-muted mb-1">Active Filters</div>
+    <div class="d-flex flex-wrap gap-1">
+        {% for enc_id in selected_categories %}
+            {% for category in categories %}
+                {% if category.encrypted_id == enc_id %}
+                    <span class="badge bg-white border text-dark px-2 py-1 d-inline-flex align-items-center">
+                        {{ category.parameter_value }}
+                        <button type="button" class="btn-close btn-close-sm ms-1" style="font-size: 0.5rem;" onclick="removeFilter('category', '{{ enc_id }}')"></button>
+                    </span>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        
+        {% for enc_id in selected_occasions %}
+            {% for occasion in occasions %}
+                {% if occasion.encrypted_id == enc_id %}
+                    <span class="badge bg-white border text-dark px-2 py-1 d-inline-flex align-items-center">
+                        {{ occasion.name }}
+                        <button type="button" class="btn-close btn-close-sm ms-1" style="font-size: 0.5rem;" onclick="removeFilter('occasion', '{{ enc_id }}')"></button>
+                    </span>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        
+        {% if min_price or max_price %}
+            <span class="badge bg-white border text-dark px-2 py-1 d-inline-flex align-items-center">
+                ₹{{ min_price|default:price_range.min_price|floatformat:0 }} - ₹{{ max_price|default:price_range.max_price|floatformat:0 }}
+                <button type="button" class="btn-close btn-close-sm ms-1" style="font-size: 0.5rem;" onclick="clearPriceFilter()"></button>
+            </span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

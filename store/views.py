@@ -33,6 +33,7 @@ import time
 import logging
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.template.loader import render_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -95,12 +96,43 @@ def shop_view(request):
         """
         Display all bouquets with filtering by occasion, category, and price range
         """
-        # Get filter parameters
-        selected_occasions_encrypted = request.GET.getlist('occasion')
-        selected_categories_encrypted = request.GET.getlist('category')  # New category filter
+        
+        # Get filter parameters - handle both single and multiple values
+        category_param = request.GET.get('category', '')
+        occasion_param = request.GET.get('occasion', '')
+        
+        # Handle category - could be comma-separated or single value
+        if category_param:
+            if ',' in category_param:
+                selected_categories_encrypted = [x.strip() for x in category_param.split(',') if x.strip()]
+            else:
+                selected_categories_encrypted = [category_param.strip()]
+        else:
+            selected_categories_encrypted = request.GET.getlist('category')
+        
+        # Handle occasion - could be comma-separated or single value
+        if occasion_param:
+            if ',' in occasion_param:
+                selected_occasions_encrypted = [x.strip() for x in occasion_param.split(',') if x.strip()]
+            else:
+                selected_occasions_encrypted = [occasion_param.strip()]
+        else:
+            selected_occasions_encrypted = request.GET.getlist('occasion')
+        
+        # Remove empty strings
+        selected_categories_encrypted = [x for x in selected_categories_encrypted if x]
+        selected_occasions_encrypted = [x for x in selected_occasions_encrypted if x]
+        
         min_price = request.GET.get('min_price')
         max_price = request.GET.get('max_price')
         sort_by = request.GET.get('sort', 'popular')
+        
+        # ❌ REMOVE THESE DUPLICATE LINES - they were overwriting the values above!
+        # selected_occasions_encrypted = request.GET.getlist('occasion')
+        # selected_categories_encrypted = request.GET.getlist('category')
+        # min_price = request.GET.get('min_price')
+        # max_price = request.GET.get('max_price')
+        # sort_by = request.GET.get('sort', 'popular')
         
         # Decrypt occasion IDs
         selected_occasions = []
@@ -130,7 +162,7 @@ def shop_view(request):
         if selected_occasions:
             bouquets = bouquets.filter(occasions__id__in=selected_occasions).distinct()
         
-        # Filter by categories - NEW
+        # Filter by categories
         if selected_categories:
             bouquets = bouquets.filter(category_id__in=selected_categories).distinct()
         
@@ -182,7 +214,7 @@ def shop_view(request):
             occasion.encrypted_id = enc(str(occasion.id))
             occasion_list.append(occasion)
         
-        # Get all categories from parameter_master for filter - NEW
+        # Get all categories from parameter_master for filter
         categories = parameter_master.objects.filter(
             parameter_name='Product Categories',
             isactive=1
@@ -244,24 +276,30 @@ def shop_view(request):
         
         # Encrypt selected items for template
         selected_occasions_encrypted_list = [enc(str(id)) for id in selected_occasions]
-        selected_categories_encrypted_list = [enc(str(id)) for id in selected_categories]  # NEW
+        selected_categories_encrypted_list = [enc(str(id)) for id in selected_categories]
+        
+        # Calculate total active filters
+        total_active_filters = len(selected_categories) + len(selected_occasions)
+        if min_price or max_price:
+            total_active_filters += 1
         
         context = {
             'page_obj': page_obj,
             'bouquets': page_obj.object_list,
             'featured_bouquets': featured_list,
             'occasions': occasion_list,
-            'categories': category_list,  # NEW
+            'categories': category_list,
             'price_range': price_range,
             'selected_occasions': selected_occasions_encrypted_list,
-            'selected_categories': selected_categories_encrypted_list,  # NEW
+            'selected_categories': selected_categories_encrypted_list,
             'min_price': min_price,
             'max_price': max_price,
             'sort_by': sort_by,
             "MEDIA_URL": settings.MEDIA_URL,
-            'min_price': min_price_value,
-            'max_price': max_price_value,
+            'min_price_value': min_price_value,
+            'max_price_value': max_price_value,
             'admin_whatsapp': admin_whatsapp,
+            'total_active_filters': total_active_filters,
         }
         
         return render(request, 'store/shop.html', context)
@@ -269,6 +307,283 @@ def shop_view(request):
         logger.exception(f"Error in shop_view: {str(e)}")
         messages.error(request, "An error occurred while loading the shop. Please try again later.")
         return redirect('home')
+
+# Add this new view function after shop_view
+def filter_products_ajax(request):
+    """
+    AJAX endpoint for filtering products without page reload
+    Returns JSON with rendered HTML and metadata
+    """
+    try:
+        # ========== DEBUG: Print all GET parameters ==========
+        logger.info(f"ALL GET PARAMS: {dict(request.GET)}")
+        logger.info(f"REQUEST GET URL: {request.GET.urlencode()}")
+        
+        # ========== Handle occasion parameter (multiple formats) ==========
+        selected_occasions_encrypted = []
+        
+        # Method 1: Try getlist (for traditional format: ?occasion=1&occasion=2)
+        occasion_list = request.GET.getlist('occasion')
+        logger.info(f"getlist('occasion'): {occasion_list}")
+        
+        # Method 2: Try getlist with brackets (for ?occasion[]=1&occasion[]=2)
+        occasion_bracket_list = request.GET.getlist('occasion[]')
+        logger.info(f"getlist('occasion[]'): {occasion_bracket_list}")
+        
+        # Method 3: Try single parameter with comma-separated values
+        occasion_single = request.GET.get('occasion', '')
+        logger.info(f"get('occasion'): {occasion_single}")
+        
+        # Combine all methods
+        if occasion_list:
+            for item in occasion_list:
+                if item:
+                    if ',' in item:
+                        selected_occasions_encrypted.extend([x.strip() for x in item.split(',') if x.strip()])
+                    else:
+                        selected_occasions_encrypted.append(item.strip())
+        elif occasion_bracket_list:
+            for item in occasion_bracket_list:
+                if item:
+                    if ',' in item:
+                        selected_occasions_encrypted.extend([x.strip() for x in item.split(',') if x.strip()])
+                    else:
+                        selected_occasions_encrypted.append(item.strip())
+        elif occasion_single:
+            if ',' in occasion_single:
+                selected_occasions_encrypted = [x.strip() for x in occasion_single.split(',') if x.strip()]
+            else:
+                selected_occasions_encrypted = [occasion_single.strip()]
+        
+        # Remove duplicates and empty values
+        selected_occasions_encrypted = list(set([x for x in selected_occasions_encrypted if x]))
+        logger.info(f"FINAL selected_occasions_encrypted: {selected_occasions_encrypted}")
+        
+        # ========== Handle category parameter (multiple formats) ==========
+        selected_categories_encrypted = []
+        
+        # Method 1: Try getlist
+        category_list = request.GET.getlist('category')
+        logger.info(f"getlist('category'): {category_list}")
+        
+        # Method 2: Try getlist with brackets
+        category_bracket_list = request.GET.getlist('category[]')
+        logger.info(f"getlist('category[]'): {category_bracket_list}")
+        
+        # Method 3: Try single parameter
+        category_single = request.GET.get('category', '')
+        logger.info(f"get('category'): {category_single}")
+        
+        # Combine all methods
+        if category_list:
+            for item in category_list:
+                if item:
+                    if ',' in item:
+                        selected_categories_encrypted.extend([x.strip() for x in item.split(',') if x.strip()])
+                    else:
+                        selected_categories_encrypted.append(item.strip())
+        elif category_bracket_list:
+            for item in category_bracket_list:
+                if item:
+                    if ',' in item:
+                        selected_categories_encrypted.extend([x.strip() for x in item.split(',') if x.strip()])
+                    else:
+                        selected_categories_encrypted.append(item.strip())
+        elif category_single:
+            if ',' in category_single:
+                selected_categories_encrypted = [x.strip() for x in category_single.split(',') if x.strip()]
+            else:
+                selected_categories_encrypted = [category_single.strip()]
+        
+        # Remove duplicates and empty values
+        selected_categories_encrypted = list(set([x for x in selected_categories_encrypted if x]))
+        logger.info(f"FINAL selected_categories_encrypted: {selected_categories_encrypted}")
+        
+        # ========== Get other parameters ==========
+        min_price = request.GET.get('min_price', '').strip()
+        max_price = request.GET.get('max_price', '').strip()
+        sort_by = request.GET.get('sort', 'popular')
+        page = request.GET.get('page', 1)
+        
+        logger.info(f"Price range: min={min_price}, max={max_price}")
+        logger.info(f"Sort: {sort_by}, Page: {page}")
+        
+        # ========== Decrypt occasion IDs ==========
+        selected_occasions = []
+        for enc_id in selected_occasions_encrypted:
+            try:
+                dec_id = dec(str(enc_id))
+                selected_occasions.append(int(dec_id))
+            except Exception as e:
+                logger.warning(f"Failed to decrypt occasion ID {enc_id}: {e}")
+        
+        # ========== Decrypt category IDs ==========
+        selected_categories = []
+        for enc_id in selected_categories_encrypted:
+            try:
+                dec_id = dec(str(enc_id))
+                selected_categories.append(int(dec_id))
+            except Exception as e:
+                logger.warning(f"Failed to decrypt category ID {enc_id}: {e}")
+        
+        logger.info(f"Decrypted - Occasions: {selected_occasions}, Categories: {selected_categories}")
+        
+        # ========== Base queryset ==========
+        bouquets = Bouquet.objects.filter(is_active=1).select_related('category').prefetch_related('occasions', 'images')
+        
+        # First you apply occasion filter
+        if selected_occasions:
+            bouquets = bouquets.filter(occasions__id__in=selected_occasions).distinct()
+            logger.info(f"After occasion filter: {bouquets.count()} bouquets")
+
+        # THEN you apply category filter
+        if selected_categories:
+            bouquets = bouquets.filter(category_id__in=selected_categories).distinct()
+            logger.info(f"After category filter: {bouquets.count()} bouquets")
+        
+        # Filter by price range
+        if min_price and max_price:
+            try:
+                min_price_dec = Decimal(min_price)
+                max_price_dec = Decimal(max_price)
+                bouquets = bouquets.filter(
+                    Q(price__gte=min_price_dec) | Q(discount_price__gte=min_price_dec),
+                    Q(price__lte=max_price_dec) | Q(discount_price__lte=max_price_dec)
+                ).distinct()
+                logger.info(f"After price filter (both): {bouquets.count()} bouquets")
+            except (InvalidOperation, ValueError) as e:
+                logger.warning(f"Invalid price values: {e}")
+        elif min_price:
+            try:
+                min_price_dec = Decimal(min_price)
+                bouquets = bouquets.filter(
+                    Q(price__gte=min_price_dec) | Q(discount_price__gte=min_price_dec)
+                ).distinct()
+                logger.info(f"After min price filter: {bouquets.count()} bouquets")
+            except (InvalidOperation, ValueError) as e:
+                logger.warning(f"Invalid min price: {e}")
+        elif max_price:
+            try:
+                max_price_dec = Decimal(max_price)
+                bouquets = bouquets.filter(
+                    Q(price__lte=max_price_dec) | Q(discount_price__lte=max_price_dec)
+                ).distinct()
+                logger.info(f"After max price filter: {bouquets.count()} bouquets")
+            except (InvalidOperation, ValueError) as e:
+                logger.warning(f"Invalid max price: {e}")
+        
+        # Sorting
+        if sort_by == 'price_low':
+            bouquets = bouquets.order_by('price')
+        elif sort_by == 'price_high':
+            bouquets = bouquets.order_by('-price')
+        elif sort_by == 'newest':
+            bouquets = bouquets.order_by('-created_at')
+        elif sort_by == 'popular':
+            bouquets = bouquets.order_by('-is_featured', '-created_at')
+        else:
+            bouquets = bouquets.order_by('-is_featured', '-created_at')
+        
+        # ========== Build bouquet list ==========
+        bouquet_list = []
+        for bouquet in bouquets:
+            bouquet.encrypted_id = enc(str(bouquet.id))
+            
+            # Get primary image
+            primary_image = bouquet.images.filter(is_active=1).first()
+            if primary_image:
+                bouquet.primary_image = primary_image.image_path
+            else:
+                bouquet.primary_image = None
+            
+            # Get all images for gallery
+            bouquet.all_images = bouquet.images.filter(is_active=1)
+            
+            # Get occasion names for display
+            bouquet.occasion_names = [occ.name for occ in bouquet.occasions.all()]
+            
+            # Get category name
+            bouquet.category_name = bouquet.category.parameter_value if bouquet.category else 'Uncategorized'
+            
+            bouquet_list.append(bouquet)
+        
+        # ========== Pagination ==========
+        paginator = Paginator(bouquet_list, 12)
+        page_obj = paginator.get_page(page)
+        
+        # ========== Get admin WhatsApp ==========
+        admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
+        admin_whatsapp = admin_user.phone if admin_user else '918805433102'
+        
+        # ========== Get occasions and categories for display ==========
+        occasions = Occasion.objects.filter(is_active=1).order_by('name')
+        for occasion in occasions:
+            occasion.encrypted_id = enc(str(occasion.id))
+            
+        categories = parameter_master.objects.filter(
+            parameter_name='Product Categories',
+            isactive=1
+        ).order_by('parameter_value')
+        for category in categories:
+            category.encrypted_id = enc(str(category.parameter_id))
+        
+        price_range = Bouquet.objects.filter(is_active=1).aggregate(
+            min_price=Min('price'),
+            max_price=Max('price')
+        )
+        
+        # ========== Render HTML ==========
+        products_html = render_to_string('store/includes/products_grid.html', {
+            'bouquets': page_obj.object_list,
+            'page_obj': page_obj,
+            'MEDIA_URL': settings.MEDIA_URL,
+            'admin_whatsapp': admin_whatsapp,
+            'request': request,
+        })
+        
+        pagination_html = ''
+        if page_obj.paginator.num_pages > 1:
+            pagination_html = render_to_string('store/includes/pagination.html', {
+                'page_obj': page_obj,
+                'request': request,
+            })
+        
+        active_filters_html = render_to_string('store/includes/active_filters.html', {
+            'selected_occasions': selected_occasions_encrypted,
+            'selected_categories': selected_categories_encrypted,
+            'min_price': min_price,
+            'max_price': max_price,
+            'occasions': occasions,
+            'categories': categories,
+            'price_range': price_range,
+        })
+        
+        # Calculate total active filters
+        total_filters = len(selected_categories) + len(selected_occasions)
+        if min_price or max_price:
+            total_filters += 1
+        
+        # After filtering
+        logger.info(f"FINAL bouquets count: {bouquets.count()}")
+        print(f"FINAL bouquets count: {bouquets.count()}")  # Force print to console
+
+        return JsonResponse({
+            'success': True,
+            'products_html': products_html,
+            'pagination_html': pagination_html,
+            'active_filters_html': active_filters_html,
+            'total_count': page_obj.paginator.count,
+            'showing_start': page_obj.start_index(),
+            'showing_end': page_obj.end_index(),
+            'active_filter_count': total_filters,
+        })
+        
+    except Exception as e:
+        logger.exception(f"Error in filter_products_ajax: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while filtering products.'
+        }, status=500)
 
 def product_detail(request):
     """

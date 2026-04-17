@@ -27,6 +27,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.urls import reverse
 logger = logging.getLogger(__name__)
+from rose_and_roots.encryption import enc, dec
 
 # accounts/views.py
 
@@ -453,11 +454,70 @@ def register_view(request):
         return render(request, 'account/register.html')
 
 def home(request):
+    """Homepage view"""
     try:
-        return render(request, 'home.html')
+        # Get featured bouquets
+        featured_bouquets = Bouquet.objects.filter(
+            is_active=1, 
+            is_featured=1
+        ).prefetch_related('images', 'occasions')[:8]
+        
+        # Add encrypted IDs and primary images
+        bouquet_list = []
+        for bouquet in featured_bouquets:
+            bouquet.encrypted_id = enc(str(bouquet.id))
+            primary_image = bouquet.images.filter(is_active=1).first()
+            bouquet.primary_image = primary_image.image_path if primary_image else None
+            bouquet.occasion_names = [occ.name for occ in bouquet.occasions.all()]
+            bouquet.category_name = bouquet.category.parameter_value if bouquet.category else 'Uncategorized'
+            bouquet_list.append(bouquet)
+        
+        # Get categories with counts
+        categories = parameter_master.objects.filter(
+            parameter_name='Product Categories',
+            isactive=1
+        ).order_by('parameter_value')
+        
+        category_list = []
+        for category in categories:
+            category.encrypted_id = enc(str(category.parameter_id))
+            category.bouquet_count = Bouquet.objects.filter(
+                category_id=category.parameter_id, 
+                is_active=1
+            ).count()
+            category_list.append(category)
+        
+        # Get occasions
+        occasions = Occasion.objects.filter(is_active=1).order_by('name')
+        occasion_list = []
+        for occasion in occasions:
+            occasion.encrypted_id = enc(str(occasion.id))
+            occasion_list.append(occasion)
+        
+        # Get admin WhatsApp
+        admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
+        admin_whatsapp = admin_user.phone if admin_user else '918805433102'
+        
+        context = {
+            'bouquets': bouquet_list,
+            'categories': category_list,
+            'occasions': occasion_list,
+            'admin_whatsapp': admin_whatsapp,
+            'MEDIA_URL': settings.MEDIA_URL,
+        }
+        
+        return render(request, 'home.html', context)
+        
     except Exception as e:
-        print("Exception caught:", e)
-        raise
+        logger.exception(f"Error in home view: {str(e)}")
+        # Fallback context
+        return render(request, 'home.html', {
+            'bouquets': [],
+            'categories': [],
+            'occasions': [],
+            'admin_whatsapp': '918805433102',
+            'MEDIA_URL': settings.MEDIA_URL,
+        })
 
 def send_order_confirmation_email(order, order_items, encrypted_order_id):
     """Send order confirmation email to customer with HTML template"""

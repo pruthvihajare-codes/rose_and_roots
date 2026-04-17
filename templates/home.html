@@ -1,25 +1,2938 @@
-<!-- templates/home.html -->
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}LittleCraftOne - Handcrafted Treasures & Fresh Bouquets{% endblock %}
+
+{% block extra_css %}
+
+    <link rel="stylesheet" href="{% static 'css/store/shop.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <style>
+        /* ===== ALTERNATING SECTION BACKGROUNDS ===== */
+        .occasion-section {
+            background: linear-gradient(135deg, #fdf8fa 0%, #fff5f8 100%);
+            padding: 50px 0;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .features-section {
+            background: #ffffff;
+            padding: 50px 0;
+            margin: 0;
+        }
+
+        /* ===== PREMIUM TESTIMONIALS - LIGHTER BACKGROUND ===== */
+        .testimonials-section {
+            padding: 60px 0;
+            background: linear-gradient(135deg, #fdf8fa 0%, #f8eef2 50%, #fdf8fa 100%);
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            border-radius: 0;
+        }
+
+        /* Animated gradient overlay - lighter */
+        .testimonials-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(140, 13, 79, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(232, 62, 140, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+            z-index: 0;
+            animation: gradientShift 15s ease-in-out infinite;
+        }
+
+        /* Floating orbs - lighter */
+        .testimonials-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(140, 13, 79, 0.04) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(140, 13, 79, 0.03) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(140, 13, 79, 0.02) 0%, transparent 30%);
+            z-index: 0;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+
+        /* Floating decorative icons - lighter color */
+        .testimonial-floating-icon {
+            position: absolute;
+            color: rgba(140, 13, 79, 0.08);
+            font-size: 3rem;
+            z-index: 1;
+            pointer-events: none;
+            animation: iconFloat 8s ease-in-out infinite;
+        }
+
+        .floating-icon-1 { top: 8%; left: 3%; animation-delay: 0s; font-size: 3rem; }
+        .floating-icon-2 { top: 15%; right: 5%; animation-delay: 1.5s; font-size: 2.5rem; }
+        .floating-icon-3 { bottom: 12%; left: 8%; animation-delay: 3s; font-size: 2.8rem; }
+        .floating-icon-4 { bottom: 20%; right: 3%; animation-delay: 4.5s; font-size: 2.8rem; }
+        .floating-icon-5 { top: 55%; left: 12%; animation-delay: 2s; font-size: 2.2rem; }
+        .floating-icon-6 { top: 35%; right: 12%; animation-delay: 5s; font-size: 2.5rem; }
+
+        /* Sparkle particles - lighter */
+        .testimonial-sparkle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(140, 13, 79, 0.3);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+            animation: sparkleFloat 4s ease-in-out infinite;
+        }
+
+        .sparkle-t1 { top: 12%; left: 18%; animation-delay: 0s; width: 4px; height: 4px; }
+        .sparkle-t2 { top: 30%; right: 22%; animation-delay: 1s; width: 3px; height: 3px; }
+        .sparkle-t3 { bottom: 25%; left: 28%; animation-delay: 2s; width: 5px; height: 5px; }
+        .sparkle-t4 { bottom: 35%; right: 18%; animation-delay: 0.5s; width: 3px; height: 3px; }
+        .sparkle-t5 { top: 45%; left: 35%; animation-delay: 1.5s; width: 4px; height: 4px; }
+        .sparkle-t6 { top: 65%; right: 30%; animation-delay: 2.5s; width: 3px; height: 3px; }
+        .sparkle-t7 { bottom: 18%; left: 45%; animation-delay: 3s; width: 4px; height: 4px; }
+        .sparkle-t8 { top: 75%; right: 8%; animation-delay: 1.8s; width: 3px; height: 3px; }
+
+        /* Section Header - Dark text for light background */
+        .testimonials-section .section-header {
+            position: relative;
+            z-index: 5;
+            margin-bottom: 30px;
+        }
+
+        .testimonials-section .section-subtitle {
+            color: #8c0d4f;
+        }
+
+        .testimonials-section .section-subtitle::before,
+        .testimonials-section .section-subtitle::after {
+            background: linear-gradient(90deg, transparent, #8c0d4f, transparent);
+        }
+
+        .testimonials-section .section-title {
+            color: #3e0925;
+        }
+
+        .testimonials-section .section-title .highlight {
+            color: #8c0d4f;
+        }
+
+        .testimonials-section .section-title .highlight::after {
+            background: rgba(140, 13, 79, 0.12);
+        }
+
+        .testimonials-section .section-description {
+            color: #6c757d;
+        }
+
+        .testimonials-section .header-icon {
+            background: linear-gradient(135deg, rgba(140, 13, 79, 0.1), rgba(232, 62, 140, 0.05));
+            color: #8c0d4f;
+            border-color: rgba(140, 13, 79, 0.15);
+        }
+
+        /* Testimonial Card - Clean white */
+        .testimonial-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px 25px;
+            box-shadow: 0 15px 35px rgba(140, 13, 79, 0.08);
+            border: 1px solid rgba(140, 13, 79, 0.08);
+            height: 100%;
+            margin: 10px 8px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 100px;
+            font-family: 'Georgia', serif;
+            color: rgba(140, 13, 79, 0.04);
+            line-height: 1;
+            z-index: 0;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-10px) scale(1.01);
+            box-shadow: 0 25px 50px rgba(140, 13, 79, 0.12);
+            border-color: rgba(140, 13, 79, 0.15);
+        }
+
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: white;
+            position: relative;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .testimonial-avatar::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8c0d4f, #e83e8c, #ffd700);
+            z-index: -1;
+            opacity: 0.6;
+            animation: avatarGlow 3s ease-in-out infinite;
+        }
+
+        .avatar-1 { background: linear-gradient(135deg, #8c0d4f, #a3125c); }
+        .avatar-2 { background: linear-gradient(135deg, #e83e8c, #c2185b); }
+        .avatar-3 { background: linear-gradient(135deg, #6b0a3c, #8c0d4f); }
+        .avatar-4 { background: linear-gradient(135deg, #ad1457, #d81b60); }
+        .avatar-5 { background: linear-gradient(135deg, #4a0024, #8c0d4f); }
+
+        .testimonial-info h4 {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            color: #3e0925;
+            margin-bottom: 4px;
+            font-size: 1.1rem;
+        }
+
+        .testimonial-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        }
+
+        .testimonial-rating {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-rating i {
+            color: #ffc107;
+            font-size: 0.9rem;
+            filter: drop-shadow(0 2px 3px rgba(255, 193, 7, 0.2));
+        }
+
+        .testimonial-text {
+            color: #495057;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .testimonial-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(140, 13, 79, 0.06);
+            padding-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-product {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #8c0d4f;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .testimonial-product i {
+            font-size: 1rem;
+        }
+
+        .testimonial-verified {
+            color: #28a745;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Swiper Customization - FIXED ARROWS WITH ICONS */
+        .testimonials-swiper {
+            padding: 20px 15px 60px !important;
+            position: relative;
+            z-index: 5;
+        }
+
+        .testimonials-swiper .swiper-pagination {
+            bottom: 10px !important;
+        }
+
+        .testimonials-swiper .swiper-pagination-bullet {
+            background: #8c0d4f;
+            opacity: 0.3;
+            width: 10px;
+            height: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .testimonials-swiper .swiper-pagination-bullet-active {
+            opacity: 1;
+            background: linear-gradient(135deg, #8c0d4f, #e83e8c);
+            width: 25px;
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(140, 13, 79, 0.3);
+        }
+
+        /* Navigation Arrows - Using Bootstrap Icons */
+        .testimonials-swiper .swiper-button-next,
+        .testimonials-swiper .swiper-button-prev {
+            color: white;
+            background: linear-gradient(135deg, #8c0d4f, #a3125c);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            box-shadow: 0 6px 20px rgba(140, 13, 79, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .testimonials-swiper .swiper-button-next:after,
+        .testimonials-swiper .swiper-button-prev:after {
+            display: none;
+        }
+
+        .testimonials-swiper .swiper-button-next::before,
+        .testimonials-swiper .swiper-button-prev::before {
+            font-family: 'bootstrap-icons';
+            font-size: 1.5rem;
+            font-weight: normal;
+        }
+
+        .testimonials-swiper .swiper-button-next::before {
+            content: '\F138';
+        }
+
+        .testimonials-swiper .swiper-button-prev::before {
+            content: '\F12C';
+        }
+
+        .testimonials-swiper .swiper-button-next:hover,
+        .testimonials-swiper .swiper-button-prev:hover {
+            background: linear-gradient(135deg, #a3125c, #e83e8c);
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(140, 13, 79, 0.3);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        /* Animation Keyframes */
+        @keyframes gradientShift {
+            0%, 100% {
+                opacity: 0.6;
+                transform: scale(1) rotate(0deg);
+            }
+            33% {
+                opacity: 0.8;
+                transform: scale(1.08) rotate(3deg);
+            }
+            66% {
+                opacity: 0.7;
+                transform: scale(1.03) rotate(-2deg);
+            }
+        }
+
+        @keyframes orbFloat {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(25px, -15px) scale(1.08);
+            }
+            50% {
+                transform: translate(-15px, 25px) scale(0.96);
+            }
+            75% {
+                transform: translate(10px, 15px) scale(1.04);
+            }
+        }
+
+        @keyframes iconFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.08;
+            }
+            25% {
+                transform: translateY(-25px) rotate(8deg);
+                opacity: 0.15;
+            }
+            50% {
+                transform: translateY(-10px) rotate(-4deg);
+                opacity: 0.1;
+            }
+            75% {
+                transform: translateY(-35px) rotate(12deg);
+                opacity: 0.12;
+            }
+        }
+
+        @keyframes sparkleFloat {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                opacity: 0.2;
+            }
+            50% {
+                transform: translateY(-15px) scale(1.4);
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes avatarGlow {
+            0%, 100% {
+                opacity: 0.4;
+                box-shadow: 0 0 15px rgba(232, 62, 140, 0.2);
+            }
+            50% {
+                opacity: 0.8;
+                box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .testimonials-swiper .swiper-button-next,
+            .testimonials-swiper .swiper-button-prev {
+                display: none;
+            }
+            
+            .testimonial-card {
+                padding: 25px 20px;
+            }
+            
+            .testimonial-floating-icon {
+                font-size: 2rem;
+            }
+        }
+
+        /* Compact spacing for all sections */
+
+        .hero-section {
+            padding: 40px 0 60px !important;
+        }
+
+        .occasion-section {
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        .featured-section {
+            padding: 30px 0 50px !important;
+        }
+
+        .instagram-section {
+            padding: 30px 0 50px !important;
+        }
+
+        /* Remove extra margins from containers */
+        .container .container {
+            padding: 0;
+        }
+
+        /* Adjust section headers for tighter spacing */
+        .section-header {
+            margin-bottom: 25px !important;
+        }
+
+        .section-header-left {
+            margin-bottom: 25px !important;
+        }
+
+        /* Remove gradient overlays that add extra spacing */
+        .section-gradient-top::before,
+        .section-gradient-bottom::after {
+            height: 60px !important;
+        }
+
+        .section-title a {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .section-title a:hover {
+            color: var(--accent-color);
+        }
+
+        .section-title a:hover .highlight {
+            text-decoration: underline;
+            text-decoration-color: var(--accent-color);
+            text-underline-offset: 8px;
+        }
+
+        /* Header icon animation */
+        .header-icon {
+            animation: softPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes softPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(140, 13, 79, 0.1);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px 5px rgba(140, 13, 79, 0.05);
+            }
+        }
+
+        /* Gradient text option */
+        .section-title.gradient-text {
+            background: linear-gradient(135deg, var(--heading-color) 0%, var(--accent-color) 50%, var(--heading-color) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        :root {
+            --default-font: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+            --heading-font: "Quicksand", sans-serif;
+            --nav-font: "Ubuntu", sans-serif;
+            --background-color: #ffffff;
+            --default-color: #212529;
+            --heading-color: #3e0925;
+            --accent-color: #8c0d4f;
+            --surface-color: #ffffff;
+            --contrast-color: #ffffff;
+            --light-background: #f8f4f6;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+        
+        /* ===== HOME PAGE STYLES ===== */
+        .home-page {
+            background: linear-gradient(135deg, #fdf8fa 0%, #fff5f8 30%, #fdf8fa 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Floating animated background shapes - MORE VISIBLE */
+        .home-page::before {
+            content: '';
+            position: absolute;
+            top: 5%;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(140, 13, 79, 0.15) 0%, rgba(232, 62, 140, 0.08) 40%, transparent 70%);
+            border-radius: 50%;
+            animation: floatShape1 20s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(40px);
+        }
+
+        .home-page::after {
+            content: '';
+            position: absolute;
+            bottom: 10%;
+            right: -50px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(232, 62, 140, 0.12) 0%, rgba(140, 13, 79, 0.06) 40%, transparent 70%);
+            border-radius: 50%;
+            animation: floatShape2 25s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(45px);
+        }
+
+        /* Additional floating shapes - BRIGHTER */
+        .bg-shape-1 {
+            position: absolute;
+            top: 30%;
+            right: 5%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 193, 7, 0.12) 0%, rgba(255, 215, 0, 0.05) 40%, transparent 70%);
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            animation: morphShape 18s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(35px);
+        }
+
+        .bg-shape-2 {
+            position: absolute;
+            bottom: 20%;
+            left: 3%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(140, 13, 79, 0.12) 0%, rgba(168, 85, 247, 0.06) 40%, transparent 70%);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            animation: morphShape2 22s ease-in-out infinite reverse;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(40px);
+        }
+
+        .bg-shape-3 {
+            position: absolute;
+            top: 60%;
+            left: 10%;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(232, 62, 140, 0.1) 0%, rgba(236, 72, 153, 0.04) 50%, transparent 70%);
+            border-radius: 50%;
+            animation: floatShape3 20s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(30px);
+        }
+
+        /* Floating flower petals - MORE VISIBLE */
+        .floating-petal {
+            position: absolute;
+            color: rgba(140, 13, 79, 0.2);
+            font-size: 2rem;
+            animation: floatPetal 12s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
+            text-shadow: 0 0 20px rgba(140, 13, 79, 0.15);
+        }
+
+        .petal-1 { top: 12%; left: 3%; animation-delay: 0s; font-size: 2.5rem; color: rgba(140, 13, 79, 0.18); }
+        .petal-2 { top: 45%; right: 5%; animation-delay: 2s; font-size: 2.2rem; color: rgba(232, 62, 140, 0.15); }
+        .petal-3 { bottom: 20%; left: 8%; animation-delay: 4s; font-size: 2rem; color: rgba(140, 13, 79, 0.16); }
+        .petal-4 { top: 70%; right: 12%; animation-delay: 6s; font-size: 2.8rem; color: rgba(255, 193, 7, 0.12); }
+        .petal-5 { bottom: 35%; left: 18%; animation-delay: 1s; font-size: 1.8rem; color: rgba(232, 62, 140, 0.14); }
+        .petal-6 { top: 30%; left: 35%; animation-delay: 5s; font-size: 2.2rem; color: rgba(140, 13, 79, 0.15); }
+
+        /* Sparkle dots - BRIGHTER AND BIGGER */
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, rgba(140, 13, 79, 0.5) 0%, rgba(232, 62, 140, 0.3) 50%, transparent 100%);
+            border-radius: 50%;
+            animation: sparkle 3s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
+            box-shadow: 0 0 15px rgba(140, 13, 79, 0.3);
+        }
+
+        .sparkle-1 { top: 18%; left: 12%; animation-delay: 0s; width: 8px; height: 8px; }
+        .sparkle-2 { top: 55%; right: 18%; animation-delay: 0.8s; width: 5px; height: 5px; }
+        .sparkle-3 { bottom: 28%; left: 22%; animation-delay: 1.5s; width: 7px; height: 7px; }
+        .sparkle-4 { top: 75%; right: 25%; animation-delay: 0.3s; width: 6px; height: 6px; }
+        .sparkle-5 { bottom: 12%; left: 42%; animation-delay: 1.2s; width: 5px; height: 5px; }
+        .sparkle-6 { top: 42%; right: 35%; animation-delay: 2s; width: 8px; height: 8px; }
+        .sparkle-7 { bottom: 55%; left: 6%; animation-delay: 2.5s; width: 6px; height: 6px; }
+        .sparkle-8 { top: 8%; right: 8%; animation-delay: 1.8s; width: 7px; height: 7px; }
+
+        /* Subtle gradient overlay on sections */
+        .section-gradient-top {
+            position: relative;
+        }
+
+        .section-gradient-top::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(180deg, rgba(253, 248, 250, 0.7) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .section-gradient-bottom {
+            position: relative;
+        }
+
+        .section-gradient-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(0deg, rgba(253, 248, 250, 0.5) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Animation Keyframes - MORE DRAMATIC */
+        @keyframes floatShape1 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+            25% { transform: translate(80px, 50px) scale(1.2); opacity: 1; }
+            50% { transform: translate(120px, -30px) scale(0.9); opacity: 0.7; }
+            75% { transform: translate(40px, 70px) scale(1.15); opacity: 0.9; }
+        }
+
+        @keyframes floatShape2 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+            25% { transform: translate(-80px, 60px) scale(1.25); opacity: 1; }
+            50% { transform: translate(-40px, -50px) scale(0.85); opacity: 0.6; }
+            75% { transform: translate(-100px, 30px) scale(1.2); opacity: 0.9; }
+        }
+
+        @keyframes floatShape3 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+            33% { transform: translate(60px, -60px) scale(1.3); opacity: 1; }
+            66% { transform: translate(-30px, 50px) scale(0.85); opacity: 0.6; }
+        }
+
+        @keyframes morphShape {
+            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; opacity: 0.8; }
+            25% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; opacity: 1; }
+            50% { border-radius: 30% 70% 40% 60% / 50% 40% 60% 50%; opacity: 0.7; }
+            75% { border-radius: 70% 30% 60% 40% / 30% 60% 40% 70%; opacity: 0.9; }
+        }
+
+        @keyframes morphShape2 {
+            0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; opacity: 0.7; }
+            25% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; opacity: 1; }
+            50% { border-radius: 50% 50% 30% 70% / 30% 70% 50% 50%; opacity: 0.6; }
+            75% { border-radius: 30% 70% 60% 40% / 70% 30% 40% 60%; opacity: 0.9; }
+        }
+
+        @keyframes floatPetal {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+            25% { transform: translateY(-40px) rotate(20deg); opacity: 0.25; }
+            50% { transform: translateY(-20px) rotate(-15deg); opacity: 0.18; }
+            75% { transform: translateY(-60px) rotate(30deg); opacity: 0.1; }
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(2); box-shadow: 0 0 25px rgba(140, 13, 79, 0.5); }
+        }
+
+        /* Ensure content stays above background elements */
+        .container, 
+        .hero-section,
+        section,
+        .featured-section,
+        .occasion-section,
+        .testimonials-section,
+        .instagram-section,
+        .newsletter-section,
+        .row,
+        .col-lg-6,
+        .col-lg-7 {
+            position: relative;
+            z-index: 5;
+        }
+        
+        /* ===== SCROLL ANIMATIONS ===== */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .fade-in-left {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .fade-in-left.animated {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .fade-in-right {
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .fade-in-right.animated {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* ===== HERO SECTION ===== */
+        .hero-section {
+            padding: 40px 0 60px !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(140, 13, 79, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(232, 62, 140, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-color), #a3125c);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(140, 13, 79, 0.2);
+        }
+        
+        .hero-badge i {
+            margin-right: 8px;
+        }
+        
+        .hero-title {
+            font-family: var(--heading-font);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            color: var(--heading-color);
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        
+        .hero-title span {
+            color: var(--accent-color);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .hero-title span::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: rgba(140, 13, 79, 0.15);
+            border-radius: 4px;
+            z-index: -1;
+        }
+        
+        .hero-description {
+            font-size: 1.15rem;
+            color: #6c757d;
+            margin-bottom: 32px;
+            max-width: 550px;
+            line-height: 1.7;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--accent-color), #a3125c);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(140, 13, 79, 0.25);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(140, 13, 79, 0.35);
+            color: white;
+        }
+        
+        .btn-outline-custom {
+            background: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-outline-custom:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(140, 13, 79, 0.2);
+        }
+        
+        .hero-image-wrapper {
+            position: relative;
+            z-index: 1;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .hero-image {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            box-shadow: 0 30px 60px rgba(140, 13, 79, 0.15);
+            border: 5px solid white;
+        }
+        
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .stat-item-hero {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-family: var(--heading-font);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        /* ===== ELEGANT SECTION HEADERS ===== */
+        .section-header {
+            text-align: center;
+            margin-bottom: 25px !important;
+            position: relative;
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(140, 13, 79, 0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .section-subtitle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: var(--accent-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-subtitle::before,
+        .section-subtitle::after {
+            content: '';
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .section-subtitle::before {
+            background: linear-gradient(90deg, transparent, var(--accent-color));
+        }
+
+        .section-subtitle::after {
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+        }
+
+        .section-title {
+            font-family: var(--heading-font);
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-weight: 700;
+            color: var(--heading-color);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            padding: 0 20px;
+            background: linear-gradient(135deg, transparent 0%, rgba(140, 13, 79, 0.03) 50%, transparent 100%);
+        }
+
+        .section-title .highlight {
+            color: var(--accent-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(140, 13, 79, 0.12);
+            border-radius: 3px;
+            z-index: -1;
+        }
+
+        .section-description {
+            color: #6c757d;
+            max-width: 550px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Decorative flower icon */
+        .section-header .header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(140, 13, 79, 0.08), rgba(232, 62, 140, 0.04));
+            border-radius: 50%;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            border: 1px solid rgba(140, 13, 79, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Alternative header style with left alignment */
+        .section-header-left {
+            text-align: left;
+            margin-bottom: 25px !important;
+            position: relative;
+        }
+
+        .section-header-left .section-subtitle {
+            justify-content: flex-start;
+        }
+
+        .section-header-left .section-subtitle::before {
+            display: none;
+        }
+
+        .section-header-left .section-title {
+            padding-left: 0;
+            background: none;
+        }
+
+        .section-header-left .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 3px;
+        }
+
+        /* Animated underline effect */
+        .section-title.underline-animation {
+            position: relative;
+        }
+
+        .section-title.underline-animation::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            border-radius: 3px;
+            transition: width 0.8s ease;
+        }
+
+        .section-title.underline-animation.animated::after {
+            width: 80px;
+        }
+        
+        /* ===== CATEGORY CARDS ===== */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(140, 13, 79, 0.06);
+            border: 1px solid rgba(140, 13, 79, 0.08);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), #e83e8c);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(140, 13, 79, 0.15), 0 0 0 1px rgba(140, 13, 79, 0.1);
+            border-color: var(--accent-color);
+        }
+        
+        .category-card:hover::before {
+            opacity: 1;
+        }
+        
+        .category-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(140, 13, 79, 0.1), rgba(232, 62, 140, 0.05));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--accent-color);
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .category-card:hover .category-icon {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .category-name {
+            font-family: var(--heading-font);
+            font-weight: 600;
+            color: var(--heading-color);
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .category-count {
+            color: #adb5bd;
+            font-size: 0.85rem;
+        }
+
+        /* ===== MOBILE CATEGORY SLIDER ===== */
+        .category-swiper {
+            display: none;
+            padding: 10px 5px 40px !important;
+            overflow: hidden !important;
+        }
+
+        .category-swiper .swiper-slide {
+            height: auto !important;
+            display: flex;
+            justify-content: center;
+        }
+
+        .category-swiper .category-card {
+            height: 100%;
+            width: 100%;
+            max-width: 180px;
+            margin: 5px auto;
+            display: flex;
+            flex-direction: column;
+            padding: 25px 15px !important;
+            min-height: 200px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(140, 13, 79, 0.06);
+            border: 1px solid rgba(140, 13, 79, 0.08);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .category-swiper .category-icon {
+            width: 60px !important;
+            height: 60px !important;
+            margin: 0 auto 15px !important;
+            font-size: 1.8rem !important;
+        }
+
+        .category-swiper .category-name {
+            font-size: 0.9rem !important;
+            word-break: break-word;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #3e0925;
+        }
+
+        .category-swiper .category-count {
+            font-size: 0.75rem !important;
+            margin-top: auto;
+            color: #adb5bd;
+        }
+
+        .category-swiper .swiper-pagination {
+            bottom: 0px !important;
+        }
+
+        .category-swiper .swiper-pagination-bullet {
+            background: #8c0d4f;
+            opacity: 0.3;
+            width: 8px;
+            height: 8px;
+        }
+
+        .category-swiper .swiper-pagination-bullet-active {
+            opacity: 1;
+            background: linear-gradient(135deg, #8c0d4f, #e83e8c);
+            width: 20px;
+            border-radius: 10px;
+        }
+
+        /* Better spacing for mobile */
+        @media (max-width: 767px) {
+            .category-grid {
+                display: none !important;
+            }
+            
+            .category-swiper {
+                display: block !important;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .category-grid {
+                display: grid !important;
+            }
+            
+            .category-swiper {
+                display: none !important;
+            }
+        }
+        
+        /* ===== OCCASION SECTION ===== */
+        .occasion-section {
+            background: linear-gradient(135deg, #fdf8fa 0%, #fff5f8 100%);
+            padding: 50px 0;
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+        
+        .occasion-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+        }
+        
+        .occasion-chip {
+            background: white;
+            border-radius: 50px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(140, 13, 79, 0.05);
+            border: 1px solid rgba(140, 13, 79, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .occasion-chip:hover {
+            background: var(--accent-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(140, 13, 79, 0.15);
+        }
+        
+        .occasion-chip:hover .occasion-icon,
+        .occasion-chip:hover .occasion-name {
+            color: white;
+        }
+        
+        .occasion-icon {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+        
+        .occasion-name {
+            font-weight: 500;
+            color: var(--default-color);
+            transition: color 0.3s ease;
+        }
+        
+        /* ===== FEATURED PRODUCTS ===== */
+        .featured-section {
+            padding: 30px 0 50px !important;
+        }
+        
+        .view-all-link {
+            color: var(--accent-color);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: gap 0.3s ease;
+        }
+        
+        .view-all-link:hover {
+            gap: 12px;
+            color: #6b0a3c;
+        }
+
+        /* ===== MOBILE FEATURED PRODUCTS SLIDER ===== */
+        .featured-products-swiper {
+            display: none;
+            padding: 10px 5px 40px !important;
+            overflow: hidden !important;
+        }
+
+        .featured-products-swiper .swiper-slide {
+            height: auto !important;
+            display: flex;
+        }
+
+        .featured-products-swiper .product-card {
+            height: 100%;
+            width: 100%;
+            margin: 5px;
+        }
+
+        .featured-products-swiper .swiper-pagination {
+            bottom: 0px !important;
+        }
+
+        .featured-products-swiper .swiper-pagination-bullet {
+            background: #8c0d4f;
+            opacity: 0.3;
+            width: 8px;
+            height: 8px;
+        }
+
+        .featured-products-swiper .swiper-pagination-bullet-active {
+            opacity: 1;
+            background: linear-gradient(135deg, #8c0d4f, #e83e8c);
+            width: 20px;
+            border-radius: 10px;
+        }
+
+        /* Mobile responsive for featured products */
+        @media (max-width: 767px) {
+            .featured-section .products-grid {
+                display: none !important;
+            }
+            
+            .featured-products-swiper {
+                display: block !important;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .featured-section .products-grid {
+                display: grid !important;
+            }
+            
+            .featured-products-swiper {
+                display: none !important;
+            }
+        }
+        
+        /* ===== SPECIAL OFFER BANNER ===== */
+        .offer-section {
+            background: #fdf8fa;
+            padding: 30px 0;
+        }
+        
+        .offer-banner {
+            background: linear-gradient(135deg, var(--accent-color), #6b0a3c);
+            border-radius: 30px;
+            padding: 50px 40px;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+        
+        .offer-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .offer-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .offer-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .offer-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .offer-title {
+            font-family: var(--heading-font);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .offer-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+        
+        .offer-timer {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .timer-item {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .timer-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .timer-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+        
+        .btn-offer {
+            background: white;
+            color: var(--accent-color);
+            border: none;
+            padding: 14px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-offer:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            color: var(--accent-color);
+        }
+        
+        /* ===== WHY CHOOSE US ===== */
+        .features-section {
+            background: #ffffff;
+            padding: 50px 0;
+            margin: 0;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(140, 13, 79, 0.06);
+            border: 1px solid rgba(140, 13, 79, 0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(140, 13, 79, 0.15), 0 0 0 1px rgba(140, 13, 79, 0.1);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(140, 13, 79, 0.1), rgba(232, 62, 140, 0.05));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--accent-color);
+            font-size: 2rem;
+        }
+        
+        .feature-title {
+            font-family: var(--heading-font);
+            font-weight: 600;
+            color: var(--heading-color);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .feature-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        /* ===== INSTAGRAM GALLERY ===== */
+        .instagram-section {
+            padding: 30px 0 50px !important;
+            background: #ffffff;
+        }
+        
+        .instagram-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .instagram-item {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            text-decoration: none;
+        }
+        
+        .instagram-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .instagram-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(140, 13, 79, 0.7), rgba(232, 62, 140, 0.5));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .instagram-item:hover .instagram-overlay {
+            opacity: 1;
+        }
+        
+        .instagram-item:hover img {
+            transform: scale(1.1);
+        }
+        
+        .instagram-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .instagram-overlay p {
+            margin: 0;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        /* ===== ANIMATIONS ===== */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .category-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .occasion-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .instagram-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 30px 0 50px;
+                text-align: center;
+            }
+            
+            .hero-description {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-stats {
+                justify-content: center;
+            }
+            
+            .hero-image-wrapper {
+                margin-top: 40px;
+            }
+            
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .occasion-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .offer-banner {
+                text-align: center;
+                padding: 40px 25px;
+            }
+            
+            .offer-timer {
+                justify-content: center;
+            }
+            
+            .testimonials-swiper .swiper-button-next,
+            .testimonials-swiper .swiper-button-prev {
+                display: none;
+            }
+            
+            .testimonial-card {
+                padding: 25px 20px;
+            }
+            
+            .testimonial-floating-icon {
+                font-size: 2rem;
+            }
+            
+            section {
+                padding: 30px 0 !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .occasion-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-stats {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            
+            .instagram-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+{% endblock %}
+
 {% block content %}
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-12 text-center">
-                <h1 class="display-4">🌹 Rosé & Roots</h1>
-                <p class="lead text-muted">Fresh flowers, handcrafted bouquets</p>
+
+    <div class="home-page">
+
+        <!-- Floating Background Elements -->
+        <div class="bg-shape-1"></div>
+        <div class="bg-shape-2"></div>
+        <div class="bg-shape-3"></div>
+        
+        <!-- Floating Petals -->
+        <i class="bi bi-flower2 floating-petal petal-1"></i>
+        <i class="bi bi-flower1 floating-petal petal-2"></i>
+        <i class="bi bi-flower3 floating-petal petal-3"></i>
+        <i class="bi bi-flower2 floating-petal petal-4"></i>
+        <i class="bi bi-flower1 floating-petal petal-5"></i>
+        <i class="bi bi-flower3 floating-petal petal-6"></i>
+        
+        <!-- Sparkle Dots -->
+        <div class="sparkle sparkle-1"></div>
+        <div class="sparkle sparkle-2"></div>
+        <div class="sparkle sparkle-3"></div>
+        <div class="sparkle sparkle-4"></div>
+        <div class="sparkle sparkle-5"></div>
+        <div class="sparkle sparkle-6"></div>
+        <div class="sparkle sparkle-7"></div>
+        <div class="sparkle sparkle-8"></div>
+        
+        <!-- ===== HERO SECTION ===== -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="hero-content fade-in-left">
+                            <span class="hero-badge">
+                                <i class="bi bi-flower2"></i> Crafting Your Curiosity
+                            </span>
+                            <h1 class="hero-title">
+                                Handcrafted <span>Treasures</span><br>
+                                for Every Special Moment
+                            </h1>
+                            <p class="hero-description">
+                                From fresh bouquets to personalized resin art, we create beautiful 
+                                handcrafted pieces that tell your unique story with love and care.
+                            </p>
+                            <div class="hero-buttons">
+                                <a href="{% url 'shop' %}" class="btn-primary-custom">
+                                    <i class="bi bi-bag"></i> Shop Now
+                                </a>
+                                <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}" target="_blank" class="btn-outline-custom">
+                                    <i class="bi bi-whatsapp"></i> Custom Order
+                                </a>
+                            </div>
+                            <div class="hero-stats">
+                                <div class="stat-item-hero">
+                                    <div class="stat-number"><span class="counter" data-target="100">0</span>+</div>
+                                    <div class="stat-label">Products</div>
+                                </div>
+                                <div class="stat-item-hero">
+                                    <div class="stat-number"><span class="counter" data-target="1000">0</span>+</div>
+                                    <div class="stat-label">Happy Customers</div>
+                                </div>
+                                <div class="stat-item-hero">
+                                    <div class="stat-number"><span class="counter" data-target="4.9">0</span></div>
+                                    <div class="stat-label">Rating</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="hero-image-wrapper text-center fade-in-right">
+                            <img src="{% static 'images/pexels-photo-931168.jpeg' %}" alt="Handcrafted Bouquet" class="hero-image img-fluid" 
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="hero-image-fallback" style="display: none; width: 100%; max-width: 500px; aspect-ratio: 1/1; background: linear-gradient(135deg, #f9e6ef 0%, #8c0d4f 100%); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; align-items: center; justify-content: center; color: white; border: 5px solid white; box-shadow: 0 30px 60px rgba(140, 13, 79, 0.15); margin: 0 auto;">
+                                <div style="text-align: center;">
+                                    <i class="bi bi-flower2" style="font-size: 5rem;"></i>
+                                    <p style="margin-top: 10px; font-family: 'Quicksand', sans-serif; font-weight: 600;">LittleCraftOne</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ===== SHOP BY CATEGORY ===== -->
+        <section class="py-5">
+            <div class="container">
+                <div class="section-header animate-on-scroll">
+                    <div class="header-icon">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </div>
+                    <span class="section-subtitle">Browse Collections</span>
+                    <h2 class="section-title underline-animation">
+                        Shop by <span class="highlight">Category</span>
+                    </h2>
+                    <p class="section-description">
+                        Discover our handcrafted collections made with love and attention to detail
+                    </p>
+                </div>
                 
-                <div class="mt-4">
-                    <a href="{% url 'shop' %}" class="btn btn-danger btn-lg px-5 py-3">
-                        Shop Bouquets
+                <!-- Desktop/Tablet: Grid Layout -->
+                <div class="category-grid">
+                    {% for category in categories %}
+                    <a href="{% url 'shop' %}?category={{ category.encrypted_id }}" class="category-card animate-on-scroll" style="transition-delay: {{ forloop.counter0 }}00ms">
+                        <div class="category-icon">
+                            {% if 'Resin' in category.parameter_value %}
+                                <i class="bi bi-gem"></i>
+                            {% elif 'Wooden' in category.parameter_value %}
+                                <i class="bi bi-tree"></i>
+                            {% elif 'Badges' in category.parameter_value %}
+                                <i class="bi bi-award"></i>
+                            {% elif 'Greetings' in category.parameter_value %}
+                                <i class="bi bi-envelope-paper"></i>
+                            {% elif 'Frames' in category.parameter_value %}
+                                <i class="bi bi-image"></i>
+                            {% elif 'Bouquet' in category.parameter_value %}
+                                <i class="bi bi-flower1"></i>
+                            {% else %}
+                                <i class="bi bi-gift"></i>
+                            {% endif %}
+                        </div>
+                        <h3 class="category-name">{{ category.parameter_value }}</h3>
+                        <span class="category-count">{{ category.bouquet_count }} Products</span>
                     </a>
+                    {% endfor %}
+                </div>
+                
+                <!-- Mobile: Swiper Slider -->
+                <div class="swiper category-swiper">
+                    <div class="swiper-wrapper">
+                        {% for category in categories %}
+                        <div class="swiper-slide">
+                            <a href="{% url 'shop' %}?category={{ category.encrypted_id }}" class="category-card">
+                                <div class="category-icon">
+                                    {% if 'Resin' in category.parameter_value %}
+                                        <i class="bi bi-gem"></i>
+                                    {% elif 'Wooden' in category.parameter_value %}
+                                        <i class="bi bi-tree"></i>
+                                    {% elif 'Badges' in category.parameter_value %}
+                                        <i class="bi bi-award"></i>
+                                    {% elif 'Greetings' in category.parameter_value %}
+                                        <i class="bi bi-envelope-paper"></i>
+                                    {% elif 'Frames' in category.parameter_value %}
+                                        <i class="bi bi-image"></i>
+                                    {% elif 'Bouquet' in category.parameter_value %}
+                                        <i class="bi bi-flower1"></i>
+                                    {% else %}
+                                        <i class="bi bi-gift"></i>
+                                    {% endif %}
+                                </div>
+                                <h3 class="category-name">{{ category.parameter_value }}</h3>
+                                <span class="category-count">{{ category.bouquet_count }} Products</span>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Pagination -->
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ===== SHOP BY OCCASION ===== -->
+        <section class="occasion-section">
+            <div class="container">
+                <div class="section-header animate-on-scroll">
+                    <div class="header-icon">
+                        <i class="bi bi-calendar-heart"></i>
+                    </div>
+                    <span class="section-subtitle">Find the Perfect Gift</span>
+                    <h2 class="section-title underline-animation">
+                        Shop by <span class="highlight">Occasion</span>
+                    </h2>
+                    <p class="section-description">
+                        Thoughtfully curated for every celebration and special moment
+                    </p>
+                </div>
+                
+                <div class="occasion-grid">
+                    {% for occasion in occasions|slice:":6" %}
+                    <a href="{% url 'shop' %}?occasion={{ occasion.encrypted_id }}" class="occasion-chip animate-on-scroll" style="transition-delay: {{ forloop.counter0 }}00ms">
+                        <span class="occasion-icon">
+                            {% if 'Birthday' in occasion.name %}
+                                <i class="bi bi-gift"></i>
+                            {% elif 'Anniversary' in occasion.name %}
+                                <i class="bi bi-heart"></i>
+                            {% elif 'Wedding' in occasion.name %}
+                                <i class="bi bi-rings"></i>
+                            {% elif 'Love' in occasion.name %}
+                                <i class="bi bi-heart-fill"></i>
+                            {% elif 'Congratulations' in occasion.name %}
+                                <i class="bi bi-trophy"></i>
+                            {% elif 'Thank You' in occasion.name %}
+                                <i class="bi bi-hand-thumbs-up"></i>
+                            {% else %}
+                                <i class="bi bi-calendar-event"></i>
+                            {% endif %}
+                        </span>
+                        <span class="occasion-name">{{ occasion.name }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-4 animate-on-scroll">
+                    <a href="{% url 'shop' %}" class="view-all-link">
+                        View All Occasions <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ===== FEATURED PRODUCTS ===== -->
+        <section class="featured-section">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-end mb-4">
+                    <div class="section-header-left animate-on-scroll">
+                        <span class="section-subtitle">
+                            <i class="bi bi-stars" style="margin-right: 8px;"></i> Handpicked for You
+                        </span>
+                        <h2 class="section-title">
+                            Featured <span class="highlight">Products</span>
+                        </h2>
+                    </div>
+                    <a href="{% url 'shop' %}" class="view-all-link d-none d-md-flex">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <!-- Desktop/Tablet: Grid Layout -->
+                <div class="products-grid">
+                    {% for bouquet in bouquets %}
+                    <div class="product-card animate-on-scroll" style="transition-delay: {{ forloop.counter0 }}00ms">
+                        <div class="product-image">
+                            {% if bouquet.primary_image %}
+                                <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}" class="img-fluid">
+                            {% else %}
+                                <div class="no-image">
+                                    <i class="bi bi-flower2"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="product-badges">
+                                {% if bouquet.is_featured %}
+                                <span class="badge-featured">Featured</span>
+                                {% endif %}
+                                {% if bouquet.same_day_available %}
+                                <span class="badge-sameday">Same Day</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="product-actions always-visible">
+                                {% if bouquet.buy_now == 0 %}
+                                    <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
+                                    target="_blank" 
+                                    class="action-btn" 
+                                    title="Inquire on WhatsApp">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </a>
+                                {% endif %}
+                                <button class="action-btn quick-view-btn" title="Quick View" data-bouquet='{"id": "{{ bouquet.encrypted_id }}", "name": "{{ bouquet.name|escapejs }}", "price": "{{ bouquet.discount_price|default:bouquet.price|floatformat:0 }}", "original_price": "{{ bouquet.price|floatformat:0 }}", "discount_percent": "{{ bouquet.discount_percent|default:0 }}", "image": "{% if bouquet.primary_image %}{{ MEDIA_URL }}{{ bouquet.primary_image }}{% endif %}", "description": "{{ bouquet.short_description|default:''|escapejs }}", "occasions": [{% for occ in bouquet.occasion_names %}"{{ occ|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}], "buy_now": {{ bouquet.buy_now }} }'>
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+
+                            {% if bouquet.buy_now == 0 %}
+                                <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
+                                    target="_blank" 
+                                    class="btn-whatsapp-card">
+                                        <i class="bi bi-whatsapp"></i> Inquiry
+                                </a>
+                                <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
+                            {% else %}
+                                <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-occasions">
+                                {% for occasion in bouquet.occasion_names|slice:":2" %}
+                                <span class="occasion-tag">{{ occasion }}</span>
+                                {% endfor %}
+                                {% if bouquet.occasion_names|length > 2 %}
+                                <span class="occasion-tag more">+{{ bouquet.occasion_names|length|add:"-2" }}</span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="product-title">
+                                <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}">{{ bouquet.name }}</a>
+                            </h3>
+
+                            <div class="product-price">
+                                {% if bouquet.discount_price %}
+                                    <span class="current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
+                                    <span class="original-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                    <span class="discount-badge-price">-{{ bouquet.discount_percent }}%</span>
+                                {% else %}
+                                    <span class="current-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}" class="btn-view-details">
+                                View Details <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Mobile: Swiper Slider -->
+                <div class="swiper featured-products-swiper">
+                    <div class="swiper-wrapper">
+                        {% for bouquet in bouquets %}
+                        <div class="swiper-slide">
+                            <div class="product-card">
+                                <div class="product-image">
+                                    {% if bouquet.primary_image %}
+                                        <img src="{{ MEDIA_URL }}{{ bouquet.primary_image }}" alt="{{ bouquet.name }}" class="img-fluid">
+                                    {% else %}
+                                        <div class="no-image">
+                                            <i class="bi bi-flower2"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="product-badges">
+                                        {% if bouquet.is_featured %}
+                                        <span class="badge-featured">Featured</span>
+                                        {% endif %}
+                                        {% if bouquet.same_day_available %}
+                                        <span class="badge-sameday">Same Day</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="product-actions always-visible">
+                                        {% if bouquet.buy_now == 0 %}
+                                            <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
+                                            target="_blank" 
+                                            class="action-btn" 
+                                            title="Inquire on WhatsApp">
+                                                <i class="bi bi-whatsapp"></i>
+                                            </a>
+                                        {% endif %}
+                                        <button class="action-btn quick-view-btn" title="Quick View" data-bouquet='{"id": "{{ bouquet.encrypted_id }}", "name": "{{ bouquet.name|escapejs }}", "price": "{{ bouquet.discount_price|default:bouquet.price|floatformat:0 }}", "original_price": "{{ bouquet.price|floatformat:0 }}", "discount_percent": "{{ bouquet.discount_percent|default:0 }}", "image": "{% if bouquet.primary_image %}{{ MEDIA_URL }}{{ bouquet.primary_image }}{% endif %}", "description": "{{ bouquet.short_description|default:''|escapejs }}", "occasions": [{% for occ in bouquet.occasion_names %}"{{ occ|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}], "buy_now": {{ bouquet.buy_now }} }'>
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+
+                                    {% if bouquet.buy_now == 0 %}
+                                        <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
+                                            target="_blank" 
+                                            class="btn-whatsapp-card">
+                                                <i class="bi bi-whatsapp"></i> Inquiry
+                                        </a>
+                                        <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                        </button>
+                                    {% else %}
+                                        <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                        </button>
+                                    {% endif %}
+                                </div>
+
+                                <div class="product-info">
+                                    <div class="product-occasions">
+                                        {% for occasion in bouquet.occasion_names|slice:":2" %}
+                                        <span class="occasion-tag">{{ occasion }}</span>
+                                        {% endfor %}
+                                        {% if bouquet.occasion_names|length > 2 %}
+                                        <span class="occasion-tag more">+{{ bouquet.occasion_names|length|add:"-2" }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <h3 class="product-title">
+                                        <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}">{{ bouquet.name }}</a>
+                                    </h3>
+
+                                    <div class="product-price">
+                                        {% if bouquet.discount_price %}
+                                            <span class="current-price">₹{{ bouquet.discount_price|floatformat:0 }}</span>
+                                            <span class="original-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                            <span class="discount-badge-price">-{{ bouquet.discount_percent }}%</span>
+                                        {% else %}
+                                            <span class="current-price">₹{{ bouquet.price|floatformat:0 }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <a href="{% url 'product_detail' %}?id={{ bouquet.encrypted_id }}" class="btn-view-details">
+                                        View Details <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Pagination -->
+                    <div class="swiper-pagination"></div>
+                </div>
+                
+                <div class="text-center mt-4 d-md-none animate-on-scroll">
+                    <a href="{% url 'shop' %}" class="btn-outline-custom">
+                        View All Products <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ===== SPECIAL OFFER BANNER ===== -->
+        <section class="offer-section">
+            <div class="container">
+                <div class="offer-banner animate-on-scroll">
+                    <div class="row align-items-center">
+                        <div class="col-lg-7">
+                            <div class="offer-content">
+                                <span class="offer-badge">
+                                    <i class="bi bi-tag-fill"></i> Limited Time Offer
+                                </span>
+                                <h3 class="offer-title">Free Shipping on Orders Above ₹2000</h3>
+                                <p class="offer-description">
+                                    Plus get 15% off on your first order! Use code: <strong>WELCOME15</strong>
+                                </p>
+                                <div class="offer-timer">
+                                    <div class="timer-item">
+                                        <div class="timer-value" id="days">02</div>
+                                        <div class="timer-label">Days</div>
+                                    </div>
+                                    <div class="timer-item">
+                                        <div class="timer-value" id="hours">14</div>
+                                        <div class="timer-label">Hours</div>
+                                    </div>
+                                    <div class="timer-item">
+                                        <div class="timer-value" id="minutes">35</div>
+                                        <div class="timer-label">Mins</div>
+                                    </div>
+                                    <div class="timer-item">
+                                        <div class="timer-value" id="seconds">42</div>
+                                        <div class="timer-label">Secs</div>
+                                    </div>
+                                </div>
+                                <a href="{% url 'shop' %}" class="btn-offer">
+                                    <i class="bi bi-bag-check"></i> Shop the Sale
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-5 d-none d-lg-block text-center">
+                            <i class="bi bi-flower2" style="font-size: 200px; color: rgba(255,255,255,0.15);"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ===== WHY CHOOSE US ===== -->
+        <section class="features-section">
+            <div class="container">
+                <div class="section-header animate-on-scroll">
+                    <div class="header-icon">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <span class="section-subtitle">Why LittleCraftOne</span>
+                    <h2 class="section-title underline-animation">
+                        Crafted with <span class="highlight">Love & Care</span>
+                    </h2>
+                    <p class="section-description">
+                        We take pride in every creation we make, ensuring quality and beauty in every piece
+                    </p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card animate-on-scroll" style="transition-delay: 0ms">
+                            <div class="feature-icon">
+                                <i class="bi bi-flower2"></i>
+                            </div>
+                            <h4 class="feature-title">Handcrafted</h4>
+                            <p class="feature-description">Each piece is carefully handmade with attention to detail</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card animate-on-scroll" style="transition-delay: 100ms">
+                            <div class="feature-icon">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <h4 class="feature-title">Same Day Delivery</h4>
+                            <p class="feature-description">Fresh bouquets delivered same day in city limits</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card animate-on-scroll" style="transition-delay: 200ms">
+                            <div class="feature-icon">
+                                <i class="bi bi-palette"></i>
+                            </div>
+                            <h4 class="feature-title">Custom Orders</h4>
+                            <p class="feature-description">Personalize your gift exactly how you want it</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="feature-card animate-on-scroll" style="transition-delay: 300ms">
+                            <div class="feature-icon">
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <h4 class="feature-title">Premium Quality</h4>
+                            <p class="feature-description">Only the finest materials and freshest flowers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ===== PREMIUM TESTIMONIALS ===== -->
+        <section class="testimonials-section">
+            <!-- Floating Decorative Icons -->
+            <i class="bi bi-star-fill testimonial-floating-icon floating-icon-1"></i>
+            <i class="bi bi-heart-fill testimonial-floating-icon floating-icon-2"></i>
+            <i class="bi bi-flower2 testimonial-floating-icon floating-icon-3"></i>
+            <i class="bi bi-chat-quote-fill testimonial-floating-icon floating-icon-4"></i>
+            <i class="bi bi-gem testimonial-floating-icon floating-icon-5"></i>
+            <i class="bi bi-emoji-smile-fill testimonial-floating-icon floating-icon-6"></i>
+            
+            <!-- Sparkle Particles -->
+            <div class="testimonial-sparkle sparkle-t1"></div>
+            <div class="testimonial-sparkle sparkle-t2"></div>
+            <div class="testimonial-sparkle sparkle-t3"></div>
+            <div class="testimonial-sparkle sparkle-t4"></div>
+            <div class="testimonial-sparkle sparkle-t5"></div>
+            <div class="testimonial-sparkle sparkle-t6"></div>
+            <div class="testimonial-sparkle sparkle-t7"></div>
+            <div class="testimonial-sparkle sparkle-t8"></div>
+            
+            <div class="container">
+                <div class="section-header animate-on-scroll">
+                    <div class="header-icon">
+                        <i class="bi bi-chat-heart-fill"></i>
+                    </div>
+                    <span class="section-subtitle">Real Stories, Real Love</span>
+                    <h2 class="section-title underline-animation">
+                        What Our <span class="highlight">Customers Say</span>
+                    </h2>
+                    <p class="section-description">
+                        Join thousands of happy customers who found their perfect gift with us
+                    </p>
+                </div>
+                
+                <div class="swiper testimonials-swiper animate-on-scroll">
+                    <div class="swiper-wrapper">
+                        <!-- Testimonial 1 -->
+                        <div class="swiper-slide">
+                            <div class="testimonial-card">
+                                <div class="testimonial-header">
+                                    <div class="testimonial-avatar avatar-1">R</div>
+                                    <div class="testimonial-info">
+                                        <h4>Rahul Sharma</h4>
+                                        <span class="testimonial-badge">
+                                            <i class="bi bi-patch-check-fill"></i> Verified Buyer
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="testimonial-text">
+                                    "Absolutely stunning bouquet! The flowers were fresh and beautifully arranged. My wife loved it for our anniversary! The same day delivery was a lifesaver."
+                                </p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-product">
+                                        <i class="bi bi-flower2"></i>
+                                        <span>Crimson Romance Bouquet</span>
+                                    </div>
+                                    <div class="testimonial-verified">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>Verified Purchase</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Testimonial 2 -->
+                        <div class="swiper-slide">
+                            <div class="testimonial-card">
+                                <div class="testimonial-header">
+                                    <div class="testimonial-avatar avatar-2">P</div>
+                                    <div class="testimonial-info">
+                                        <h4>Priya Patel</h4>
+                                        <span class="testimonial-badge">
+                                            <i class="bi bi-patch-check-fill"></i> Verified Buyer
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="testimonial-text">
+                                    "The resin coasters I ordered are gorgeous! Each piece is unique with beautiful golden flakes. Such attention to detail and beautiful packaging. Will definitely order again!"
+                                </p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-product">
+                                        <i class="bi bi-gem"></i>
+                                        <span>Golden Resin Coaster Set</span>
+                                    </div>
+                                    <div class="testimonial-verified">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>Verified Purchase</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Testimonial 3 -->
+                        <div class="swiper-slide">
+                            <div class="testimonial-card">
+                                <div class="testimonial-header">
+                                    <div class="testimonial-avatar avatar-3">A</div>
+                                    <div class="testimonial-info">
+                                        <h4>Amit Kumar</h4>
+                                        <span class="testimonial-badge">
+                                            <i class="bi bi-patch-check-fill"></i> Verified Buyer
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="testimonial-text">
+                                    "Ordered custom name badges for my entire team of 15 people. Amazing quality, fast delivery, and everyone loved them! The gold plating looks premium."
+                                </p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-product">
+                                        <i class="bi bi-award"></i>
+                                        <span>Custom Name Badges</span>
+                                    </div>
+                                    <div class="testimonial-verified">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>Verified Purchase</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Testimonial 4 -->
+                        <div class="swiper-slide">
+                            <div class="testimonial-card">
+                                <div class="testimonial-header">
+                                    <div class="testimonial-avatar avatar-4">S</div>
+                                    <div class="testimonial-info">
+                                        <h4>Sneha Reddy</h4>
+                                        <span class="testimonial-badge">
+                                            <i class="bi bi-patch-check-fill"></i> Verified Buyer
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="testimonial-text">
+                                    "The wooden string frame I ordered as a housewarming gift was absolutely perfect! The craftsmanship is exceptional and it arrived beautifully packaged."
+                                </p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-product">
+                                        <i class="bi bi-tree"></i>
+                                        <span>Tree of Life String Frame</span>
+                                    </div>
+                                    <div class="testimonial-verified">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>Verified Purchase</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Testimonial 5 -->
+                        <div class="swiper-slide">
+                            <div class="testimonial-card">
+                                <div class="testimonial-header">
+                                    <div class="testimonial-avatar avatar-5">V</div>
+                                    <div class="testimonial-info">
+                                        <h4>Vikram Singh</h4>
+                                        <span class="testimonial-badge">
+                                            <i class="bi bi-patch-check-fill"></i> Verified Buyer
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="testimonial-text">
+                                    "Same day delivery saved my anniversary! The bouquet was fresh, vibrant, and exactly as pictured. Thank you LittleCraftOne for making our day special!"
+                                </p>
+                                <div class="testimonial-footer">
+                                    <div class="testimonial-product">
+                                        <i class="bi bi-flower1"></i>
+                                        <span>Anniversary Bliss Bouquet</span>
+                                    </div>
+                                    <div class="testimonial-verified">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>Verified Purchase</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="swiper-pagination"></div>
+                    <!-- Navigation -->
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ===== INSTAGRAM GALLERY ===== -->
+        <section class="instagram-section">
+            <div class="container">
+                <div class="section-header animate-on-scroll">
+                    <div class="header-icon">
+                        <i class="bi bi-instagram"></i>
+                    </div>
+                    <span class="section-subtitle">Follow Us</span>
+                    <h2 class="section-title underline-animation">
+                        <a href="https://www.instagram.com/littlecraftone/" target="_blank" style="text-decoration: none; color: inherit;">
+                            @<span class="highlight">LittleCraftOne</span>
+                        </a>
+                    </h2>
+                    <p class="section-description">
+                        Tag us in your photos for a chance to be featured in our gallery
+                    </p>
+                </div>
+                
+                <div class="text-center animate-on-scroll">
+                    <a href="https://www.instagram.com/littlecraftone/" target="_blank" class="btn-outline-custom">
+                        <i class="bi bi-instagram"></i> Follow on Instagram
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Quick View Modal -->
+    <div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content quick-view-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quickViewModalTitle">Quick View</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <div class="quick-view-image">
+                                <img id="quickViewModalImage" src="" alt="">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="quick-view-details">
+                                <h2 id="quickViewModalName"></h2>
+                                <div class="quick-view-price" id="quickViewModalPrice"></div>
+                                <div class="quick-view-occasions">
+                                    <h6>Occasions:</h6>
+                                    <div id="quickViewModalOccasions"></div>
+                                </div>
+                                <p id="quickViewModalDescription"></p>
+                                <div class="quick-view-actions" id="quickViewModalActions"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 {% endblock %}
 
 {% block extra_js %}
-    <!-- Remove the duplicate messages script from here -->
-    <!-- The messages are already handled in base.html -->
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        // Global variables
+        const ADMIN_WHATSAPP = "{{ admin_whatsapp|default:'918805433102' }}";
+        
+        // ===== SCROLL ANIMATIONS =====
+        function handleScrollAnimations() {
+            const elements = document.querySelectorAll('.animate-on-scroll, .fade-in-left, .fade-in-right');
+            
+            elements.forEach(element => {
+                const rect = element.getBoundingClientRect();
+                const windowHeight = window.innerHeight;
+                
+                if (rect.top < windowHeight - 100) {
+                    element.classList.add('animated');
+                }
+            });
+        }
+        
+        // ===== COUNTER ANIMATION =====
+        function animateCounters() {
+            const counters = document.querySelectorAll('.counter');
+            
+            counters.forEach(counter => {
+                const target = parseFloat(counter.getAttribute('data-target'));
+                const isFloat = target % 1 !== 0;
+                let current = 0;
+                const increment = target / 50;
+                
+                const updateCounter = () => {
+                    if (current < target) {
+                        current += increment;
+                        if (current > target) current = target;
+                        counter.textContent = isFloat ? current.toFixed(1) : Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = isFloat ? target.toFixed(1) : target;
+                    }
+                };
+                
+                const rect = counter.getBoundingClientRect();
+                const windowHeight = window.innerHeight;
+                
+                if (rect.top < windowHeight - 100 && !counter.classList.contains('counted')) {
+                    counter.classList.add('counted');
+                    updateCounter();
+                }
+            });
+        }
+        
+        // ===== COUNTDOWN TIMER =====
+        function startCountdown() {
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + 2);
+            endDate.setHours(23, 59, 59);
+            
+            function updateTimer() {
+                const now = new Date();
+                const diff = endDate - now;
+                
+                if (diff <= 0) {
+                    document.getElementById('days').textContent = '00';
+                    document.getElementById('hours').textContent = '00';
+                    document.getElementById('minutes').textContent = '00';
+                    document.getElementById('seconds').textContent = '00';
+                    return;
+                }
+                
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }
+            
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        }
+        
+        // ===== QUICK VIEW MODAL =====
+        let quickViewModal = null;
+        
+        function initializeQuickViewModal() {
+            const modalEl = document.getElementById('quickViewModal');
+            if (modalEl) {
+                quickViewModal = new bootstrap.Modal(modalEl);
+            }
+        }
+        
+        $(document).on('click', '.quick-view-btn', function(e) {
+            e.preventDefault();
+            
+            try {
+                const bouquetData = $(this).data('bouquet');
+                
+                $('#quickViewModalName').text(bouquetData.name);
+                
+                let priceHtml = '';
+                if (bouquetData.discount_price && bouquetData.discount_price !== bouquetData.original_price) {
+                    priceHtml = `
+                        <span class="current-price">₹${bouquetData.discount_price}</span>
+                        <span class="original-price">₹${bouquetData.original_price}</span>
+                        <span class="discount-badge">-${bouquetData.discount_percent}%</span>
+                    `;
+                } else {
+                    priceHtml = `<span class="current-price">₹${bouquetData.price}</span>`;
+                }
+                $('#quickViewModalPrice').html(priceHtml);
+                
+                if (bouquetData.image) {
+                    $('#quickViewModalImage').attr('src', bouquetData.image).attr('alt', bouquetData.name);
+                }
+                
+                let occasionsHtml = '';
+                if (bouquetData.occasions && bouquetData.occasions.length) {
+                    bouquetData.occasions.forEach(function(occ) {
+                        occasionsHtml += `<span class="occasion-badge">${occ}</span>`;
+                    });
+                }
+                $('#quickViewModalOccasions').html(occasionsHtml);
+                
+                $('#quickViewModalDescription').text(bouquetData.description);
+                
+                let actionsHtml = `
+                    <a href="/product/?id=${bouquetData.id}" class="btn btn-primary">
+                        View Details
+                    </a>
+                `;
+                
+                if (bouquetData.buy_now == 0) {
+                    actionsHtml += `
+                        <a href="https://wa.me/${ADMIN_WHATSAPP}?text=I want to inquire about ${encodeURIComponent(bouquetData.name)}" 
+                            target="_blank" 
+                            class="btn-whatsapp-card btn">
+                            <i class="bi bi-whatsapp"></i> Inquiry
+                        </a>
+                    `;
+                } else {
+                    actionsHtml += `
+                        <button class="btn btn-outline-primary" onclick="addToCart('${bouquetData.id}')">
+                            <i class="bi bi-cart-plus"></i> Add to Cart
+                        </button>
+                    `;
+                }
+                
+                $('#quickViewModalActions').html(actionsHtml);
+                
+                if (quickViewModal) {
+                    quickViewModal.show();
+                }
+                
+            } catch (error) {
+                console.error('Error showing quick view:', error);
+            }
+        });
+        
+        // ===== ADD TO CART =====
+        window.addToCart = function(encryptedId) {
+            const csrftoken = getCookie('csrftoken');
+            
+            $.ajax({
+                url: "{% url 'add_to_cart' %}",
+                type: 'POST',
+                contentType: 'application/json',
+                headers: { 'X-CSRFToken': csrftoken },
+                data: JSON.stringify({ bouquet_id: encryptedId }),
+                success: function(data) {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Added to Cart!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500,
+                            confirmButtonColor: "#8c0d4f"
+                        });
+                        updateCartBadge(data.cart_count);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cannot Add to Cart',
+                            text: data.message,
+                            confirmButtonColor: "#8c0d4f"
+                        });
+                    }
+                }
+            });
+        };
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function updateCartBadge(count) {
+            $('.cart-badge').each(function() {
+                $(this).text(count);
+                if (count === 0) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        }
+        
+        // ===== INITIALIZE CATEGORY SLIDER (Mobile Only) =====
+        function initializeCategorySwiper() {
+            if (window.innerWidth < 768) {
+                const categorySwiper = new Swiper('.category-swiper', {
+                    slidesPerView: 2,
+                    spaceBetween: 12,
+                    centeredSlides: false,
+                    grabCursor: true,
+                    loop: true,
+                    autoplay: {
+                        delay: 3000,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
+                    },
+                    pagination: {
+                        el: '.category-swiper .swiper-pagination',
+                        clickable: true,
+                        dynamicBullets: false,
+                    },
+                    breakpoints: {
+                        380: {
+                            slidesPerView: 2,
+                            spaceBetween: 12,
+                        },
+                        480: {
+                            slidesPerView: 2.5,
+                            spaceBetween: 15,
+                        },
+                        600: {
+                            slidesPerView: 3,
+                            spaceBetween: 15,
+                        },
+                    }
+                });
+                
+                window.categorySwiperInstance = categorySwiper;
+            }
+        }
+        
+        // ===== INITIALIZE FEATURED PRODUCTS SLIDER (Mobile Only) =====
+        function initializeFeaturedProductsSwiper() {
+            if (window.innerWidth < 768) {
+                const featuredSwiper = new Swiper('.featured-products-swiper', {
+                    slidesPerView: 1,
+                    spaceBetween: 15,
+                    centeredSlides: false,
+                    grabCursor: true,
+                    loop: true,
+                    autoplay: {
+                        delay: 3500,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
+                    },
+                    pagination: {
+                        el: '.featured-products-swiper .swiper-pagination',
+                        clickable: true,
+                    },
+                    breakpoints: {
+                        480: {
+                            slidesPerView: 1.5,
+                            spaceBetween: 15,
+                        },
+                        600: {
+                            slidesPerView: 2,
+                            spaceBetween: 15,
+                        },
+                    }
+                });
+                
+                window.featuredSwiperInstance = featuredSwiper;
+            }
+        }
+        
+        // ===== INITIALIZE TESTIMONIALS SWIPER =====
+        function initializeTestimonialsSwiper() {
+            new Swiper('.testimonials-swiper', {
+                slidesPerView: 1,
+                spaceBetween: 20,
+                loop: true,
+                autoplay: {
+                    delay: 4000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                breakpoints: {
+                    768: {
+                        slidesPerView: 2,
+                        spaceBetween: 20,
+                    },
+                    992: {
+                        slidesPerView: 3,
+                        spaceBetween: 25,
+                    },
+                }
+            });
+        }
+        
+        // ===== INITIALIZE =====
+        $(document).ready(function() {
+            startCountdown();
+            initializeQuickViewModal();
+            initializeCategorySwiper();
+            initializeFeaturedProductsSwiper();
+            initializeTestimonialsSwiper();
+            
+            setTimeout(() => {
+                handleScrollAnimations();
+                animateCounters();
+            }, 100);
+            
+            window.addEventListener('scroll', () => {
+                handleScrollAnimations();
+                animateCounters();
+            });
+            
+            $.ajax({
+                url: "{% url 'cart_count' %}",
+                type: 'GET',
+                success: function(data) {
+                    updateCartBadge(data.count);
+                }
+            });
+        });
+        
+        // Re-initialize sliders on window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                // Destroy existing swipers if they exist
+                if (window.categorySwiperInstance) {
+                    window.categorySwiperInstance.destroy(true, true);
+                    window.categorySwiperInstance = null;
+                }
+                if (window.featuredSwiperInstance) {
+                    window.featuredSwiperInstance.destroy(true, true);
+                    window.featuredSwiperInstance = null;
+                }
+                // Re-initialize for current screen size
+                initializeCategorySwiper();
+                initializeFeaturedProductsSwiper();
+            }, 250);
+        });
+    </script>
+
 {% endblock %}
