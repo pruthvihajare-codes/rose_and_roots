@@ -32,6 +32,10 @@ from django.views.decorators.csrf import csrf_protect
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from masters.models import *
+from django.views.decorators.http import require_POST
+
+from django.shortcuts import get_object_or_404
+
 logger = logging.getLogger(__name__)
 
 def about_us(request):
@@ -319,9 +323,32 @@ def admin_dashboard(request):
         total_users = CustomUser.objects.count()
         total_orders = Order.objects.count()
         total_products = Bouquet.objects.filter(is_active=1).count()
-        total_inquiries = ContactInquiry.objects.count() if 'ContactInquiry' in globals() else 0
+        
+        # ===== RECENT INQUIRIES =====
+        recent_inquiries = []
+        total_inquiries = 0
+        total_pending_inquiries = 0
+
+        try:
+            from masters.models import ContactInquiry
+            recent_inquiries = ContactInquiry.objects.order_by('-created_at')[:5]
+            total_inquiries = ContactInquiry.objects.count()
+            total_pending_inquiries = ContactInquiry.objects.filter(is_resolved=False).count()
+            
+            # Add encrypted IDs to recent inquiries
+            for inquiry in recent_inquiries:
+                inquiry.encrypted_id = enc(str(inquiry.id))
+                
+        except ImportError:
+            logger.warning("ContactInquiry model not available")
+        except Exception as e:
+            logger.warning(f"Error fetching inquiries: {e}")
+        
         total_reviews = Review.objects.count()
-        total_categories = parameter_master.objects.filter(parameter_name='Product Categories', isactive=1).count()
+        total_categories = parameter_master.objects.filter(
+            parameter_name='Product Categories', 
+            isactive=1
+        ).count()
         total_occasions = Occasion.objects.filter(is_active=1).count()
         
         # Order stats by status
@@ -343,14 +370,6 @@ def admin_dashboard(request):
         
         # ===== RECENT USERS =====
         recent_users = CustomUser.objects.order_by('-date_joined')[:6]
-        
-        # ===== RECENT INQUIRIES =====
-        recent_inquiries = []
-        try:
-            
-            recent_inquiries = ContactInquiry.objects.order_by('-created_at')[:5]
-        except:
-            pass
         
         # ===== POPULAR PRODUCTS (by reviews) =====
         popular_products = Bouquet.objects.filter(is_active=1).annotate(
@@ -384,6 +403,7 @@ def admin_dashboard(request):
             "total_orders": total_orders,
             "total_products": total_products,
             "total_inquiries": total_inquiries,
+            "total_pending_inquiries": total_pending_inquiries,
             "total_reviews": total_reviews,
             "total_categories": total_categories,
             "total_occasions": total_occasions,
@@ -411,7 +431,6 @@ def admin_dashboard(request):
             # Chart Data
             "chart_labels": last_7_days,
             "chart_data": orders_last_7_days,
-            
             "MEDIA_URL": settings.MEDIA_URL,
         }
 
@@ -3000,3 +3019,111 @@ def admin_cancel_order(request):
         messages.error(request, 'Failed to cancel order.')
         return redirect('admin_order_list')
 
+# masters/views.py
+
+@no_direct_access
+@login_required
+def inquiry_list(request):
+    """Admin: List all contact inquiries"""
+    try:
+        if request.user.role_id != 1:
+            messages.error(request, 'Permission denied.')
+            return redirect('dashboard')
+        
+        inquiries = ContactInquiry.objects.all().order_by('-created_at')
+        
+        # Filter by status
+        status_filter = request.GET.get('status', '')
+        if status_filter == 'resolved':
+            inquiries = inquiries.filter(is_resolved=True)
+        elif status_filter == 'pending':
+            inquiries = inquiries.filter(is_resolved=False)
+        
+        # Search
+        search = request.GET.get('search', '')
+        if search:
+            inquiries = inquiries.filter(
+                Q(name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(subject__icontains=search)
+            )
+        
+        # Pagination
+        paginator = Paginator(inquiries, 15)
+        page = request.GET.get('page')
+        page_obj = paginator.get_page(page)
+        
+        # Add encrypted IDs to inquiries
+        for inquiry in page_obj:
+            inquiry.encrypted_id = enc(str(inquiry.id))
+        
+        context = {
+            'page_obj': page_obj,
+            'inquiries': page_obj.object_list,
+            'status_filter': status_filter,
+            'search': search,
+            'total_pending': ContactInquiry.objects.filter(is_resolved=False).count(),
+            'total_resolved': ContactInquiry.objects.filter(is_resolved=True).count(),
+        }
+        return render(request, 'masters/inquiry_list.html', context)
+        
+    except Exception as e:
+        logger.exception(f"Error in inquiry_list: {e}")
+        messages.error(request, 'Something went wrong.')
+        return redirect('admin_dashboard')
+
+@no_direct_access
+@login_required
+def inquiry_detail(request, encrypted_id):
+    """Admin: View inquiry details"""
+    try:
+        if request.user.role_id != 1:
+            messages.error(request, 'Permission denied.')
+            return redirect('dashboard')
+        
+        # Decrypt the ID
+        decrypted_id = dec(str(encrypted_id))
+        inquiry = get_object_or_404(ContactInquiry, id=decrypted_id)
+        
+        context = {
+            'inquiry': inquiry,
+            'encrypted_id': encrypted_id,
+        }
+        return render(request, 'masters/inquiry_detail.html', context)
+        
+    except Exception as e:
+        logger.exception(f"Error in inquiry_detail: {e}")
+        messages.error(request, 'Something went wrong.')
+        return redirect('inquiry_list')
+    
+@require_POST
+@login_required
+def toggle_inquiry_status(request):
+    """Admin: Mark inquiry as resolved/pending"""
+    try:
+        # Permission check
+        if request.user.role_id != 1:
+            return JsonResponse({'success': False, 'message': 'Permission denied'}, status=403)
+
+        encrypted_id = request.POST.get('inquiry_id')
+        if not encrypted_id:
+            return JsonResponse({'success': False, 'message': 'Inquiry ID required'}, status=400)
+
+        # Decrypt ID
+        decrypted_id = dec(str(encrypted_id))
+
+        inquiry = get_object_or_404(ContactInquiry, id=decrypted_id)
+
+        # Toggle status
+        inquiry.is_resolved = not inquiry.is_resolved
+        inquiry.save()
+
+        return JsonResponse({
+            'success': True,
+            'is_resolved': inquiry.is_resolved,
+            'message': f'Inquiry marked as {"Resolved" if inquiry.is_resolved else "Pending"}'
+        })
+
+    except Exception as e:
+        logger.exception(f"Error in toggle_inquiry_status: {e}")
+        return JsonResponse({'success': False, 'message': 'Something went wrong'}, status=500)

@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Inquiry Details - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/masters/admin_dashboard.css' %}">
+    <style>
+        .inquiry-detail-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: #64748b;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: #8c0d4f;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .inquiry-detail-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .inquiry-detail-header {
+            padding: 30px;
+            background: linear-gradient(135deg, #8c0d4f, #a3125c);
+            color: white;
+        }
+        
+        .inquiry-detail-header h2 {
+            margin: 0 0 10px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .inquiry-meta-header {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .inquiry-detail-body {
+            padding: 30px;
+        }
+        
+        .info-section {
+            margin-bottom: 30px;
+        }
+        
+        .info-section h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-section h4 i {
+            margin-right: 10px;
+            color: #8c0d4f;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 15px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+        
+        .message-box {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #8c0d4f;
+        }
+        
+        .message-box p {
+            margin: 0;
+            line-height: 1.8;
+            color: #334155;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .status-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status-badge-large {
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .status-badge-large.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-badge-large.resolved {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        .action-buttons-large {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-resolve {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-resolve:hover {
+            background: #059669;
+            color: white;
+        }
+        
+        .btn-reply {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-reply:hover {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-back {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: #475569;
+            color: white;
+        }
+        
+        .timeline-info {
+            display: flex;
+            gap: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #64748b;
+            font-size: 13px;
+        }
+        
+        .timeline-item i {
+            font-size: 16px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .inquiry-meta-header {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .status-section {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .action-buttons-large {
+                width: 100%;
+            }
+            
+            .btn-action {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="admin-dashboard">
+        <div class="container-fluid px-4">
+            <div class="inquiry-detail-container">
+                
+                <!-- Back Link -->
+                <a href="{% url 'inquiry_list' %}" class="back-link">
+                    <i class="bi bi-arrow-left"></i> Back to Inquiries
+                </a>
+                
+                <!-- Main Card -->
+                <div class="inquiry-detail-card">
+                    <!-- Header -->
+                    <div class="inquiry-detail-header">
+                        <h2>{{ inquiry.subject }}</h2>
+                        <div class="inquiry-meta-header">
+                            <span><i class="bi bi-person"></i> {{ inquiry.name }}</span>
+                            <span><i class="bi bi-calendar"></i> {{ inquiry.created_at|date:"F d, Y" }}</span>
+                            <span><i class="bi bi-clock"></i> {{ inquiry.created_at|date:"h:i A" }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Body -->
+                    <div class="inquiry-detail-body">
+                        <!-- Status Section -->
+                        <div class="status-section">
+                            <div class="status-info">
+                                <span class="status-label">Current Status:</span>
+                                <span class="status-badge-large {% if inquiry.is_resolved %}resolved{% else %}pending{% endif %}">
+                                    {% if inquiry.is_resolved %}
+                                    <i class="bi bi-check2-circle"></i> Resolved
+                                    {% else %}
+                                    <i class="bi bi-clock"></i> Pending
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="action-buttons-large">
+                                <button class="btn-action btn-resolve" onclick="toggleResolved({{ inquiry.id }})">
+                                    <i class="bi bi-{% if inquiry.is_resolved %}arrow-counterclockwise{% else %}check2-circle{% endif %}"></i>
+                                    {% if inquiry.is_resolved %}Mark as Pending{% else %}Mark as Resolved{% endif %}
+                                </button>
+                                <a href="mailto:{{ inquiry.email }}?subject=Re: {{ inquiry.subject|urlencode }}" 
+                                class="btn-action btn-reply">
+                                    <i class="bi bi-reply-fill"></i> Reply via Email
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Information -->
+                        <div class="info-section">
+                            <h4><i class="bi bi-person-vcard"></i> Customer Information</h4>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Full Name</span>
+                                    <span class="info-value">{{ inquiry.name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Email Address</span>
+                                    <span class="info-value">
+                                        <a href="mailto:{{ inquiry.email }}" style="color: #8c0d4f; text-decoration: none;">
+                                            {{ inquiry.email }}
+                                        </a>
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Phone Number</span>
+                                    <span class="info-value">{{ inquiry.phone|default:"Not provided" }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Inquiry Type</span>
+                                    <span class="info-value">{{ inquiry.get_inquiry_type_display }}</span>
+                                </div>
+                                {% if inquiry.user %}
+                                <div class="info-item">
+                                    <span class="info-label">Registered User</span>
+                                    <span class="info-value">
+                                        <i class="bi bi-check-circle-fill text-success"></i> 
+                                        {{ inquiry.user.email }}
+                                    </span>
+                                </div>
+                                {% else %}
+                                <div class="info-item">
+                                    <span class="info-label">Registered User</span>
+                                    <span class="info-value text-muted">Guest</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Message -->
+                        <div class="info-section">
+                            <h4><i class="bi bi-chat-text"></i> Message</h4>
+                            <div class="message-box">
+                                <p>{{ inquiry.message }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Timeline -->
+                        <div class="timeline-info">
+                            <div class="timeline-item">
+                                <i class="bi bi-calendar-plus"></i>
+                                <span>Created: {{ inquiry.created_at|date:"M d, Y h:i A" }}</span>
+                            </div>
+                            <div class="timeline-item">
+                                <i class="bi bi-calendar-check"></i>
+                                <span>Last Updated: {{ inquiry.updated_at|date:"M d, Y h:i A" }}</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Card -->
+                <div style="margin-top: 24px; display: flex; gap: 15px; justify-content: flex-end;">
+                    <a href="https://wa.me/91{{ inquiry.phone|slice:'1:' }}" target="_blank" 
+                    class="btn-action" style="background: #25d366; color: white;">
+                        <i class="bi bi-whatsapp"></i> WhatsApp
+                    </a>
+                    <a href="{% url 'inquiry_list' %}" class="btn-action btn-back">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+    <script>
+        // Toggle resolved status
+        function toggleResolved(inquiryId) {
+            fetch('/dashboard/inquiries/toggle-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `inquiry_id=${inquiryId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Something went wrong', 'error');
+            });
+        }
+        
+        // Show toast notification
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 10px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+{% endblock %}

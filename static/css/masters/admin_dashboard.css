@@ -712,3 +712,154 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* Pending Counter Badge */
+.pending-counter {
+    display: inline-block;
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+}
+
+/* Inquiry Card Item - Make entire card clickable */
+.inquiry-card-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.2s;
+}
+
+.inquiry-card-item:hover {
+    background: #f8fafc;
+}
+
+.inquiry-pending {
+    border-left: 3px solid #f59e0b;
+}
+
+.inquiry-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.inquiry-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8c0d4f, #a3125c);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.inquiry-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.inquiry-name {
+    display: block;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inquiry-email {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inquiry-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.badge-resolved {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.inquiry-subject {
+    font-size: 13px;
+    font-weight: 500;
+    color: #8c0d4f;
+    margin-bottom: 8px;
+}
+
+.inquiry-subject i {
+    font-size: 11px;
+    margin-right: 4px;
+}
+
+.inquiry-message-preview {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    background: #f1f5f9;
+    padding: 8px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inquiry-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inquiry-time {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.inquiry-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: #64748b;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background: #e2e8f0;
+    color: #8c0d4f;
+}

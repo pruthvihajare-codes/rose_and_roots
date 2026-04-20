@@ -114,9 +114,10 @@ urlpatterns = [
     path('contact-us/', contact_us, name='contact_us'),
     path('send-contact-email/', send_contact_email, name='send_contact_email'),
 
-    # urls.py - Add these patterns
-
-    
+    # Inquiry Management
+    path('dashboard/inquiries/', inquiry_list, name='inquiry_list'),
+    path('dashboard/inquiries/<str:encrypted_id>/', inquiry_detail, name='inquiry_detail'),
+    path('toggle_inquiry_status/', toggle_inquiry_status, name='toggle_inquiry_status'),
     
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

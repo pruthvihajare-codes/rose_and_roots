@@ -1,0 +1,593 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Inquiries Management - LittleCraftOne{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/masters/admin_dashboard.css' %}">
+    <style>
+        /* Inquiry List Specific Styles */
+        .inquiry-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .inquiry-page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .inquiry-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .inquiry-stat-badge {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .stat-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .stat-resolved {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-tab {
+            padding: 8px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s;
+            background: #f1f5f9;
+        }
+        
+        .filter-tab:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        
+        .filter-tab.active {
+            background: #8c0d4f;
+            color: white;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #8c0d4f;
+            box-shadow: 0 0 0 3px rgba(140, 13, 79, 0.1);
+        }
+        
+        /* Inquiry Table */
+        .inquiry-table {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .inquiry-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .inquiry-table th {
+            padding: 16px 20px;
+            background: #f8fafc;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        
+        .inquiry-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        
+        .inquiry-table tbody tr {
+            transition: background 0.2s;
+        }
+        
+        .inquiry-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .inquiry-table tbody tr.inquiry-pending-row {
+            border-left: 3px solid #f59e0b;
+        }
+        
+        .inquiry-table tbody tr.inquiry-resolved-row {
+            border-left: 3px solid #10b981;
+        }
+        
+        .customer-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8c0d4f, #a3125c);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .customer-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .customer-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .customer-email {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .subject-cell {
+            max-width: 250px;
+        }
+        
+        .subject-text {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .message-preview {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .status-badge-inquiry {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-pending-badge {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-resolved-badge {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background: #e2e8f0;
+            color: #8c0d4f;
+        }
+        
+        .action-btn.resolve:hover {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        .action-btn.reply:hover {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h4 {
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+        
+        /* Pagination */
+        .pagination-container {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .pagination {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .page-link {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #64748b;
+            background: white;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .page-link:hover {
+            background: #f8fafc;
+            border-color: #8c0d4f;
+            color: #8c0d4f;
+        }
+        
+        .page-link.active {
+            background: #8c0d4f;
+            color: white;
+            border-color: #8c0d4f;
+        }
+        
+        /* Clickable row */
+        .clickable {
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .inquiry-table {
+                overflow-x: auto;
+            }
+            
+            .inquiry-table table {
+                min-width: 900px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+    <div class="admin-dashboard">
+        <div class="container-fluid px-4">
+            
+            <!-- Page Header -->
+            <div class="inquiry-page-header">
+                <div>
+                    <h1><i class="bi bi-chat-dots me-2"></i>Contact Inquiries</h1>
+                    <p class="text-muted">Manage and respond to customer inquiries</p>
+                </div>
+                <div class="inquiry-stats">
+                    <span class="inquiry-stat-badge stat-pending">
+                        <i class="bi bi-clock"></i> {{ total_pending }} Pending
+                    </span>
+                    <span class="inquiry-stat-badge stat-resolved">
+                        <i class="bi bi-check2-circle"></i> {{ total_resolved }} Resolved
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-tabs">
+                    <a href="?status=" class="filter-tab {% if not status_filter %}active{% endif %}">
+                        All
+                    </a>
+                    <a href="?status=pending" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">
+                        Pending
+                    </a>
+                    <a href="?status=resolved" class="filter-tab {% if status_filter == 'resolved' %}active{% endif %}">
+                        Resolved
+                    </a>
+                </div>
+                
+                <div class="search-box">
+                    <form method="GET" class="d-flex">
+                        {% if status_filter %}
+                        <input type="hidden" name="status" value="{{ status_filter }}">
+                        {% endif %}
+                        <input type="text" name="search" placeholder="Search by name, email, or subject..." 
+                            value="{{ search }}" class="form-control">
+                        <button type="submit" class="btn btn-primary ms-2" style="border-radius: 30px; padding: 10px 20px;">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Inquiries Table -->
+            <div class="inquiry-table">
+                {% if inquiries %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Subject & Message</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inquiry in inquiries %}
+                        <tr class="{% if inquiry.is_resolved %}inquiry-resolved-row{% else %}inquiry-pending-row{% endif %}">
+                            <td class="clickable" onclick="viewInquiry('{{ inquiry.encrypted_id }}')">
+                                <div class="customer-cell">
+                                    <div class="customer-avatar">
+                                        {{ inquiry.name|first|upper }}
+                                    </div>
+                                    <div class="customer-info">
+                                        <span class="customer-name">{{ inquiry.name }}</span>
+                                        <span class="customer-email">{{ inquiry.email }}</span>
+                                        {% if inquiry.phone %}
+                                        <span class="customer-email">{{ inquiry.phone }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="clickable" onclick="viewInquiry('{{ inquiry.encrypted_id }}')">
+                                <div class="subject-text">{{ inquiry.subject }}</div>
+                                <div class="message-preview">{{ inquiry.message|truncatechars:60 }}</div>
+                            </td>
+                            <td class="clickable" onclick="viewInquiry('{{ inquiry.encrypted_id }}')">
+                                <div>{{ inquiry.created_at|date:"d M Y" }}</div>
+                                <small class="text-muted">{{ inquiry.created_at|date:"h:i A" }}</small>
+                            </td>
+                            <td class="clickable" onclick="viewInquiry('{{ inquiry.encrypted_id }}')">
+                                <span class="status-badge-inquiry {% if inquiry.is_resolved %}status-resolved-badge{% else %}status-pending-badge{% endif %}">
+                                    {% if inquiry.is_resolved %}
+                                    <i class="bi bi-check2-circle"></i> Resolved
+                                    {% else %}
+                                    <i class="bi bi-clock"></i> Pending
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td onclick="event.stopPropagation()">
+                                <div class="action-buttons">
+                                    <a href="{% url 'inquiry_detail' inquiry.encrypted_id %}" class="action-btn" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <!-- Resolve Button - FIXED -->
+                                    <button class="btn-icon resolve-btn" onclick="toggleResolved('{{ inquiry.encrypted_id }}')" title="{% if inquiry.is_resolved %}Mark as Pending{% else %}Mark as Resolved{% endif %}">
+                                        <i class="bi bi-{% if inquiry.is_resolved %}arrow-counterclockwise{% else %}check2-circle{% endif %}"></i>
+                                    </button>
+                                    <a href="mailto:{{ inquiry.email }}?subject=Re: {{ inquiry.subject|urlencode }}" 
+                                        class="action-btn reply" title="Reply via Email">
+                                            <i class="bi bi-reply-fill"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h4>No inquiries found</h4>
+                    <p class="text-muted">
+                        {% if search or status_filter %}
+                        Try adjusting your filters
+                        {% else %}
+                        When customers submit the contact form, they'll appear here
+                        {% endif %}
+                    </p>
+                    {% if search or status_filter %}
+                    <a href="{% url 'inquiry_list' %}" class="btn btn-outline-primary mt-3">
+                        <i class="bi bi-x-lg"></i> Clear Filters
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination-container">
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" 
+                    class="page-link">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="page-link active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" 
+                        class="page-link">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" 
+                    class="page-link">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Global functions
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function toggleResolved(encryptedId) {
+            $.ajax({
+                url: "{% url 'toggle_inquiry_status' %}",
+                type: "POST",
+                headers: {
+                    "X-CSRFToken": document.getElementById("csrf-token").value
+                },
+                data: {
+                    inquiry_id: encryptedId
+                },
+                success: function (data) {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Updated!",
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire("Error", data.message, "error");
+                    }
+                },
+                error: function (xhr) {
+                    console.error("ERROR:", xhr.status, xhr.responseText); // 👈 keep this
+                    Swal.fire("Error", "CSRF failed or server error", "error");
+                }
+            });
+        }
+        
+        function viewInquiry(encryptedId) {
+            window.location.href = `/dashboard/inquiries/${encryptedId}/`;
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 10px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+    </script>
+{% endblock %}

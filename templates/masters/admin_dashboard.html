@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}Admin Dashboard - LittleCraftOne{% endblock %}
 
 {% block extra_css %}
@@ -10,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 <div class="admin-dashboard">
     <div class="container-fluid px-4">
         
@@ -21,6 +20,9 @@
                 <p>Welcome back, {{ user.full_name|default:user.email }}! Here's what's happening today.</p>
             </div>
             <div class="header-actions">
+                <a href="{% url 'inquiry_list' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-chat-dots"></i> Inquiries
+                </a>
                 <a href="{% url 'add_bouquet' %}" class="btn btn-primary">
                     <i class="bi bi-plus-lg"></i> Add Product
                 </a>
@@ -144,7 +146,12 @@
             <div class="col-lg-4">
                 <div class="dashboard-card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5><i class="bi bi-person-badge me-2"></i>Recent Users</h5>
+                        <h5>
+                            <i class="bi bi-chat-text me-2"></i>Recent Inquiries
+                            {% if total_pending_inquiries > 0 %}
+                                <span class="pending-counter">{{ total_pending_inquiries }}</span>
+                            {% endif %}
+                        </h5>
                         <a href="{% url 'user_list' %}" class="view-all-link">View All →</a>
                     </div>
                     <div class="card-body p-0">
@@ -170,31 +177,73 @@
                 </div>
             </div>
             
-            <!-- Recent Inquiries -->
+            <!-- Recent Inquiries - Enhanced Version -->
             <div class="col-lg-4">
                 <div class="dashboard-card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5><i class="bi bi-chat-text me-2"></i>Recent Inquiries</h5>
-                        <span class="view-all-link">New</span>
+                        <h5>
+                            <i class="bi bi-chat-text me-2"></i>Recent Inquiries
+                            {% if total_pending_inquiries > 0 %}
+                            <span class="pending-counter">{{ total_pending_inquiries }}</span>
+                            {% endif %}
+                        </h5>
+                        <a href="{% url 'inquiry_list' %}" class="view-all-link">
+                            View All ({{ total_inquiries }}) →
+                        </a>
                     </div>
                     <div class="card-body p-0">
                         {% if recent_inquiries %}
                         <div class="recent-list" style="max-height: 350px; overflow-y: auto;">
                             {% for inquiry in recent_inquiries %}
-                            <div class="recent-list-item inquiry-item">
-                                <div class="inquiry-icon">
-                                    <i class="bi bi-envelope"></i>
+                            <div class="inquiry-card-item {% if not inquiry.is_resolved %}inquiry-pending{% endif %}" 
+                                onclick="viewInquiry('{{ inquiry.encrypted_id }}')" style="cursor: pointer;">
+                                <div class="inquiry-header">
+                                    <div class="inquiry-avatar">
+                                        {{ inquiry.name|first|upper }}
+                                    </div>
+                                    <div class="inquiry-meta">
+                                        <span class="inquiry-name">{{ inquiry.name|truncatechars:18 }}</span>
+                                        <span class="inquiry-email">{{ inquiry.email|truncatechars:22 }}</span>
+                                    </div>
+                                    <span class="inquiry-badge {% if inquiry.is_resolved %}badge-resolved{% else %}badge-pending{% endif %}">
+                                        {% if inquiry.is_resolved %}✓ Resolved{% else %}⏳ Pending{% endif %}
+                                    </span>
                                 </div>
-                                <div class="inquiry-info">
-                                    <span class="inquiry-name">{{ inquiry.name|truncatechars:18 }}</span>
-                                    <span class="inquiry-subject">{{ inquiry.subject|truncatechars:25 }}</span>
+                                <div class="inquiry-subject">
+                                    <i class="bi bi-tag"></i> {{ inquiry.subject|truncatechars:28 }}
                                 </div>
-                                <span class="inquiry-time">{{ inquiry.created_at|date:"d M" }}</span>
+                                <div class="inquiry-message-preview">
+                                    {{ inquiry.message|truncatechars:55 }}
+                                </div>
+                                <div class="inquiry-footer">
+                                    <span class="inquiry-time">
+                                        <i class="bi bi-clock"></i> {{ inquiry.created_at|date:"d M, h:i A" }}
+                                    </span>
+                                    <div class="inquiry-actions" onclick="event.stopPropagation()">
+                                        <!-- View Button -->
+                                        <a href="{% url 'inquiry_detail' inquiry.encrypted_id %}" class="btn-icon" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        
+                                        <!-- Resolve Button - FIXED -->
+                                        <button class="btn-icon resolve-btn" onclick="toggleResolved('{{ inquiry.encrypted_id }}')" title="{% if inquiry.is_resolved %}Mark as Pending{% else %}Mark as Resolved{% endif %}">
+                                            <i class="bi bi-{% if inquiry.is_resolved %}arrow-counterclockwise{% else %}check2-circle{% endif %}"></i>
+                                        </button>
+                                        
+                                        <!-- Reply Button -->
+                                        <a href="mailto:{{ inquiry.email }}" class="btn-icon" title="Reply via Email">
+                                            <i class="bi bi-reply"></i>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                             {% endfor %}
                         </div>
                         {% else %}
-                        <div class="text-center py-4 text-muted">No inquiries yet</div>
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox" style="font-size: 40px; opacity: 0.3;"></i>
+                            <p class="mt-3">No inquiries yet</p>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -358,6 +407,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>  <!-- ✅ Add this line -->
+
 <script>
     // Orders Chart
     const ctx = document.getElementById('ordersChart').getContext('2d');
@@ -383,25 +435,63 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: '#e2e8f0'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
+                y: { beginAtZero: true, grid: { color: '#e2e8f0' } },
+                x: { grid: { display: false } }
             }
         }
     });
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function toggleResolved(encryptedId) {
+        $.ajax({
+            url: "{% url 'toggle_inquiry_status' %}",
+            type: "POST",
+            headers: {
+                "X-CSRFToken": document.getElementById("csrf-token").value
+            },
+            data: {
+                inquiry_id: encryptedId
+            },
+            success: function (data) {
+                if (data.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Updated!",
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            },
+            error: function (xhr) {
+                console.error("ERROR:", xhr.status, xhr.responseText); // 👈 keep this
+                Swal.fire("Error", "CSRF failed or server error", "error");
+            }
+        });
+    }
+    
+    // View inquiry details
+    function viewInquiry(encryptedId) {
+        window.location.href = '/dashboard/inquiries/' + encryptedId + '/';
+    }
 </script>
 {% endblock %}
