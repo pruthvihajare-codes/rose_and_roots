@@ -72,8 +72,18 @@
             <div class="row align-items-center">
                 <!-- Brand Name (Left) -->
                 <div class="col-8 col-sm-8 col-md-6">
+                {% if user.is_authenticated %}
+                    {% if user.role_id == 1 %}
+                        <a href="{% url 'admin_dashboard' %}" class="brand-name">LittleCraftOne</a>
+                    {% elif user.role_id == 2 %}
+                        <a href="{% url 'dashboard' %}" class="brand-name">LittleCraftOne</a>
+                    {% else %}
+                        <a href="/" class="brand-name">LittleCraftOne</a>
+                    {% endif %}
+                {% else %}
                     <a href="/" class="brand-name">LittleCraftOne</a>
-                </div>
+                {% endif %}
+            </div>
                 
                 <!-- Desktop Navigation Icons (Right) -->
                 <div class="col-md-6 desktop-nav-icons d-none d-lg-block">
@@ -793,7 +803,17 @@
                     <!-- Brand Column -->
                     <div class="col-lg-4 col-md-6">
                         <div class="footer-brand">
-                            <a href="/" class="footer-logo">LittleCraftOne</a>
+                            {% if user.is_authenticated %}
+                                {% if user.role_id == 1 %}
+                                    <a href="{% url 'admin_dashboard' %}" class="footer-logo">LittleCraftOne</a>
+                                {% elif user.role_id == 2 %}
+                                    <a href="{% url 'dashboard' %}" class="footer-logo">LittleCraftOne</a>
+                                {% else %}
+                                    <a href="/" class="footer-logo">LittleCraftOne</a>
+                                {% endif %}
+                            {% else %}
+                                <a href="/" class="footer-logo">LittleCraftOne</a>
+                            {% endif %}
                             <p class="footer-tagline">Crafting Your Curiosity</p>
                             <p class="footer-description">
                                 Creating beautiful, handcrafted treasures that tell your story. 

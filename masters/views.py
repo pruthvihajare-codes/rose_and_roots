@@ -21,7 +21,7 @@ from masters.models import *
 from rose_and_roots.encryption import *
 
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django.db import IntegrityError
 
 # views.py
@@ -31,7 +31,7 @@ from django.core.mail import send_mail, BadHeaderError
 from django.views.decorators.csrf import csrf_protect
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-
+from masters.models import *
 logger = logging.getLogger(__name__)
 
 def about_us(request):
@@ -106,6 +106,29 @@ def send_contact_email(request):
         subject = re.sub(r'[<>]', '', subject)
         order_id = re.sub(r'[<>]', '', order_id)
         message = re.sub(r'[<>]', '', message)
+        
+        # ========== SAVE CONTACT INQUIRY ==========
+        try:
+            from masters.models import ContactInquiry
+            
+            ContactInquiry.objects.create(
+                name=name,
+                email=email,
+                phone=phone or None,
+                subject=subject,
+                message=message,
+                inquiry_type='general',
+                user=request.user if request.user.is_authenticated else None
+            )
+            logger.info(f"Contact inquiry saved for {email}")
+            
+        except ImportError:
+            # Model not available yet
+            logger.warning("ContactInquiry model not available")
+        except Exception as db_error:
+            logger.error(f"Failed to save contact inquiry: {db_error}")
+            # Don't fail the form submission if DB save fails
+        # ===========================================================
         
         # Prepare email content with HTML support
         email_subject = f"[LittleCraftOne] {subject} - from {name}"
@@ -284,19 +307,112 @@ def admin_dashboard(request):
             messages.error(request, 'Please login to access the dashboard.')
             return redirect('/')
         
-        if not request.session.session_key:
-            messages.error(request, 'Your session has expired. Please login again.')
-            return redirect('/')
-        
-        # Check if user has admin role
-        if not hasattr(request.user, 'role_id') or request.user.role_id != 1:
+        if request.user.role_id != 1:
             messages.error(request, 'You do not have permission to access this page.')
             return redirect('/')
+        
+        from django.utils import timezone
+        from datetime import timedelta
+        from django.db.models import Count, Sum, Q
+        
+        # ===== QUICK STATS =====
+        total_users = CustomUser.objects.count()
+        total_orders = Order.objects.count()
+        total_products = Bouquet.objects.filter(is_active=1).count()
+        total_inquiries = ContactInquiry.objects.count() if 'ContactInquiry' in globals() else 0
+        total_reviews = Review.objects.count()
+        total_categories = parameter_master.objects.filter(parameter_name='Product Categories', isactive=1).count()
+        total_occasions = Occasion.objects.filter(is_active=1).count()
+        
+        # Order stats by status
+        pending_orders = Order.objects.filter(status='pending').count()
+        processing_orders = Order.objects.filter(status='processing').count()
+        delivered_orders = Order.objects.filter(status='delivered').count()
+        cancelled_orders = Order.objects.filter(status='cancelled').count()
+        
+        # Revenue stats
+        total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
+        this_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        monthly_revenue = Order.objects.filter(order_date__gte=this_month).aggregate(total=Sum('total'))['total'] or 0
+        monthly_orders = Order.objects.filter(order_date__gte=this_month).count()
+        
+        # ===== RECENT ORDERS =====
+        recent_orders = Order.objects.select_related('user').order_by('-order_date')[:8]
+        for order in recent_orders:
+            order.encrypted_id = enc(str(order.id))
+        
+        # ===== RECENT USERS =====
+        recent_users = CustomUser.objects.order_by('-date_joined')[:6]
+        
+        # ===== RECENT INQUIRIES =====
+        recent_inquiries = []
+        try:
+            
+            recent_inquiries = ContactInquiry.objects.order_by('-created_at')[:5]
+        except:
+            pass
+        
+        # ===== POPULAR PRODUCTS (by reviews) =====
+        popular_products = Bouquet.objects.filter(is_active=1).annotate(
+            review_count=Count('reviews')
+        ).order_by('-review_count')[:6]
+        
+        for product in popular_products:
+            product.encrypted_id = enc(str(product.id))
+            primary_image = product.images.filter(is_active=1).first()
+            product.primary_image = primary_image.image_path if primary_image else None
+            product.avg_rating = product.reviews.aggregate(avg=Avg('rating'))['avg'] or 0
+        
+        # ===== LOW STOCK / INACTIVE PRODUCTS =====
+        inactive_products = Bouquet.objects.filter(is_active=0).count()
+        
+        # ===== CHART DATA - Last 7 days orders =====
+        last_7_days = []
+        orders_last_7_days = []
+        for i in range(6, -1, -1):
+            date = timezone.now().date() - timedelta(days=i)
+            count = Order.objects.filter(order_date__date=date).count()
+            last_7_days.append(date.strftime('%a'))
+            orders_last_7_days.append(count)
         
         context = {
             "page_title": "Admin Dashboard",
             "user": request.user,
-            "session_key": request.session.session_key
+            
+            # Quick Stats
+            "total_users": total_users,
+            "total_orders": total_orders,
+            "total_products": total_products,
+            "total_inquiries": total_inquiries,
+            "total_reviews": total_reviews,
+            "total_categories": total_categories,
+            "total_occasions": total_occasions,
+            
+            # Order Stats
+            "pending_orders": pending_orders,
+            "processing_orders": processing_orders,
+            "delivered_orders": delivered_orders,
+            "cancelled_orders": cancelled_orders,
+            
+            # Revenue
+            "total_revenue": total_revenue,
+            "monthly_revenue": monthly_revenue,
+            "monthly_orders": monthly_orders,
+            
+            # Recent Data
+            "recent_orders": recent_orders,
+            "recent_users": recent_users,
+            "recent_inquiries": recent_inquiries,
+            
+            # Products
+            "popular_products": popular_products,
+            "inactive_products": inactive_products,
+            
+            # Chart Data
+            "chart_labels": last_7_days,
+            "chart_data": orders_last_7_days,
+            
+            "MEDIA_URL": settings.MEDIA_URL,
         }
 
         return render(request, "masters/admin_dashboard.html", context)
@@ -305,7 +421,9 @@ def admin_dashboard(request):
         logger.exception("Unexpected error in admin_dashboard")
         messages.error(request, "Something went wrong.")
         return redirect('login')
-    
+
+# accounts/views.py or masters/views.py
+
 @no_direct_access
 @login_required
 def dashboard(request):
@@ -314,19 +432,119 @@ def dashboard(request):
             messages.error(request, 'Please login to access the dashboard.')
             return redirect('/')
         
-        if not request.session.session_key:
-            messages.error(request, 'Your session has expired. Please login again.')
-            return redirect('/')
-        
-        # Check if user has admin role
-        if not hasattr(request.user, 'role_id') or request.user.role_id != 2:
+        if request.user.role_id != 2:
             messages.error(request, 'You do not have permission to access this page.')
             return redirect('/')
         
+        user = request.user
+        
+        # Get or create profile
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        
+        # ===== QUICK STATS (from existing tables) =====
+        
+        # 1. Cart Items Count
+        cart_items_count = CartItem.objects.filter(
+            cart__user=user
+        ).count() if Cart.objects.filter(user=user).exists() else 0
+        
+        # 2. Products Browsed Count (if RecentlyViewed exists)
+        recently_viewed_count = 0
+        recently_viewed = []
+        try:
+            from masters.models import RecentlyViewed
+            recently_viewed_count = RecentlyViewed.objects.filter(user=user).count()
+            recent_views = RecentlyViewed.objects.filter(user=user).select_related('bouquet').order_by('-viewed_at')[:6]
+            for view in recent_views:
+                view.bouquet.encrypted_id = enc(str(view.bouquet.id))
+                primary_image = view.bouquet.images.filter(is_active=1).first()
+                view.bouquet.primary_image = primary_image.image_path if primary_image else None
+                recently_viewed.append(view.bouquet)
+        except ImportError:
+            pass
+        
+        # 3. Reviews Count (from product_reviews table)
+        reviews_count = Review.objects.filter(user=user).count()
+        
+        # 4. Inquiries Count (if ContactInquiry exists)
+        inquiries_count = 0
+        try:
+            from masters.models import ContactInquiry
+            inquiries_count = ContactInquiry.objects.filter(user=user).count()
+        except ImportError:
+            pass
+        
+        # ===== PROFILE COMPLETION =====
+        profile_completion = profile.get_completion_percentage()
+        missing_fields = profile.get_missing_fields()
+        missing_count = len(missing_fields)
+        
+        # ===== POPULAR CATEGORIES (from parameter_master) =====
+        categories = parameter_master.objects.filter(
+            parameter_name='Product Categories',
+            isactive=1
+        ).order_by('parameter_value')[:6]
+        
+        for category in categories:
+            category.encrypted_id = enc(str(category.parameter_id))
+            category.product_count = Bouquet.objects.filter(
+                category_id=category.parameter_id, 
+                is_active=1
+            ).count()
+        
+        # ===== OCCASIONS (from occasion table) =====
+        occasions = Occasion.objects.filter(is_active=1).order_by('name')[:6]
+        for occasion in occasions:
+            occasion.encrypted_id = enc(str(occasion.id))
+        
+        # ===== MY RECENT REVIEWS (from product_reviews) =====
+        recent_reviews = Review.objects.filter(user=user).select_related('bouquet').order_by('-created_at')[:3]
+        for review in recent_reviews:
+            review.bouquet.encrypted_id = enc(str(review.bouquet.id))
+        
+        # ===== FEATURED PRODUCTS (from bouquet table) =====
+        featured_products = Bouquet.objects.filter(
+            is_active=1, 
+            is_featured=1
+        ).prefetch_related('images')[:4]
+        
+        for product in featured_products:
+            product.encrypted_id = enc(str(product.id))
+            primary_image = product.images.filter(is_active=1).first()
+            product.primary_image = primary_image.image_path if primary_image else None
+            product.category_name = product.category.parameter_value if product.category else ''
+        
+        # ===== ADMIN WHATSAPP =====
+        admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
+        admin_whatsapp = admin_user.phone if admin_user else '918805433102'
+        
         context = {
             "page_title": "Dashboard",
-            "user": request.user,
-            "session_key": request.session.session_key
+            "user": user,
+            "profile": profile,
+            
+            # Quick Stats
+            "cart_items_count": cart_items_count,
+            "recently_viewed_count": recently_viewed_count,
+            "reviews_count": reviews_count,
+            "inquiries_count": inquiries_count,
+            
+            # Profile
+            "profile_completion": profile_completion,
+            "missing_fields": missing_fields,
+            "missing_count": missing_count,
+            "member_since": user.date_joined,
+            
+            # Content Sections
+            "recently_viewed": recently_viewed,
+            "categories": categories,
+            "occasions": occasions,
+            "recent_reviews": recent_reviews,
+            "featured_products": featured_products,
+            
+            # Contact
+            "admin_whatsapp": admin_whatsapp,
+            "MEDIA_URL": settings.MEDIA_URL,
         }
 
         return render(request, "masters/dashboard.html", context)
@@ -334,7 +552,10 @@ def dashboard(request):
     except Exception as e:
         logger.exception("Unexpected error in dashboard")
         messages.error(request, "Something went wrong.")
-        return render(request, "masters/dashboard.html")
+        return render(request, "masters/dashboard.html", {
+            "page_title": "Dashboard",
+            "user": request.user,
+        })    
 
 @no_direct_access
 @login_required

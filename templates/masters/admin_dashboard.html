@@ -1,34 +1,407 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Admin Dashboard - LittleCraftOne{% endblock %}
+
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/masters/admin_dashboard.css' %}">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
 
-    <div class="admin-dashboard">
-        <div class="dashboard-header">
-            <h1>Admin Dashboard</h1>
-            <p>Welcome to your control panel</p>
-        </div>
-
-        <div class="dashboard-cards">
-            <div class="card">
-                <h3>Total Users</h3>
-                <p>0</p>
+<div class="admin-dashboard">
+    <div class="container-fluid px-4">
+        
+        <!-- Header -->
+        <div class="dashboard-header d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+                <p>Welcome back, {{ user.full_name|default:user.email }}! Here's what's happening today.</p>
             </div>
-
-            <div class="card">
-                <h3>Total Roles</h3>
-                <p>0</p>
-            </div>
-
-            <div class="card">
-                <h3>System Logs</h3>
-                <p>0</p>
+            <div class="header-actions">
+                <a href="{% url 'add_bouquet' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Product
+                </a>
+                <a href="{% url 'add_user' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-person-plus"></i> Add User
+                </a>
             </div>
         </div>
+        
+        <!-- Quick Stats Row 1 -->
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_users }}</h3>
+                    <p>Total Users</p>
+                </div>
+                <a href="{% url 'user_list' %}" class="stat-link">View All →</a>
+            </div>
+            
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_orders }}</h3>
+                    <p>Total Orders</p>
+                </div>
+                <a href="{% url 'admin_order_list' %}" class="stat-link">View All →</a>
+            </div>
+            
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="bi bi-flower1"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_products }}</h3>
+                    <p>Active Products</p>
+                </div>
+                <a href="{% url 'bouquet_list' %}" class="stat-link">View All →</a>
+            </div>
+            
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="bi bi-chat-dots-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ total_inquiries }}</h3>
+                    <p>Contact Inquiries</p>
+                </div>
+                <span class="stat-link">View All →</span>
+            </div>
+        </div>
+        
+        <!-- Quick Stats Row 2 -->
+        <div class="stats-grid-secondary">
+            <div class="stat-card-mini">
+                <i class="bi bi-star-fill"></i>
+                <span class="stat-value">{{ total_reviews }}</span>
+                <span class="stat-label">Reviews</span>
+            </div>
+            <div class="stat-card-mini">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span class="stat-value">{{ total_categories }}</span>
+                <span class="stat-label">Categories</span>
+            </div>
+            <div class="stat-card-mini">
+                <i class="bi bi-calendar-heart"></i>
+                <span class="stat-value">{{ total_occasions }}</span>
+                <span class="stat-label">Occasions</span>
+            </div>
+            <div class="stat-card-mini stat-warning-bg">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span class="stat-value">{{ inactive_products }}</span>
+                <span class="stat-label">Inactive</span>
+            </div>
+        </div>
+
+        <!-- Popular Products -->
+        <div class="dashboard-card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-trophy me-2"></i>Popular Products</h5>
+                <a href="{% url 'bouquet_list' %}" class="view-all-link">View All →</a>
+            </div>
+            <div class="card-body">
+                <div class="popular-products-grid">
+                    {% for product in popular_products %}
+                    <div class="popular-product-card">
+                        <div class="product-image">
+                            {% if product.primary_image %}
+                            <img src="{{ MEDIA_URL }}{{ product.primary_image }}" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="no-image">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-details">
+                            <h6>{{ product.name|truncatechars:20 }}</h6>
+                            <div class="product-meta">
+                                <span class="product-price">₹{{ product.price|floatformat:0 }}</span>
+                                <span class="product-reviews">
+                                    <i class="bi bi-star-fill"></i> 
+                                    {{ product.avg_rating|floatformat:1 }} ({{ product.review_count }})
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted w-100">No products yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Users, Recent Inquiries, Quick Actions - Side by Side -->
+        <div class="row g-4 mb-4">
+            <!-- Recent Users -->
+            <div class="col-lg-4">
+                <div class="dashboard-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-person-badge me-2"></i>Recent Users</h5>
+                        <a href="{% url 'user_list' %}" class="view-all-link">View All →</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="recent-list">
+                            {% for user_obj in recent_users %}
+                            <div class="recent-list-item">
+                                <div class="user-avatar">
+                                    {{ user_obj.first_name|first|default:user_obj.email|first|upper }}
+                                </div>
+                                <div class="user-info">
+                                    <span class="user-name">{{ user_obj.full_name|default:user_obj.email }}</span>
+                                    <span class="user-email">{{ user_obj.email }}</span>
+                                </div>
+                                <span class="user-role {% if user_obj.role_id == 1 %}role-admin{% else %}role-customer{% endif %}">
+                                    {% if user_obj.role_id == 1 %}Admin{% else %}Customer{% endif %}
+                                </span>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-4 text-muted">No users yet</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Inquiries -->
+            <div class="col-lg-4">
+                <div class="dashboard-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-chat-text me-2"></i>Recent Inquiries</h5>
+                        <span class="view-all-link">New</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if recent_inquiries %}
+                        <div class="recent-list" style="max-height: 350px; overflow-y: auto;">
+                            {% for inquiry in recent_inquiries %}
+                            <div class="recent-list-item inquiry-item">
+                                <div class="inquiry-icon">
+                                    <i class="bi bi-envelope"></i>
+                                </div>
+                                <div class="inquiry-info">
+                                    <span class="inquiry-name">{{ inquiry.name|truncatechars:18 }}</span>
+                                    <span class="inquiry-subject">{{ inquiry.subject|truncatechars:25 }}</span>
+                                </div>
+                                <span class="inquiry-time">{{ inquiry.created_at|date:"d M" }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">No inquiries yet</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="col-lg-4">
+                <div class="dashboard-card h-100">
+                    <div class="card-header">
+                        <h5><i class="bi bi-lightning-charge-fill me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <a href="{% url 'add_bouquet' %}" class="quick-action-btn">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Add Product</span>
+                            </a>
+                            <a href="{% url 'add_user' %}" class="quick-action-btn">
+                                <i class="bi bi-person-plus"></i>
+                                <span>Add User</span>
+                            </a>
+                            <a href="{% url 'add_occasion' %}" class="quick-action-btn">
+                                <i class="bi bi-calendar-plus"></i>
+                                <span>Add Occasion</span>
+                            </a>
+                            <a href="{% url 'add_vendor' %}" class="quick-action-btn">
+                                <i class="bi bi-shop"></i>
+                                <span>Add Vendor</span>
+                            </a>
+                            <a href="{% url 'admin_order_list' %}" class="quick-action-btn">
+                                <i class="bi bi-truck"></i>
+                                <span>Manage Orders</span>
+                            </a>
+                            <a href="{% url 'user_list' %}" class="quick-action-btn">
+                                <i class="bi bi-people"></i>
+                                <span>Manage Users</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chart & Recent Orders Row -->
+        <div class="row g-4 mb-4">
+            <!-- Orders Chart -->
+            <div class="col-lg-5">
+                <div class="dashboard-card h-100">
+                    <div class="card-header">
+                        <h5><i class="bi bi-graph-up me-2"></i>Orders (Last 7 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="ordersChart" height="180"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="col-lg-7">
+                <div class="dashboard-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-clock-history me-2"></i>Recent Orders</h5>
+                        <a href="{% url 'admin_order_list' %}" class="view-all-link">View All →</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="dashboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr onclick="location.href='{% url 'admin_order_detail' order.encrypted_id %}'" style="cursor: pointer;">
+                                        <td><strong>{{ order.order_number }}</strong></td>
+                                        <td>{{ order.first_name }} {{ order.last_name|slice:":1" }}.</td>
+                                        <td>₹{{ order.total|floatformat:0 }}</td>
+                                        <td>
+                                            <span class="status-badge status-{{ order.status }}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ order.order_date|date:"d M Y" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">No orders yet</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Status & Revenue Row -->
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-clipboard-check me-2"></i>Order Status Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-status-grid">
+                            <div class="status-item status-pending">
+                                <span class="status-count">{{ pending_orders }}</span>
+                                <span class="status-label">Pending</span>
+                            </div>
+                            <div class="status-item status-processing">
+                                <span class="status-count">{{ processing_orders }}</span>
+                                <span class="status-label">Processing</span>
+                            </div>
+                            <div class="status-item status-delivered">
+                                <span class="status-count">{{ delivered_orders }}</span>
+                                <span class="status-label">Delivered</span>
+                            </div>
+                            <div class="status-item status-cancelled">
+                                <span class="status-count">{{ cancelled_orders }}</span>
+                                <span class="status-label">Cancelled</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-currency-rupee me-2"></i>Revenue Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="revenue-stats">
+                            <div class="revenue-item">
+                                <span class="revenue-label">Total Revenue</span>
+                                <span class="revenue-value">₹{{ total_revenue|floatformat:0 }}</span>
+                            </div>
+                            <div class="revenue-item">
+                                <span class="revenue-label">This Month</span>
+                                <span class="revenue-value">₹{{ monthly_revenue|floatformat:0 }}</span>
+                            </div>
+                            <div class="revenue-item">
+                                <span class="revenue-label">Orders This Month</span>
+                                <span class="revenue-value">{{ monthly_orders }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
     </div>
+</div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Orders Chart
+    const ctx = document.getElementById('ordersChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Orders',
+                data: {{ chart_data|safe }},
+                borderColor: '#8c0d4f',
+                backgroundColor: 'rgba(140, 13, 79, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#8c0d4f',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

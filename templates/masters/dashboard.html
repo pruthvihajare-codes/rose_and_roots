@@ -1,34 +1,280 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Dashboard - Rose & Roots{% endblock %}
+
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/masters/admin_dashboard.css' %}">
+    {% comment %} <link rel="stylesheet" href="{% static 'css/masters/dashboard.css' %}"> {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/masters/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
 
-    <div class="admin-dashboard">
-        <div class="dashboard-header">
-            <h1>Dashboard</h1>
-            <p>Welcome to Dashboard</p>
+<div class="customer-dashboard">
+    <div class="container py-4">
+        
+        <!-- Welcome Section -->
+        <div class="welcome-section mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="welcome-title">
+                        👋 Welcome back, {{ user.first_name|default:user.email }}!
+                    </h1>
+                    <p class="welcome-subtitle">
+                        <i class="bi bi-calendar-check"></i> 
+                        Member since {{ member_since|date:"F Y" }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'shop' %}" class="btn-shop-now">
+                        <i class="bi bi-shop"></i> Shop Now
+                    </a>
+                </div>
+            </div>
         </div>
-
-        <div class="dashboard-cards">
-            <div class="card">
-                <h3>Total Users</h3>
-                <p>0</p>
+        
+        <!-- Quick Stats Cards -->
+        <div class="stats-grid mb-4">
+            
+            <!-- Cart Items - Go to Cart Page -->
+            <div class="stat-card" onclick="location.href='{% url 'cart_view' %}'">
+                <div class="stat-icon">🛒</div>
+                <div class="stat-content">
+                    <h3>{{ cart_items_count }}</h3>
+                    <p>Cart Items</p>
+                </div>
+                <span class="stat-link">View Cart →</span>
             </div>
-
-            <div class="card">
-                <h3>Total Roles</h3>
-                <p>0</p>
+            
+            <!-- Products Browsed - Scroll to Recently Viewed Section (or non-clickable) -->
+            <div class="stat-card" onclick="document.querySelector('.recently-viewed-grid')?.scrollIntoView({behavior: 'smooth'});" {% if not recently_viewed %}style="cursor: default;" onclick="return false;"{% endif %}>
+                <div class="stat-icon">👀</div>
+                <div class="stat-content">
+                    <h3>{{ recently_viewed_count }}</h3>
+                    <p>Products Browsed</p>
+                </div>
+                {% if recently_viewed %}
+                <span class="stat-link">View Below →</span>
+                {% endif %}
             </div>
-
-            <div class="card">
-                <h3>System Logs</h3>
-                <p>0</p>
+            
+            <!-- Reviews - Go to Profile Reviews Tab -->
+            <div class="stat-card" onclick="location.href='{% url 'profile' %}?tab=reviews'">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-content">
+                    <h3>{{ reviews_count }}</h3>
+                    <p>Reviews Written</p>
+                </div>
+                <span class="stat-link">View Reviews →</span>
+            </div>
+            
+            <!-- Inquiries - Go to Contact Us Page -->
+            <div class="stat-card" onclick="location.href='{% url 'contact_us' %}'">
+                <div class="stat-icon">💬</div>
+                <div class="stat-content">
+                    <h3>{{ inquiries_count }}</h3>
+                    <p>Inquiries Sent</p>
+                </div>
+                <span class="stat-link">Contact Us →</span>
+            </div>
+            
+        </div>
+        
+        <!-- Recently Viewed Products -->
+        {% if recently_viewed %}
+        <div class="dashboard-section mb-4">
+            <div class="section-header">
+                <h2><i class="bi bi-eye me-2"></i>Recently Viewed</h2>
+                <a href="{% url 'shop' %}" class="view-all">Clear All →</a>
+            </div>
+            
+            <div class="recently-viewed-grid">
+                {% for product in recently_viewed %}
+                <div class="product-card" onclick="location.href='{% url 'product_detail' %}?id={{ product.encrypted_id }}'">
+                    <div class="product-image">
+                        {% if product.primary_image %}
+                        <img src="{{ MEDIA_URL }}{{ product.primary_image }}" alt="{{ product.name }}">
+                        {% else %}
+                        <div class="no-image">No Image</div>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h4>{{ product.name|truncatechars:20 }}</h4>
+                        <p class="price">₹{{ product.discount_price|default:product.price|floatformat:0 }}</p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
+        {% endif %}
+        
+        <!-- Two Column Layout -->
+        <div class="row g-4 mb-4">
+            <!-- Left: Profile Completion & Categories -->
+            <div class="col-lg-6">
+                <!-- Profile Completion -->
+                <div class="dashboard-section mb-4">
+                    <div class="section-header">
+                        <h2><i class="bi bi-person-check me-2"></i>Complete Your Profile</h2>
+                    </div>
+                    
+                    <div class="profile-completion-card">
+                        <div class="completion-progress-wrapper">
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ profile_completion }}%;" 
+                                     aria-valuenow="{{ profile_completion }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            <span class="completion-text">{{ profile_completion }}% Complete</span>
+                        </div>
+                        
+                        {% if missing_count > 0 %}
+                        <div class="missing-fields mt-3">
+                            <p class="missing-title">Complete these fields:</p>
+                            <ul class="missing-list">
+                                {% for field in missing_fields|slice:":3" %}
+                                <li><i class="bi bi-circle"></i> {{ field }}</li>
+                                {% endfor %}
+                                {% if missing_count > 3 %}
+                                <li><i class="bi bi-circle"></i> +{{ missing_count|add:"-3" }} more</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="profile-complete-message">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <p>Your profile is complete! 🎉</p>
+                        </div>
+                        {% endif %}
+                        
+                        <a href="{% url 'profile' %}?tab=profile" class="btn-complete-profile">
+                            Update Profile →
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Popular Categories -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2><i class="bi bi-grid me-2"></i>Browse by Category</h2>
+                    </div>
+                    
+                    <div class="category-grid">
+                        {% for category in categories %}
+                        <a href="{% url 'shop' %}?category={{ category.encrypted_id }}" class="category-item">
+                            <span class="category-name">{{ category.parameter_value }}</span>
+                            <span class="category-count">{{ category.product_count }} items</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: Occasions & Featured -->
+            <div class="col-lg-6">
+                <!-- Occasions -->
+                <div class="dashboard-section mb-4">
+                    <div class="section-header">
+                        <h2><i class="bi bi-calendar-heart me-2"></i>Shop by Occasion</h2>
+                    </div>
+                    
+                    <div class="occasion-grid">
+                        {% for occasion in occasions %}
+                        <a href="{% url 'shop' %}?occasion={{ occasion.encrypted_id }}" class="occasion-item">
+                            {{ occasion.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- WhatsApp Order -->
+                <div class="whatsapp-card mb-4">
+                    <div class="whatsapp-content">
+                        <i class="bi bi-whatsapp"></i>
+                        <div>
+                            <h4>Order via WhatsApp</h4>
+                            <p>Quick and easy ordering through WhatsApp</p>
+                        </div>
+                    </div>
+                    <a href="https://wa.me/{{ admin_whatsapp }}" target="_blank" class="btn-whatsapp">
+                        Chat Now →
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Reviews -->
+        {% if recent_reviews %}
+        <div class="dashboard-section mb-4">
+            <div class="section-header">
+                <h2><i class="bi bi-star-fill me-2"></i>My Recent Reviews</h2>
+                <a href="{% url 'profile' %}?tab=reviews" class="view-all">View All →</a>
+            </div>
+            
+            <div class="reviews-list">
+                {% for review in recent_reviews %}
+                <div class="review-item-dash">
+                    <div class="review-header-dash">
+                        <span class="review-product-name">{{ review.bouquet.name }}</span>
+                        <div class="review-rating-dash">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="review-comment-dash">{{ review.comment|truncatechars:100 }}</p>
+                    <span class="review-date-dash">{{ review.created_at|date:"d M Y" }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Featured Products -->
+        {% if featured_products %}
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2><i class="bi bi-star me-2"></i>Featured Products</h2>
+                <a href="{% url 'shop' %}" class="view-all">View All →</a>
+            </div>
+            
+            <div class="featured-grid">
+                {% for product in featured_products %}
+                <div class="featured-card" onclick="location.href='{% url 'product_detail' %}?id={{ product.encrypted_id }}'">
+                    <div class="featured-image">
+                        {% if product.primary_image %}
+                        <img src="{{ MEDIA_URL }}{{ product.primary_image }}" alt="{{ product.name }}">
+                        {% else %}
+                        <div class="no-image">No Image</div>
+                        {% endif %}
+                        {% if product.discount_percent %}
+                        <span class="discount-badge">-{{ product.discount_percent }}%</span>
+                        {% endif %}
+                    </div>
+                    <div class="featured-info">
+                        <h4>{{ product.name|truncatechars:25 }}</h4>
+                        <div class="price-wrapper">
+                            {% if product.discount_price %}
+                            <span class="current-price">₹{{ product.discount_price|floatformat:0 }}</span>
+                            <span class="original-price">₹{{ product.price|floatformat:0 }}</span>
+                            {% else %}
+                            <span class="current-price">₹{{ product.price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
     </div>
+</div>
 
 {% endblock %}

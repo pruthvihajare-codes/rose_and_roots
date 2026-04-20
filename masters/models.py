@@ -1,5 +1,7 @@
 from django.db import models
 
+from accounts.models import CustomUser
+
 # Create your models here.
 
 class Occasion(models.Model):
@@ -174,3 +176,66 @@ class parameter_master(models.Model):
         db_table = 'parameter_master'
     def __str__(self):
         return self.parameter_name
+    
+# accounts/models.py - Add these classes
+
+class RecentlyViewed(models.Model):
+    """Track products users have viewed"""
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='recently_viewed',
+        db_column='user_id'
+    )
+    bouquet = models.ForeignKey(
+        'masters.Bouquet',  # Assuming Bouquet is in masters app
+        on_delete=models.CASCADE,
+        db_column='bouquet_id'
+    )
+    viewed_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'recently_viewed'
+        ordering = ['-viewed_at']
+        unique_together = ['user', 'bouquet']  # Prevent duplicates
+    
+    def __str__(self):
+        return f"{self.user.email} viewed {self.bouquet.name}"
+
+
+class ContactInquiry(models.Model):
+    """Store contact form submissions"""
+    INQUIRY_TYPES = (
+        ('general', 'General Inquiry'),
+        ('order', 'Order Related'),
+        ('product', 'Product Question'),
+        ('feedback', 'Feedback'),
+        ('support', 'Support'),
+    )
+    
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    inquiry_type = models.CharField(max_length=20, choices=INQUIRY_TYPES, default='general')
+    is_resolved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='inquiries',
+        db_column='user_id'
+    )
+    
+    class Meta:
+        db_table = 'contact_inquiries'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Inquiry from {self.email} - {self.subject}"
