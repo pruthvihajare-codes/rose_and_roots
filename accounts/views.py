@@ -18,16 +18,12 @@ from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
-# Add this at the top of your views.py or in a separate utils.py
 import time
 import uuid
 import logging
 from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.urls import reverse
-logger = logging.getLogger(__name__)
 from rose_and_roots.encryption import enc, dec
+logger = logging.getLogger(__name__)
 
 # accounts/views.py
 
@@ -56,9 +52,6 @@ def logout_user(request):
         logger.error(f"Logout error: {e}")
         messages.error(request, "Something went wrong.")
         return redirect('home')
-
-# Regular view functions for rendering templates
-# accounts/views.py
 
 @sensitive_post_parameters()
 @csrf_protect

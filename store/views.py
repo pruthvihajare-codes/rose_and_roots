@@ -5,7 +5,6 @@ import logging
 from decimal import Decimal, InvalidOperation
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction, DatabaseError
 from django.conf import settings
@@ -26,17 +25,11 @@ from django.db.models import F
 from store.models import *
 from accounts.views import *
 from django.utils import timezone
-
-logger = logging.getLogger(__name__)
-
-# accounts/views.py
 import time
-import logging
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
-
 logger = logging.getLogger(__name__)
+
 
 def check_session_validity(request):
     """

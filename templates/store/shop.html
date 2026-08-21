@@ -578,7 +578,6 @@
     </style>
     
     <script>
-
         // Global variables from Django
         const ADMIN_WHATSAPP = "{{ admin_whatsapp|default:'918805433102' }}";
 
@@ -589,6 +588,7 @@
             let priceSlider = null;
             let priceSliderMobile = null;
             let currentPage = 1;
+            let quickViewModal = null;
             
             // ========== CREATE LOADER ==========
             function createLoader() {
@@ -626,6 +626,85 @@
             
             function hideLoader() {
                 $('#filterLoader').removeClass('active');
+            }
+            
+            // ========== SYNC CHECKBOX VISUALS ==========
+            function syncCheckboxVisuals() {
+                $('.category-checkbox').each(function() {
+                    const $checkbox = $(this);
+                    const $customCheckbox = $checkbox.siblings('.checkbox-custom');
+                    
+                    if ($checkbox.prop('checked')) {
+                        $customCheckbox.css({
+                            'background-color': '#8c0d4f',
+                            'border-color': '#8c0d4f'
+                        });
+                        if (!$customCheckbox.find('.bi-check-lg').length) {
+                            $customCheckbox.append('<i class="bi bi-check-lg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 12px;"></i>');
+                        }
+                    } else {
+                        $customCheckbox.css({
+                            'background-color': 'white',
+                            'border-color': '#ccc'
+                        });
+                        $customCheckbox.find('.bi-check-lg').remove();
+                    }
+                });
+            }
+            
+            // ========== SYNC FILTER UI WITH URL PARAMETERS ==========
+            function syncFiltersFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const categoryParam = urlParams.get('category');
+                const occasionParam = urlParams.get('occasion');
+                
+                console.log('🔍 Syncing filters from URL - category:', categoryParam, 'occasion:', occasionParam);
+                
+                // Sync categories
+                if (categoryParam) {
+                    const categories = categoryParam.split(',').filter(c => c.trim());
+                    console.log('📋 Categories from URL:', categories);
+                    
+                    $('.category-checkbox').each(function() {
+                        const value = $(this).val();
+                        if (categories.includes(value)) {
+                            $(this).prop('checked', true);
+                            const $customCheckbox = $(this).siblings('.checkbox-custom');
+                            $customCheckbox.css({
+                                'background-color': '#8c0d4f',
+                                'border-color': '#8c0d4f'
+                            });
+                            if (!$customCheckbox.find('.bi-check-lg').length) {
+                                $customCheckbox.append('<i class="bi bi-check-lg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 12px;"></i>');
+                            }
+                            console.log('✅ Checked category checkbox:', value);
+                        }
+                    });
+                }
+                
+                // Sync occasions
+                if (occasionParam) {
+                    const occasions = occasionParam.split(',').filter(o => o.trim());
+                    console.log('📋 Occasions from URL:', occasions);
+                    
+                    const occasionSelect = $('.occasion-select');
+                    if (occasionSelect.length) {
+                        occasionSelect.val(occasions).trigger('change');
+                        console.log('✅ Set occasion select to:', occasions);
+                    }
+                }
+                
+                // Update filter count badge
+                const checkedCount = $('.category-checkbox:checked').length;
+                const occasionSelect = $('.occasion-select');
+                const occasionCount = occasionSelect.val() ? occasionSelect.val().length : 0;
+                const totalFilters = checkedCount + occasionCount;
+                
+                if (totalFilters > 0) {
+                    $('#mobileFilterCount').html(`<span class="badge bg-danger ms-2">${totalFilters}</span>`);
+                } else {
+                    $('#mobileFilterCount').empty();
+                }
             }
             
             // ========== COLLECT FILTERS ==========
@@ -670,63 +749,6 @@
                 
                 return filters;
             }
-
-            /*function collectFilters() {
-                const filters = {};
-                
-                // Categories - get all checked checkboxes
-                const categories = [];
-                $('.category-checkbox:checked').each(function() {
-                    const val = $(this).val();
-                    if (val) categories.push(val);
-                });
-                if (categories.length) {
-                    filters.category = categories.join(',');
-                    console.log('✅ Category added to filters:', filters.category);
-                }
-                
-                // Occasions - handle both array and string
-                const desktopOccasion = $('#occasionSelect').val();
-                const mobileOccasion = $('#occasionSelectMobile').val();
-                const occasions = desktopOccasion && desktopOccasion.length > 0 ? desktopOccasion : mobileOccasion;
-
-                console.log('🔍 Desktop occasion:', desktopOccasion);
-                console.log('🔍 Mobile occasion:', mobileOccasion);
-                console.log('🔍 Selected occasion:', occasions);
-                
-                if (occasions) {
-                    if (Array.isArray(occasions) && occasions.length > 0) {
-                        filters.occasion = occasions.join(',');
-                        console.log('✅ Occasion (array) added to filters:', filters.occasion);
-                    } else if (typeof occasions === 'string' && occasions.length > 0) {
-                        filters.occasion = occasions;
-                        console.log('✅ Occasion (string) added to filters:', filters.occasion);
-                    } else {
-                        console.log('❌ Occasion failed condition check');
-                    }
-                } else {
-                    console.log('❌ Occasion is null/undefined/empty');
-                }
-                
-                // Price
-                const minPrice = $('#minPrice').val();
-                const maxPrice = $('#maxPrice').val();
-                if (minPrice) filters.min_price = minPrice;
-                if (maxPrice) filters.max_price = maxPrice;
-                
-                // Sort
-                const sort = $('#sortField').val();
-                if (sort) filters.sort = sort;
-                
-                // Page
-                filters.page = currentPage;
-                
-                console.log('📦 FINAL filters object:', JSON.stringify(filters));
-                console.log('📦 filters.occasion =', filters.occasion);
-                console.log('📦 filters.category =', filters.category);
-                
-                return filters;
-            }*/
             
             // ========== UPDATE PRODUCTS VIA AJAX ==========
             function updateProducts() {
@@ -735,7 +757,6 @@
                 console.log('📤 Sending AJAX request...');
                 console.log('📤 URL:', "{% url 'filter_products_ajax' %}");
                 console.log('📤 Data:', filters);
-                console.log('📤 Query string:', $.param(filters));
                 
                 showLoader();
                 $('.products-grid').addClass('loading');
@@ -760,6 +781,9 @@
                             } else {
                                 $('#mobileFilterCount').empty();
                             }
+                            
+                            // Sync checkbox visuals after AJAX
+                            setTimeout(syncCheckboxVisuals, 50);
                             
                             initializeModals();
                         } else {
@@ -789,8 +813,6 @@
             
             // ========== INITIALIZE MODALS ==========
             function initializeModals() {
-                // No need to initialize individual modals anymore
-                // We use a single reusable modal
                 if (!quickViewModal) {
                     const modalEl = document.getElementById('quickViewModal');
                     if (modalEl) {
@@ -801,19 +823,16 @@
             
             // ========== INITIALIZE SELECT2 ==========
             function initializeSelect2() {
-                // Target BOTH desktop and mobile occasion selects
                 const occasionSelects = $('.occasion-select');
                 
                 if (occasionSelects.length === 0) return;
                 
-                // Destroy existing Select2 instances first
                 occasionSelects.each(function() {
                     if ($(this).data('select2')) {
                         $(this).select2('destroy');
                     }
                 });
                 
-                // Reinitialize Select2 on both
                 occasionSelects.select2({
                     placeholder: 'Select occasions',
                     allowClear: true,
@@ -821,7 +840,6 @@
                     closeOnSelect: false,
                     theme: 'default'
                 }).on('change', function() {
-                    // Get the selected values
                     const selectedValues = $(this).val();
                     console.log('🔍 Select2 change event - selected values:', selectedValues);
                     
@@ -833,7 +851,6 @@
                     $('#selectedOccasionCount').html(badgeHtml);
                     $('#selectedOccasionCountMobile').html(badgeHtml);
                     
-                    // Force sync between the two selects
                     const otherSelect = $(this).attr('id') === 'occasionSelect' ? 
                         $('#occasionSelectMobile') : $('#occasionSelect');
                     if (otherSelect.length) {
@@ -844,7 +861,6 @@
                     updateProducts();
                 });
                 
-                // Sync the two Select2 instances
                 $('#occasionSelect').on('change', function() {
                     const values = $(this).val();
                     $('#occasionSelectMobile').val(values).trigger('change.select2');
@@ -904,7 +920,7 @@
                     });
                 }
                 
-                // Mobile slider (sync with desktop)
+                // Mobile slider
                 const priceSliderMobileEl = document.getElementById('priceSliderMobile');
                 if (priceSliderMobileEl && typeof noUiSlider !== 'undefined') {
                     if (priceSliderMobileEl.noUiSlider) {
@@ -954,7 +970,7 @@
             // ========== REMOVE FILTER ==========
             window.removeFilter = function(type, value) {
                 if (type === 'category') {
-                    $(`.category-checkbox[value="${value}"]`).prop('checked', false);
+                    $(`.category-checkbox[value="${value}"]`).prop('checked', false).trigger('change');
                 } else if (type === 'occasion') {
                     const select = $('.occasion-select');
                     const currentValues = select.val() || [];
@@ -1081,6 +1097,81 @@
                 });
             }
             
+            // ========== QUICK VIEW MODAL ==========
+            function initializeQuickViewModal() {
+                const modalEl = document.getElementById('quickViewModal');
+                if (modalEl) {
+                    quickViewModal = new bootstrap.Modal(modalEl);
+                }
+            }
+
+            $(document).on('click', '.quick-view-btn', function(e) {
+                e.preventDefault();
+                
+                try {
+                    const bouquetData = $(this).data('bouquet');
+                    
+                    $('#quickViewModalName').text(bouquetData.name);
+                    
+                    let priceHtml = '';
+                    if (bouquetData.discount_price && bouquetData.discount_price !== bouquetData.original_price) {
+                        priceHtml = `
+                            <span class="current-price">₹${bouquetData.discount_price}</span>
+                            <span class="original-price">₹${bouquetData.original_price}</span>
+                            <span class="discount-badge">-${bouquetData.discount_percent}%</span>
+                        `;
+                    } else {
+                        priceHtml = `<span class="current-price">₹${bouquetData.price}</span>`;
+                    }
+                    $('#quickViewModalPrice').html(priceHtml);
+                    
+                    if (bouquetData.image) {
+                        $('#quickViewModalImage').attr('src', bouquetData.image).attr('alt', bouquetData.name);
+                    }
+                    
+                    let occasionsHtml = '';
+                    if (bouquetData.occasions && bouquetData.occasions.length) {
+                        bouquetData.occasions.forEach(function(occ) {
+                            occasionsHtml += `<span class="occasion-badge">${occ}</span>`;
+                        });
+                    }
+                    $('#quickViewModalOccasions').html(occasionsHtml);
+                    
+                    $('#quickViewModalDescription').text(bouquetData.description);
+                    
+                    let actionsHtml = `
+                        <a href="{% url 'product_detail' %}?id=${bouquetData.id}" class="btn btn-primary">
+                            View Details
+                        </a>
+                    `;
+                    
+                    if (bouquetData.buy_now == 0) {
+                        actionsHtml += `
+                            <a href="https://wa.me/${ADMIN_WHATSAPP}?text=I want to inquire about ${encodeURIComponent(bouquetData.name)}" 
+                                target="_blank" 
+                                class="btn-whatsapp-card btn">
+                                <i class="bi bi-whatsapp"></i> Inquiry
+                            </a>
+                        `;
+                    } else {
+                        actionsHtml += `
+                            <button class="btn btn-outline-primary" onclick="addToCart('${bouquetData.id}')">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        `;
+                    }
+                    
+                    $('#quickViewModalActions').html(actionsHtml);
+                    
+                    if (quickViewModal) {
+                        quickViewModal.show();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error showing quick view:', error);
+                }
+            });
+            
             // ========== MAIN INITIALIZATION ==========
             $(document).ready(function() {
                 console.log('Shop page initialized with AJAX filtering');
@@ -1088,24 +1179,45 @@
                 createLoader();
                 initializeSelect2();
                 initializePriceSliders();
+                initializeQuickViewModal();
                 
-                // ✅ FORCE CHECKBOX VISUAL UPDATE - CRITICAL FIX
-                setTimeout(function() {
-                    $('.category-checkbox').each(function() {
-                        if ($(this).is(':checked')) {
-                            // Force CSS re-evaluation
-                            $(this).hide().show(0);
-                            console.log('✅ Checkbox checked:', $(this).val());
-                        }
-                    });
-                }, 10);
+                // Force checkbox visual update on load
+                setTimeout(syncCheckboxVisuals, 50);
+                setTimeout(syncCheckboxVisuals, 200);
                 
-                // Category checkboxes - update custom styling on change
+                // Sync filters from URL
+                setTimeout(syncFiltersFromURL, 100);
+                setTimeout(syncFiltersFromURL, 300);
+                setTimeout(syncFiltersFromURL, 500);
+                
+                // Category checkboxes - handle change
                 $('.category-checkbox').on('change', function() {
-                    // Force repaint
-                    $(this).hide().show(0);
+                    const $checkbox = $(this);
+                    const $customCheckbox = $checkbox.siblings('.checkbox-custom');
+                    
+                    if ($checkbox.prop('checked')) {
+                        $customCheckbox.css({
+                            'background-color': '#8c0d4f',
+                            'border-color': '#8c0d4f'
+                        });
+                        if (!$customCheckbox.find('.bi-check-lg').length) {
+                            $customCheckbox.append('<i class="bi bi-check-lg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 12px;"></i>');
+                        }
+                    } else {
+                        $customCheckbox.css({
+                            'background-color': 'white',
+                            'border-color': '#ccc'
+                        });
+                        $customCheckbox.find('.bi-check-lg').remove();
+                    }
+                    
                     currentPage = 1;
                     updateProducts();
+                });
+                
+                // After AJAX completes, sync checkbox visuals
+                $(document).ajaxComplete(function() {
+                    setTimeout(syncCheckboxVisuals, 50);
                 });
                 
                 // Price apply buttons
@@ -1178,7 +1290,7 @@
                 
                 // Get initial cart count
                 $.ajax({
-                    url: "{% url 'cart_count' %}",  // Use Django URL name
+                    url: "{% url 'cart_count' %}",
                     type: 'GET',
                     success: function(data) {
                         updateCartBadge(data.count);
@@ -1190,139 +1302,13 @@
             });
             
         })(jQuery);
-
-    </script>
-
-    <script>
-        // ========== QUICK VIEW MODAL (Single reusable modal) ==========
-        let quickViewModal = null;
-
-        function initializeQuickViewModal() {
-            const modalEl = document.getElementById('quickViewModal');
-            if (modalEl) {
-                quickViewModal = new bootstrap.Modal(modalEl);
-            }
-        }
-
-        // Handle quick view button clicks
-        $(document).on('click', '.quick-view-btn', function(e) {
-            e.preventDefault();
-            
-            try {
-                const bouquetData = $(this).data('bouquet');
-                
-                // Populate modal with data
-                $('#quickViewModalName').text(bouquetData.name);
-                
-                // Price section
-                let priceHtml = '';
-                if (bouquetData.discount_price && bouquetData.discount_price !== bouquetData.original_price) {
-                    priceHtml = `
-                        <span class="current-price">₹${bouquetData.discount_price}</span>
-                        <span class="original-price">₹${bouquetData.original_price}</span>
-                        <span class="discount-badge">-${bouquetData.discount_percent}%</span>
-                    `;
-                } else {
-                    priceHtml = `<span class="current-price">₹${bouquetData.price}</span>`;
-                }
-                $('#quickViewModalPrice').html(priceHtml);
-                
-                // Image
-                if (bouquetData.image) {
-                    $('#quickViewModalImage').attr('src', bouquetData.image).attr('alt', bouquetData.name);
-                }
-                
-                // Occasions
-                let occasionsHtml = '';
-                if (bouquetData.occasions && bouquetData.occasions.length) {
-                    bouquetData.occasions.forEach(function(occ) {
-                        occasionsHtml += `<span class="occasion-badge">${occ}</span>`;
-                    });
-                }
-                $('#quickViewModalOccasions').html(occasionsHtml);
-                
-                // Description
-                $('#quickViewModalDescription').text(bouquetData.description);
-                
-                // Actions
-                let actionsHtml = `
-                    <a href="{% url 'product_detail' %}?id=${bouquetData.id}" class="btn btn-primary">
-                        View Details
-                    </a>
-                `;
-                
-                if (bouquetData.buy_now == 0) {
-                    actionsHtml += `
-                        <a href="https://wa.me/${ADMIN_WHATSAPP}?text=I want to inquire about ${encodeURIComponent(bouquetData.name)}" 
-                            target="_blank" 
-                            class="btn-whatsapp-card btn">
-                            <i class="bi bi-whatsapp"></i> Inquiry
-                        </a>
-                    `;
-                } else {
-                    actionsHtml += `
-                        <button class="btn btn-outline-primary" onclick="addToCart('${bouquetData.id}')">
-                            <i class="bi bi-cart-plus"></i> Add to Cart
-                        </button>
-                    `;
-                }
-                
-                $('#quickViewModalActions').html(actionsHtml);
-                
-                // Show modal
-                if (quickViewModal) {
-                    quickViewModal.show();
-                }
-                
-            } catch (error) {
-                console.error('Error showing quick view:', error);
-            }
-        });
-        // Initialize the modal after DOM is ready
-        $(document).ready(function() {
-            initializeQuickViewModal();
-        });
-    </script>
-
-    <script>
-        // ===== FORCE CHECKBOX VISUAL STATE =====
-        (function() {
-            function updateCheckboxVisual() {
-                $('.category-checkbox').each(function() {
-                    if ($(this).is(':checked')) {
-                        $(this).siblings('.checkbox-custom').css({
-                            'background-color': '#8c0d4f',
-                            'border-color': '#8c0d4f'
-                        });
-                        // Add checkmark if not present
-                        if (!$(this).siblings('.checkbox-custom').find('.bi-check-lg').length) {
-                            $(this).siblings('.checkbox-custom').append('<i class="bi bi-check-lg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 12px;"></i>');
-                        }
-                    }
-                });
-            }
-            
-            // Run on load
-            $(document).ready(function() {
-                setTimeout(updateCheckboxVisual, 50);
-                setTimeout(updateCheckboxVisual, 200);
-            });
-            
-            // Run after AJAX updates
-            $(document).ajaxComplete(function() {
-                setTimeout(updateCheckboxVisual, 50);
-            });
-        })();
     </script>
 
     <script>
         // ===== AUTO SCROLL TO PRODUCTS SECTION =====
         $(document).ready(function() {
-            // Check if coming from footer/home link (not from filter AJAX)
             if (window.location.pathname === '/shop/' && !window.location.search) {
-                // Small delay to ensure page is fully loaded
                 setTimeout(function() {
-                    // Scroll to the products grid section
                     const productsSection = document.querySelector('.sort-bar');
                     if (productsSection) {
                         productsSection.scrollIntoView({ 
