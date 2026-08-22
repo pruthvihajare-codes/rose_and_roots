@@ -110,19 +110,21 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 # ============================================
 SESSION_COOKIE_AGE = 1800
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_SECURE = True  # Set to True in production
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Strict'
 SESSION_SAVE_EVERY_REQUEST = True
 
-CSRF_COOKIE_SECURE = True  # Set to True in production
+CSRF_COOKIE_SECURE = False  # MUST be False if not using HTTPS
 CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_SAMESITE = 'Lax'  # Change from 'Strict' to 'Lax' for better compatibility
 CSRF_TRUSTED_ORIGINS = [
     'http://168.144.184.87',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
 ]
+
+# Session settings - FOR PRODUCTION WITHOUT HTTPS
+SESSION_COOKIE_SECURE = False  # MUST be False if not using HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'  # Change from 'Strict' to 'Lax'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -158,7 +160,6 @@ PASSWORD_HASHERS = [
 # SECURITY HEADERS - HTTPS/SSL
 # ============================================
 SECURE_SSL_REDIRECT = False  # Set to True if using HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
