@@ -25,6 +25,11 @@ class DirectAccessMiddleware:
     def __call__(self, request):
         current_path = request.path
         
+        # Skip for login POST requests (important!)
+        if request.method == 'POST' and current_path in ['/login/', '/accounts/login/', '/login']:
+            response = self.get_response(request)
+            return response
+        
         # Check if user has active session
         if request.user.is_authenticated:
             # For home page - special handling
@@ -56,21 +61,26 @@ class DirectAccessMiddleware:
         """Detect direct browser access (typing URL)"""
         referer = request.META.get('HTTP_REFERER')
         
-        if not referer:
+        # Allow navigation from within the site
+        if referer:
+            # Check if referer is from our own domain
+            our_domains = [
+                'http://168.144.184.87',
+                'http://127.0.0.1:8000',
+                'http://localhost:8000',
+                'https://littlecraftone.com',
+                'https://www.littlecraftone.com',
+            ]
+            
+            for domain in our_domains:
+                if referer.startswith(domain):
+                    return False
+        
+        # If no referer, check if it's a GET request to a page
+        if request.method == 'GET':
             return True
         
-        our_domains = [
-            'http://127.0.0.1:8000',
-            'http://localhost:8000',
-            'https://littlecraftone.com',
-            'https://www.littlecraftone.com',
-        ]
-        
-        for domain in our_domains:
-            if referer.startswith(domain):
-                return False
-        
-        return True
+        return False
     
     def _get_access_type(self, request):
         """Determine how the page was accessed"""
@@ -85,6 +95,7 @@ class DirectAccessMiddleware:
             return 'internal'
         
         our_domains = [
+            'http://168.144.184.87',
             'http://127.0.0.1:8000',
             'http://localhost:8000',
             'https://littlecraftone.com',

@@ -83,6 +83,11 @@ class BrowserNavigationMiddleware(MiddlewareMixin):
     
     def _is_browser_navigation(self, request):
         """Detect browser back/forward button navigation."""
+        
+        # Skip for POST requests (like login)
+        if request.method == 'POST':
+            return False
+        
         http_referer = request.META.get('HTTP_REFERER', '')
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
@@ -120,7 +125,6 @@ class BrowserNavigationMiddleware(MiddlewareMixin):
         
         return False
 
-
 class SessionValidationMiddleware(MiddlewareMixin):
     """
     Validates session integrity on browser navigation.
@@ -142,9 +146,21 @@ class SessionValidationMiddleware(MiddlewareMixin):
     
     def process_request(self, request):
         current_path = request.path
+
+        # Skip for POST requests (like login, form submissions)
+        if request.method == 'POST':
+            return None
         
         # ALWAYS allow access to login and register pages
         if current_path in ['/login/', '/register/'] or current_path.startswith('/login') or current_path.startswith('/register'):
+            return None
+
+        # Skip if user is not authenticated
+        if not request.user.is_authenticated:
+            return None
+            
+        # Skip public pages
+        if self._is_public_path(current_path):
             return None
         
         # ALWAYS allow session check endpoint
