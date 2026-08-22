@@ -14,3 +14,5 @@ ERROR 2026-03-23 18:01:21,381 log 11636 24740 You're accessing the development s
 ERROR 2026-03-23 18:01:21,383 log 11636 26840 You're accessing the development server over HTTPS, but it only supports HTTP.
 ERROR 2026-03-23 18:01:21,388 log 11636 4444 You're accessing the development server over HTTPS, but it only supports HTTP.
 ERROR 2026-03-23 18:01:21,389 log 11636 10544 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2026-08-22 11:11:04,508 basehttp 19216 12068 You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2026-08-22 11:11:04,693 basehttp 19216 19692 You're accessing the development server over HTTPS, but it only supports HTTP.
