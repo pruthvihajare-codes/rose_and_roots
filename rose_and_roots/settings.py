@@ -52,13 +52,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
-    # Your existing middleware
-    'store.middleware.DirectAccessMiddleware',
-    
-    # Add these new middlewares in the correct order
-    'store.middleware_navigation.CacheControlMiddleware',
-    'store.middleware_navigation.SessionValidationMiddleware',
-    'store.middleware_navigation.BrowserNavigationMiddleware',
+    # 'store.middleware.DirectAccessMiddleware',
+    # 'store.middleware_navigation.CacheControlMiddleware',
+    # 'store.middleware_navigation.SessionValidationMiddleware',
+    # 'store.middleware_navigation.BrowserNavigationMiddleware',
 ]
 
 # ============================================
