@@ -37,21 +37,29 @@
                 </button>
             </div>
 
-            <!-- Add to Cart Button -->
+            <!-- Add to Cart Button - Using Link instead of Button -->
             {% if bouquet.buy_now == 0 %}
                 <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}" 
                     target="_blank" 
                     class="btn-whatsapp-card">
                         <i class="bi bi-whatsapp"></i> Inquiry
                 </a>
-        
-                <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                
+                <!-- Add to Cart as a Link -->
+                <a href="{% url 'add_to_cart' %}?bouquet_id={{ bouquet.encrypted_id }}" 
+                   class="btn-add-to-cart always-visible add-to-cart-link"
+                   data-bouquet-id="{{ bouquet.encrypted_id }}"
+                   data-bouquet-name="{{ bouquet.name|escapejs }}">
                     <i class="bi bi-cart-plus"></i> Add to Cart
-                </button>
+                </a>
             {% else %}
-                <button class="btn-add-to-cart always-visible" onclick="addToCart('{{ bouquet.encrypted_id }}')">
+                <!-- Add to Cart as a Link -->
+                <a href="{% url 'add_to_cart' %}?bouquet_id={{ bouquet.encrypted_id }}" 
+                   class="btn-add-to-cart always-visible add-to-cart-link"
+                   data-bouquet-id="{{ bouquet.encrypted_id }}"
+                   data-bouquet-name="{{ bouquet.name|escapejs }}">
                     <i class="bi bi-cart-plus"></i> Add to Cart
-                </button>
+                </a>
             {% endif %}
         </div>
 
@@ -110,5 +118,3 @@
         </div>
     </div>
 {% endif %}
-
-

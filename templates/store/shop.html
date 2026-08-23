@@ -7,6 +7,17 @@
 <link rel="stylesheet" href="{% static 'css/store/shop.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@14.7.0/dist/nouislider.min.css">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    .cart-bounce {
+    animation: bounceCart 0.5s ease;
+    }
+
+    @keyframes bounceCart {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -1022,11 +1033,18 @@
             
             // ========== CART FUNCTIONS ==========
             window.addToCart = function(encryptedId) {
-                const btn = event.currentTarget;
-                const originalText = btn.innerHTML;
+                debugger;
+                // Get the button element - we need to find it differently since we're not using event
+                const btn = document.querySelector(`button[onclick*="addToCart('${encryptedId}')"]`);
+                // Or use a more reliable approach - find the button that was clicked
+                // Since we're calling this directly, we'll use a different approach
                 
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
-                btn.disabled = true;
+                // Better approach: Use a data attribute and event delegation
+                const originalText = btn ? btn.innerHTML : 'Add to Cart';
+                if (btn) {
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+                    btn.disabled = true;
+                }
                 
                 const csrftoken = getCookie('csrftoken');
                 
@@ -1056,21 +1074,29 @@
                             });
                         }
                     },
-                    error: function() {
+                    error: function(xhr) {
+                        console.error('Add to cart error:', xhr);
+                        let errorMsg = 'Something went wrong.';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) errorMsg = response.message;
+                        } catch(e) {}
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Something went wrong.',
+                            text: errorMsg,
                             confirmButtonColor: "#8c0d4f"
                         });
                     },
                     complete: function() {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
+                        if (btn) {
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        }
                     }
                 });
             };
-            
+
             function getCookie(name) {
                 let cookieValue = null;
                 if (document.cookie && document.cookie !== '') {
@@ -1085,7 +1111,8 @@
                 }
                 return cookieValue;
             }
-            
+
+            // ========== UPDATE CART BADGE ==========
             function updateCartBadge(count) {
                 $('.cart-badge').each(function() {
                     $(this).text(count);
@@ -1095,8 +1122,12 @@
                         $(this).show();
                     }
                 });
+                
+                // Update cart count in navbar
+                $('.cart-count').each(function() {
+                    $(this).text(count);
+                });
             }
-            
             // ========== QUICK VIEW MODAL ==========
             function initializeQuickViewModal() {
                 const modalEl = document.getElementById('quickViewModal');
@@ -1320,5 +1351,156 @@
             }
         });
     </script>    
+
+    <script>
+        // ========== ADD TO CART WITH LINK ==========
+        $(document).ready(function() {
+            // Handle add to cart links
+            $(document).on('click', '.add-to-cart-link', function(e) {
+                e.preventDefault();
+                
+                const link = this;
+                const bouquetId = $(link).data('bouquet-id');
+                const bouquetName = $(link).data('bouquet-name');
+                const originalText = link.innerHTML;
+                const originalClass = link.className;
+                
+                // Show loading state
+                link.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
+                link.classList.add('disabled');
+                link.style.pointerEvents = 'none';
+                
+                // Get CSRF token - TRY MULTIPLE METHODS
+                let csrftoken = null;
+                
+                // Method 1: From cookie
+                const cookieMatch = document.cookie.match(/csrftoken=([^;]+)/);
+                if (cookieMatch) {
+                    csrftoken = cookieMatch[1];
+                }
+                
+                // Method 2: From meta tag
+                if (!csrftoken) {
+                    const metaTag = document.querySelector('meta[name="csrf-token"]');
+                    if (metaTag) {
+                        csrftoken = metaTag.getAttribute('content');
+                    }
+                }
+                
+                // Method 3: From hidden input
+                if (!csrftoken) {
+                    const input = document.querySelector('[name="csrfmiddlewaretoken"]');
+                    if (input) {
+                        csrftoken = input.value;
+                    }
+                }
+                
+                if (!csrftoken) {
+                    console.error('CSRF token not found');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Security token not found. Please refresh the page.',
+                        confirmButtonColor: "#8c0d4f"
+                    });
+                    resetLink();
+                    return;
+                }
+                
+                console.log('CSRF Token found:', csrftoken);
+                
+                // Make AJAX request
+                $.ajax({
+                    url: link.href,  // This will be /add_to_cart/?bouquet_id=xxx
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    data: {
+                        bouquet_id: bouquetId
+                    },
+                    success: function(data) {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Added to Cart!',
+                                text: `"${bouquetName}" added to your cart`,
+                                showConfirmButton: false,
+                                timer: 1500,
+                                confirmButtonColor: "#8c0d4f"
+                            });
+                            updateCartBadge(data.cart_count);
+                            
+                            // Optional: Animate the cart icon
+                            $('.cart-icon').addClass('cart-bounce');
+                            setTimeout(() => {
+                                $('.cart-icon').removeClass('cart-bounce');
+                            }, 500);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Cannot Add to Cart',
+                                text: data.message || 'Unable to add item to cart.',
+                                confirmButtonColor: "#8c0d4f"
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Add to cart error:', xhr);
+                        console.error('Response text:', xhr.responseText);
+                        
+                        let errorMsg = 'Something went wrong. Please try again.';
+                        if (xhr.status === 403) {
+                            errorMsg = 'Session expired. Please refresh the page.';
+                        } else if (xhr.status === 400) {
+                            errorMsg = 'Invalid request. Please try again.';
+                        }
+                        
+                        // Try to parse error response
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMsg = response.message;
+                            }
+                        } catch(e) {}
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorMsg,
+                            confirmButtonColor: "#8c0d4f"
+                        });
+                    },
+                    complete: function() {
+                        resetLink();
+                    }
+                });
+                
+                function resetLink() {
+                    link.innerHTML = originalText;
+                    link.className = originalClass;
+                    link.style.pointerEvents = 'auto';
+                }
+            });
+        });
+
+        // ========== UPDATE CART BADGE ==========
+        function updateCartBadge(count) {
+            $('.cart-badge').each(function() {
+                $(this).text(count);
+                if (count === 0) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+            
+            // Update cart count in navbar
+            $('.cart-count').each(function() {
+                $(this).text(count);
+            });
+        }
+    </script>
 
 {% endblock %}

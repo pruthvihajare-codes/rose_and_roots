@@ -857,15 +857,35 @@ def get_cart_items_details(cart):
 
 # ------------------- CART OPERATIONS -------------------
 
-@require_POST
+from django.views.decorators.http import require_http_methods
+import json
+
+@require_http_methods(["GET", "POST"])
 def add_to_cart(request):
-    """Add item to cart (AJAX endpoint)"""
+    """Add item to cart - handles JSON and form data"""
     try:
-        data = json.loads(request.body)
-        encrypted_id = data.get('bouquet_id')
+        encrypted_id = None
+        
+        # Try to get data from JSON first
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                encrypted_id = data.get('bouquet_id')
+            except json.JSONDecodeError:
+                pass
+        
+        # If not JSON, try form data (GET or POST)
+        if not encrypted_id:
+            if request.method == 'POST':
+                encrypted_id = request.POST.get('bouquet_id')
+            else:
+                encrypted_id = request.GET.get('bouquet_id')
         
         if not encrypted_id:
-            return JsonResponse({'success': False, 'message': 'Invalid product'})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Invalid product'})
+            messages.error(request, 'Invalid product')
+            return redirect(request.META.get('HTTP_REFERER', 'shop'))
         
         # Verify product exists
         try:
@@ -873,9 +893,15 @@ def add_to_cart(request):
             bouquet = Bouquet.objects.filter(id=bouquet_id, is_active=1).first()
             
             if not bouquet:
-                return JsonResponse({'success': False, 'message': 'Product not found'})
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'message': 'Product not found'})
+                messages.error(request, 'Product not found')
+                return redirect('shop')
         except Exception as e:
-            return JsonResponse({'success': False, 'message': 'Invalid product'})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Invalid product'})
+            messages.error(request, 'Invalid product')
+            return redirect('shop')
         
         # Get or create cart
         if request.user.is_authenticated:
@@ -887,10 +913,16 @@ def add_to_cart(request):
         
         # Check limits and duplicates
         if CartItem.objects.filter(cart=cart).count() >= 10:
-            return JsonResponse({'success': False, 'message': 'Cart limit reached (maximum 10 items)'})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Cart limit reached (maximum 10 items)'})
+            messages.error(request, 'Cart limit reached (maximum 10 items)')
+            return redirect(request.META.get('HTTP_REFERER', 'shop'))
         
         if CartItem.objects.filter(cart=cart, bouquet=bouquet).exists():
-            return JsonResponse({'success': False, 'message': 'Item already in cart'})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Item already in cart'})
+            messages.warning(request, 'Item already in cart')
+            return redirect(request.META.get('HTTP_REFERER', 'shop'))
         
         # Get primary image
         primary_image = bouquet.images.filter(is_active=1).first()
@@ -899,7 +931,7 @@ def add_to_cart(request):
         # Determine price
         price_at_add = bouquet.discount_price if bouquet.discount_price else bouquet.price
         
-        # Create cart item with all details
+        # Create cart item
         cart_item = CartItem.objects.create(
             cart=cart,
             bouquet=bouquet,
@@ -912,15 +944,25 @@ def add_to_cart(request):
         
         new_count = CartItem.objects.filter(cart=cart).count()
         
-        return JsonResponse({
-            'success': True,
-            'message': 'Item added to cart',
-            'cart_count': new_count
-        })
+        # Return JSON for AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f'"{bouquet.name}" added to cart',
+                'cart_count': new_count
+            })
+        
+        # Regular form submission
+        messages.success(request, f'"{bouquet.name}" added to cart!')
+        return redirect(request.META.get('HTTP_REFERER', 'shop'))
         
     except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)})
-    
+        logger.exception(f"Error adding to cart: {e}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': str(e)})
+        messages.error(request, 'Something went wrong. Please try again.')
+        return redirect(request.META.get('HTTP_REFERER', 'shop'))
+
 @require_POST
 def remove_from_cart(request):
     """Remove item from cart"""

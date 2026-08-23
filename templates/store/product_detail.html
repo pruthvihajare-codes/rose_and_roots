@@ -5,6 +5,7 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/store/product-detail.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
 {% endblock %}
 
 {% block content %}
@@ -42,9 +43,12 @@
                         <!-- Sticky Header Actions -->
                         <div class="sticky-actions">
                             <!-- KEEP THIS - Add to Cart in sticky header -->
-                            <button class="sticky-add-to-cart" onclick="addToCart('{{ encrypted_id }}')">
-                                <i class="bi bi-cart-plus"></i> Add to Cart
-                            </button>
+                            <a href="{% url 'add_to_cart' %}?bouquet_id={{ encrypted_id }}" 
+                                class="sticky-add-to-cart add-to-cart-link"
+                                data-bouquet-id="{{ encrypted_id }}"
+                                data-bouquet-name="{{ bouquet.name|escapejs }}">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                            </a>
                             
                             <!-- WhatsApp button in sticky header for quick inquiry -->
                             {% if bouquet.buy_now == 0 %}
@@ -192,9 +196,12 @@
                             <div class="main-product-actions">
                                 <div class="action-buttons">
                                     <!-- KEEP THIS - Add to Cart Button (always visible) -->
-                                    <button class="btn-add-to-cart" onclick="addToCart('{{ encrypted_id }}')">
-                                        <i class="bi bi-cart-plus"></i> Add to Cart
-                                    </button>
+                                    <a href="{% url 'add_to_cart' %}?bouquet_id={{ encrypted_id }}" 
+                                        class="btn-add-to-cart add-to-cart-link"
+                                        data-bouquet-id="{{ encrypted_id }}"
+                                        data-bouquet-name="{{ bouquet.name|escapejs }}">
+                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </a>
                                     {% if bouquet.buy_now == 0 %}
                                         <!-- WhatsApp Inquiry Button -->
                                         <a href="https://wa.me/{{ admin_whatsapp|default:'918805433102' }}?text={{ 'I want to inquire about '|urlencode }}{{ bouquet.name|urlencode }}%20(ID:%20{{ bouquet.id|urlencode }})%0A%0A{{ 'Please share more details about this product including:'|urlencode }}%0A- {{ 'Availability'|urlencode }}%0A- {{ 'Delivery options'|urlencode }}%0A- {{ 'Customization possibilities'|urlencode }}" 
@@ -715,6 +722,126 @@
             // Directly redirect to checkout with buy_now parameter
             window.location.href = "{% url 'checkout' %}?buy_now=" + encodeURIComponent(encryptedId);
         }
+
+        // ========== ADD TO CART WITH LINK ==========
+        $(document).ready(function() {
+            // Handle add to cart links
+            $(document).on('click', '.add-to-cart-link', function(e) {
+                e.preventDefault();
+                
+                const link = this;
+                const bouquetId = $(link).data('bouquet-id');
+                const bouquetName = $(link).data('bouquet-name');
+                const originalText = link.innerHTML;
+                const originalClass = link.className;
+                
+                // Show loading state
+                link.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
+                link.classList.add('disabled');
+                link.style.pointerEvents = 'none';
+                
+                // Get CSRF token - SIMPLIFIED
+                let csrftoken = null;
+                
+                // Read from cookie
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith('csrftoken=')) {
+                        csrftoken = cookie.substring(10);
+                        break;
+                    }
+                }
+                
+                if (!csrftoken) {
+                    console.error('CSRF token not found');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Security token not found. Please refresh the page.',
+                        confirmButtonColor: "#8c0d4f"
+                    });
+                    resetLink();
+                    return;
+                }
+                
+                console.log('CSRF Token found:', csrftoken);
+                
+                // Make AJAX request
+                $.ajax({
+                    url: link.href,
+                    type: 'POST',
+                    contentType: 'application/json',  // ✅ Send JSON
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    data: JSON.stringify({  // ✅ JSON data
+                        bouquet_id: bouquetId
+                    }),
+                    success: function(data) {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Added to Cart!',
+                                text: `"${bouquetName}" added to your cart`,
+                                showConfirmButton: false,
+                                timer: 1500,
+                                confirmButtonColor: "#8c0d4f"
+                            });
+                            updateCartBadge(data.cart_count);
+                            
+                            // Animate the cart icon
+                            $('.cart-icon').addClass('cart-bounce');
+                            setTimeout(() => {
+                                $('.cart-icon').removeClass('cart-bounce');
+                            }, 500);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Cannot Add to Cart',
+                                text: data.message || 'Unable to add item to cart.',
+                                confirmButtonColor: "#8c0d4f"
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Add to cart error:', xhr);
+                        console.error('Response text:', xhr.responseText);
+                        
+                        let errorMsg = 'Something went wrong. Please try again.';
+                        if (xhr.status === 403) {
+                            errorMsg = 'Session expired. Please refresh the page.';
+                        } else if (xhr.status === 400) {
+                            errorMsg = 'Invalid request. Please try again.';
+                        }
+                        
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMsg = response.message;
+                            }
+                        } catch(e) {}
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorMsg,
+                            confirmButtonColor: "#8c0d4f"
+                        });
+                    },
+                    complete: function() {
+                        resetLink();
+                    }
+                });
+                
+                function resetLink() {
+                    link.innerHTML = originalText;
+                    link.className = originalClass;
+                    link.style.pointerEvents = 'auto';
+                }
+            });
+        });
 
     </script>
 
