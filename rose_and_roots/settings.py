@@ -23,7 +23,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure--h)%86%!jheg&f
 # ============================================
 # ALLOWED HOSTS
 # ============================================
-ALLOWED_HOSTS = ['168.144.184.87', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['168.144.184.87']
 
 # ============================================
 # INSTALLED APPS
