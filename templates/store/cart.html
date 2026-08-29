@@ -95,7 +95,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-2 col-6">
-                                        <button class="btn-remove-item" onclick="removeFromCart('{{ item.encrypted_id }}')" title="Remove item">
+                                        <button class="btn-remove-item" data-id="{{ item.encrypted_id }}" title="Remove item">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -280,7 +280,137 @@
     <script src="{% static 'js/store/cart.js' %}"></script>
 
     <script>
-        // ========== CART FUNCTIONS ==========
+        
+        // ========== REMOVE FROM CART ==========
+        function removeFromCart(encryptedId, btn) {
+            if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                return;
+            }
+            
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btn.disabled = true;
+            
+            // Get CSRF token
+            const csrftoken = getCookie('csrftoken');
+            console.log('CSRF Token:', csrftoken); // Debug: Check if token is found
+            
+            if (!csrftoken) {
+                console.error('CSRF token not found!');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Security token not found. Please refresh the page.'
+                });
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                return;
+            }
+            
+            $.ajax({
+                url: '/remove_from_cart/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                data: JSON.stringify({
+                    bouquet_id: encryptedId
+                }),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(data) {
+                    console.log('Success:', data);
+                    if (data.success) {
+                        // Remove the cart item with animation
+                        const cartItem = btn.closest('.cart-item');
+                        if (cartItem) {
+                            cartItem.style.transition = 'all 0.3s ease';
+                            cartItem.style.opacity = '0';
+                            cartItem.style.transform = 'translateX(-50px)';
+                            setTimeout(() => {
+                                location.reload();
+                            }, 400);
+                        } else {
+                            location.reload();
+                        }
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Removed!',
+                            text: 'Item removed from cart',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Could not remove item'
+                        });
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error details:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText,
+                        statusCode: xhr.status
+                    });
+                    
+                    let errorMessage = 'Could not remove item. Please try again.';
+                    
+                    // Check for specific error cases
+                    if (xhr.status === 403) {
+                        errorMessage = 'Session expired or CSRF token invalid. Please refresh the page.';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Item not found. It may have already been removed.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
+                    } else if (xhr.status === 400) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            errorMessage = 'Invalid request. Please try again.';
+                        }
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorMessage
+                    });
+                    
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        // ========== INITIALIZE EVENT LISTENERS ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing remove buttons...');
+            const buttons = document.querySelectorAll('.btn-remove-item');
+            console.log('Found', buttons.length, 'remove buttons');
+            
+            buttons.forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const encryptedId = this.dataset.id;
+                    console.log('Remove button clicked for ID:', encryptedId);
+                    removeFromCart(encryptedId, this);
+                });
+            });
+        });
+    </script>
+
+    <script>
+        // ========== CSRF TOKEN HELPER ==========
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -296,78 +426,9 @@
             return cookieValue;
         }
 
-        function removeFromCart(encryptedId) {
-            if (!confirm('Are you sure you want to remove this item from your cart?')) {
-                return;
-            }
-            
-            const btn = event.currentTarget;
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            btn.disabled = true;
-            
-            $.ajax({
-                url: '/remove_from_cart',
-                type: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                data: JSON.stringify({
-                    bouquet_id: encryptedId
-                }),
-                contentType: 'application/json',
-                success: function(data) {
-                    if (data.success) {
-                        // Show success message
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Removed!',
-                            text: 'Item removed from cart',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            // Reload page to update cart
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: data.message
-                        }).then(() => {
-                            location.reload();
-                        });
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error removing item:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Could not remove item. Please try again.'
-                    }).then(() => {
-                        location.reload();
-                    });
-                },
-                complete: function() {
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                }
-            });
-        }
-
-        {% comment %}
-        // ===== FUTURE CHECKOUT FUNCTIONS - COMMENTED FOR LATER USE =====
-        function proceedToCheckout() {
-            // Checkout logic here
-            window.location.href = "{% url 'checkout' %}";
-        }
-        
-        function applyCoupon() {
-            // Coupon logic here
-        }
-        ===== END COMMENTED SECTION =====
-        {% endcomment %}
+        // Debug: Check all cookies
+        console.log('All cookies:', document.cookie);
+        console.log('CSRF Token from cookie:', getCookie('csrftoken'));
     </script>
 
 {% endblock %}

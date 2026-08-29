@@ -109,9 +109,9 @@ SESSION_COOKIE_AGE = 1800
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
 
-CSRF_COOKIE_SECURE = False  # MUST be False if not using HTTPS
-CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Lax'  # Change from 'Strict' to 'Lax' for better compatibility
+# CSRF_COOKIE_SECURE = False 
+# CSRF_COOKIE_HTTPONLY = False
+# CSRF_COOKIE_SAMESITE = 'Lax'  
 CSRF_TRUSTED_ORIGINS = [
     'http://168.144.184.87',
     'http://localhost:8000',
@@ -122,6 +122,12 @@ CSRF_TRUSTED_ORIGINS = [
 SESSION_COOKIE_SECURE = False  # MUST be False if not using HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'  # Change from 'Strict' to 'Lax'
+
+CSRF_COOKIE_SECURE = False  # Must be False for HTTP
+CSRF_COOKIE_HTTPONLY = False  # Set to False so JavaScript can read it
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False  # Use cookies instead of session
+CSRF_COOKIE_NAME = 'csrftoken'  # Default name
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

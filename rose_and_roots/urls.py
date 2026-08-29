@@ -85,7 +85,8 @@ urlpatterns = [
     # Cart URLs
     path('cart_view', cart_view, name='cart_view'),
     path('add_to_cart', add_to_cart, name='add_to_cart'),
-    path('remove_from_cart', remove_from_cart, name='remove_from_cart'),
+    # path('remove_from_cart', remove_from_cart, name='remove_from_cart'),
+    path('remove_from_cart/', remove_from_cart, name='remove_from_cart'),
     # path('get_cart_count', get_cart_count, name='cart_count'),
     path('get_cart_count/', get_cart_count, name='cart_count'),
     path('clear_cart', clear_cart, name='clear_cart'),
