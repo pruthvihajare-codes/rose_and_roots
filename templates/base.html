@@ -6,8 +6,13 @@
     <meta charset="UTF-8">
     <title>{% block title %}LittleCraftOne{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google Fonts - Merriweather -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WQJY0K9WRR"></script>
+    
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
@@ -26,12 +31,11 @@
     <link rel="stylesheet" href="{% static 'css/account/auth-responsive.css' %}">
     <link rel="stylesheet" href="{% static 'css/account/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-    
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+
     <!-- Top Bar Section (Visible only on PC/Laptop) -->
     <div class="top-bar d-none d-lg-block">
         <div class="container">
@@ -43,22 +47,14 @@
                             <span class="customer-support-text">Customer support:</span>
                             <a href="tel:+918805433102" class="top-bar-contact">+91 88054 33102</a>
                         </div>
-                        <div class="top-bar-item">
-                            <i class="bi bi-envelope-fill top-bar-icon"></i>
-                            <a href="mailto:littlecraftone.support@gmail.com" class="top-bar-contact">littlecraftone.support@gmail.com</a>
-                        </div>
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
                     <div class="d-flex align-items-center justify-content-end">
-                        {% if user.is_authenticated and user.role_id == 2 %}
-                            <div class="top-bar-item">
-                                <a href="#" class="track-order">
-                                    <i class="bi bi-truck"></i>
-                                    <span>Track Order</span>
-                                </a>
-                            </div>
-                        {% endif %}
+                        <div class="top-bar-item">
+                            <i class="bi bi-envelope-fill top-bar-icon"></i>
+                            <a href="mailto:littlecraftone.support@gmail.com" class="top-bar-contact">littlecraftone.support@gmail.com</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -69,20 +65,21 @@
     <section class="brand-navigation-section">
         <div class="container">
             <div class="row align-items-center">
-                <!-- Brand Name (Left) -->
+                <!-- Brand Name (Left) with Tagline -->
                 <div class="col-8 col-sm-8 col-md-6">
-                {% if user.is_authenticated %}
-                    {% if user.role_id == 1 %}
-                        <a href="{% url 'admin_dashboard' %}" class="brand-name">LittleCraftOne</a>
-                    {% elif user.role_id == 2 %}
-                        <a href="{% url 'dashboard' %}" class="brand-name">LittleCraftOne</a>
+                    {% if user.is_authenticated %}
+                        {% if user.role_id == 1 %}
+                            <a href="{% url 'admin_dashboard' %}" class="brand-name">LittleCraftOne</a>
+                        {% elif user.role_id == 2 %}
+                            <a href="{% url 'dashboard' %}" class="brand-name">LittleCraftOne</a>
+                        {% else %}
+                            <a href="/" class="brand-name">LittleCraftOne</a>
+                        {% endif %}
                     {% else %}
                         <a href="/" class="brand-name">LittleCraftOne</a>
                     {% endif %}
-                {% else %}
-                    <a href="/" class="brand-name">LittleCraftOne</a>
-                {% endif %}
-            </div>
+                    {% comment %} <div class="brand-tagline">✦ Crafting Your Curiosity ✦</div> {% endcomment %}
+                </div>
                 
                 <!-- Desktop Navigation Icons (Right) -->
                 <div class="col-md-6 desktop-nav-icons d-none d-lg-block">
