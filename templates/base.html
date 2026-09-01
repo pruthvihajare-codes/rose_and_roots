@@ -1182,23 +1182,7 @@
 
     <script>
         // ========== CART FUNCTIONS ==========
-    
-        // Helper function to get CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
+        
         // Update cart badge in navbar (both desktop and mobile)
         function updateCartBadge(count) {
             const cartBadges = document.querySelectorAll('.cart-badge');
@@ -1261,19 +1245,86 @@
             });
         }
 
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ========== GET CSRF TOKEN (Multiple sources) ==========
+        function getCsrfToken() {
+            // Method 1: Hidden input (most reliable)
+            const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (input && input.value) {
+                return input.value;
+            }
+            
+            // Method 2: Meta tag
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta && meta.getAttribute('content')) {
+                return meta.getAttribute('content');
+            }
+            
+            // Method 3: Cookie
+            const cookieToken = getCookie('csrftoken');
+            if (cookieToken) {
+                return cookieToken;
+            }
+            
+            return null;
+        }
+
         // Function to remove item from cart modal
         function removeFromCartModal(encryptedId) {
+            if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                return;
+            }
+            
+            const csrftoken = getCsrfToken();
+            console.log('CSRF Token for modal remove:', csrftoken ? 'Found' : 'Not found');
+            
+            if (!csrftoken) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Security token not found. Please refresh the page.'
+                });
+                return;
+            }
+            
+            // Show loading state on the button
+            const buttons = document.querySelectorAll('.account-menu-arrow .btn');
+            let targetBtn = null;
+            buttons.forEach(btn => {
+                if (btn.textContent.includes('trash') || btn.innerHTML.includes('trash')) {
+                    targetBtn = btn;
+                }
+            });
+            
             $.ajax({
-                url: '/remove_from_cart',
+                url: '/remove_from_cart/',  // Added trailing slash
                 type: 'POST',
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 data: JSON.stringify({
                     bouquet_id: encryptedId
                 }),
                 contentType: 'application/json',
+                dataType: 'json',
                 success: function(data) {
+                    console.log('Remove from modal response:', data);
                     if (data.success) {
                         // Reload modal content
                         loadCartModal();
@@ -1286,21 +1337,36 @@
                             text: 'Item removed from cart',
                             showConfirmButton: false,
                             timer: 1500
+                        }).then(() => {
+                            // Reload the page after the alert
+                            location.reload();
                         });
                     } else {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: data.message
+                            text: data.message || 'Could not remove item'
                         });
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error removing item:', error);
+                    console.log('Status:', xhr.status);
+                    console.log('Response:', xhr.responseText);
+                    
+                    let errorMessage = 'Could not remove item. Please try again.';
+                    if (xhr.status === 403) {
+                        errorMessage = 'Session expired or CSRF token invalid. Please refresh the page.';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Item not found. It may have already been removed.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
+                    }
+                    
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Could not remove item'
+                        text: errorMessage
                     });
                 }
             });
