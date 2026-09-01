@@ -183,6 +183,7 @@
                     {% if user.is_authenticated and user.role_id == 2 %}
                         <!-- Common menu items for all -->
                         <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                        <li class="nav-menu-item"><a href="{% url 'dashboard' %}" class="nav-menu-link {% if request.path == '/dashboard/' %}active{% endif %}">Dashboard</a></li>
                         <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
                         <li class="nav-menu-item"><a href="{% url 'about_us' %}" class="nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">About</a></li>
                         <li class="nav-menu-item"><a href="{% url 'contact_us' %}" class="nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">Contact</a></li>
@@ -666,6 +667,7 @@
             <!-- Customer Only Menu Items -->
             {% if user.is_authenticated and user.role_id == 2 %}
                 <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                <li class="mobile-nav-menu-item"><a href="{% url 'dashboard' %}" class="mobile-nav-menu-link {% if request.path == '/dashboard/' %}active{% endif %}">Dashboard</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'about_us' %}" class="mobile-nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">About</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'contact_us' %}" class="mobile-nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">Contact</a></li>
