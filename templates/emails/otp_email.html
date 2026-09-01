@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - LittleCraftOne</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d4a373;
+        }
+        .otp-box {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: #2c3e50;
+            font-family: monospace;
+        }
+        .expiry {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌸 LittleCraftOne</div>
+            <h2>Email Verification</h2>
+        </div>
+        
+        <p>Dear User,</p>
+        
+        <p>Thank you for registering with LittleCraftOne! To complete your registration, please verify your email address using the OTP below:</p>
+        
+        <div class="otp-box">
+            <div class="otp-code">{{ otp_code }}</div>
+            <p style="margin-top: 10px; color: #6c757d;">
+                <strong>Valid for 10 minutes</strong>
+            </p>
+        </div>
+        
+        <p>Enter this OTP on the registration page to verify your email address.</p>
+        
+        <div class="expiry">
+            ⚠️ This OTP will expire in 10 minutes.
+        </div>
+        
+        <p style="margin-top: 20px;">
+            If you didn't request this, please ignore this email.
+        </p>
+        
+        <div class="footer">
+            <p>
+                <strong>LittleCraftOne</strong><br>
+                © {{ year }} LittleCraftOne. All rights reserved.
+            </p>
+            <p>
+                This is an automated email, please do not reply.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

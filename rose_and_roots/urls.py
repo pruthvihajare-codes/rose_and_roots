@@ -28,6 +28,9 @@ urlpatterns = [
     # Template views
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
+    path('send-otp/', send_otp_view, name='send_otp'),
+    path('verify-otp/', verify_otp_view, name='verify_otp'),
+    path('resend-otp/', resend_otp_view, name='resend_otp'),
     path('check-session/', check_session_validity, name='check_session_validity'),
     
     # API endpoints

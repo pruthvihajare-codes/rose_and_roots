@@ -180,25 +180,86 @@
                 <ul class="nav-menu">
                     
                     <!-- Customer Only Menu Items -->
-                    {% if user.is_authenticated and user.role_id == 2 %}
+                    {% comment %} {% if user.is_authenticated and user.role_id == 2 %}
                         <!-- Common menu items for all -->
                         <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
                         <li class="nav-menu-item"><a href="{% url 'dashboard' %}" class="nav-menu-link {% if request.path == '/dashboard/' %}active{% endif %}">Dashboard</a></li>
                         <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
                         <li class="nav-menu-item"><a href="{% url 'about_us' %}" class="nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">About</a></li>
                         <li class="nav-menu-item"><a href="{% url 'contact_us' %}" class="nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">Contact</a></li>
-                        <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
+                        <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li> {% endcomment %}
                         {% comment %} <li class="nav-menu-item"><a href="{% url 'checkout' %}" class="nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li> {% endcomment %}
                     
-                    <!-- Guest Users - Show cart but not checkout -->
-                    {% elif not user.is_authenticated %}
+                    <!-- Customer Only Menu Items -->
+                    {% if user.is_authenticated and user.role_id == 2 %}
                         <!-- Common menu items for all -->
+                        <li class="nav-menu-item">
+                            <a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">
+                                <i class="bi bi-house-door-fill me-1"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'dashboard' %}" class="nav-menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">
+                                <i class="bi bi-shop me-1"></i> Shop
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'about_us' %}" class="nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">
+                                <i class="bi bi-info-circle me-1"></i> About
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'contact_us' %}" class="nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">
+                                <i class="bi bi-envelope me-1"></i> Contact
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">
+                                <i class="bi bi-cart3 me-1"></i> Cart
+                            </a>
+                        </li>
+
+                    <!-- Guest Users - Show cart but not checkout -->
+                    {% comment %} {% elif not user.is_authenticated %}
                         <li class="nav-menu-item"><a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
                         <li class="nav-menu-item"><a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
                         <li class="nav-menu-item"><a href="{% url 'about_us' %}" class="nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">About</a></li>
                         <li class="nav-menu-item"><a href="{% url 'contact_us' %}" class="nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">Contact</a></li>
-                        <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
+                        <li class="nav-menu-item"><a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li> {% endcomment %}
                     
+                    <!-- Guest Users - Show cart but not checkout -->
+                    {% elif not user.is_authenticated %}
+                        <li class="nav-menu-item">
+                            <a href="/" class="nav-menu-link {% if request.path == '/' %}active{% endif %}">
+                                <i class="bi bi-house-door-fill me-1"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'shop' %}" class="nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">
+                                <i class="bi bi-shop me-1"></i> Shop
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'about_us' %}" class="nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">
+                                <i class="bi bi-info-circle me-1"></i> About
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'contact_us' %}" class="nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">
+                                <i class="bi bi-envelope me-1"></i> Contact
+                            </a>
+                        </li>
+                        <li class="nav-menu-item">
+                            <a href="{% url 'cart_view' %}" class="nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">
+                                <i class="bi bi-cart3 me-1"></i> Cart
+                            </a>
+                        </li>
+
                     <!-- Admin Menu (role_id = 1) -->
                     {% elif user.is_authenticated and user.role_id == 1 %}
                         <li class="nav-menu-item"><a href="{% url 'admin_dashboard' %}" class="nav-menu-link {% if request.path == '/admin-dashboard/' %}active{% endif %}">Dashboard</a></li>
@@ -665,24 +726,84 @@
         <ul class="mobile-nav-menu">
             
             <!-- Customer Only Menu Items -->
-            {% if user.is_authenticated and user.role_id == 2 %}
+            {% comment %} {% if user.is_authenticated and user.role_id == 2 %}
                 <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'dashboard' %}" class="mobile-nav-menu-link {% if request.path == '/dashboard/' %}active{% endif %}">Dashboard</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'about_us' %}" class="mobile-nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">About</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'contact_us' %}" class="mobile-nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">Contact</a></li>
-                <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
+                <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li> {% endcomment %}
                 {% comment %} <li class="mobile-nav-menu-item"><a href="{% url 'checkout' %}" class="mobile-nav-menu-link {% if request.path == '/checkout/' %}active{% endif %}">Checkout</a></li> {% endcomment %}
             
+            <!-- Customer Only Menu Items -->
+            {% if user.is_authenticated and user.role_id == 2 %}
+                <li class="mobile-nav-menu-item">
+                    <a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">
+                        <i class="bi bi-house-door-fill me-2"></i> Home
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'dashboard' %}" class="mobile-nav-menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">
+                        <i class="bi bi-shop me-2"></i> Shop
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'about_us' %}" class="mobile-nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">
+                        <i class="bi bi-info-circle me-2"></i> About
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'contact_us' %}" class="mobile-nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">
+                        <i class="bi bi-envelope me-2"></i> Contact
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">
+                        <i class="bi bi-cart3 me-2"></i> Cart
+                    </a>
+                </li>
+
             <!-- Guest Users - Show cart but not checkout -->
-            {% elif not user.is_authenticated %}
-                <!-- Common menu items for all -->
+            {% comment %} {% elif not user.is_authenticated %}
                 <li class="mobile-nav-menu-item"><a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">Shop</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'about_us' %}" class="mobile-nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">About</a></li>
                 <li class="mobile-nav-menu-item"><a href="{% url 'contact_us' %}" class="mobile-nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">Contact</a></li>
-                <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li>
+                <li class="mobile-nav-menu-item"><a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">Cart</a></li> {% endcomment %}
             
+            <!-- Guest Users - Show cart but not checkout -->
+            {% elif not user.is_authenticated %}
+                <li class="mobile-nav-menu-item">
+                    <a href="/" class="mobile-nav-menu-link {% if request.path == '/' %}active{% endif %}">
+                        <i class="bi bi-house-door-fill me-2"></i> Home
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'shop' %}" class="mobile-nav-menu-link {% if request.path == '/shop/' %}active{% endif %}">
+                        <i class="bi bi-shop me-2"></i> Shop
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'about_us' %}" class="mobile-nav-menu-link {% if request.path == '/about_us/' %}active{% endif %}">
+                        <i class="bi bi-info-circle me-2"></i> About
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'contact_us' %}" class="mobile-nav-menu-link {% if request.path == '/contact-us/' %}active{% endif %}">
+                        <i class="bi bi-envelope me-2"></i> Contact
+                    </a>
+                </li>
+                <li class="mobile-nav-menu-item">
+                    <a href="{% url 'cart_view' %}" class="mobile-nav-menu-link {% if request.path == '/cart_view' %}active{% endif %}">
+                        <i class="bi bi-cart3 me-2"></i> Cart
+                    </a>
+                </li>
+
             <!-- Admin Menu (role_id = 1) -->
             {% elif user.is_authenticated and user.role_id == 1 %}
                 
