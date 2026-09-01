@@ -20,7 +20,6 @@
                             <!-- Left Side - Branding -->
                             <div class="col-md-4 auth-left register-left">
                                 <div class="auth-left-content">
-                                    <a href="/" class="auth-logo">LittleCraftOne</a>
                                     <h1 class="auth-heading">Join Our Community</h1>
                                     <p class="auth-subtitle">Create an account to unlock exclusive benefits</p>
                                     
@@ -118,7 +117,7 @@
                                             </div>
                                         </div>
                                         
-                                        <!-- Email Field -->
+                                        <!-- Email Field with OTP -->
                                         <div class="form-group">
                                             <label for="registerEmail" class="form-label">Email Address</label>
                                             <div class="input-group">
@@ -126,10 +125,43 @@
                                                     <i class="bi bi-envelope"></i>
                                                 </span>
                                                 <input type="email" class="form-control" id="registerEmail" name="email" placeholder="Enter your email" required>
+                                                <input type="hidden" name="email" id="hiddenEmail" value="">
+                                                <button type="button" class="btn btn-primary" id="sendOtpBtn">
+                                                    <span id="sendOtpText">Send OTP</span>
+                                                    <span id="sendOtpSpinner" class="d-none">
+                                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                                    </span>
+                                                </button>
                                             </div>
                                             <div class="invalid-feedback" id="emailError">
                                                 Please enter a valid email address.
                                             </div>
+                                            <div class="otp-status" id="otpStatus"></div>
+                                        </div>
+                                        
+                                        <!-- OTP Verification Section -->
+                                        <div class="form-group otp-section d-none" id="otpSection">
+                                            <label for="otpInput" class="form-label">Enter OTP</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="bi bi-shield-lock"></i>
+                                                </span>
+                                                <input type="text" class="form-control" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}">
+                                                <button type="button" class="btn btn-success" id="verifyOtpBtn">
+                                                    <span id="verifyOtpText">Verify</span>
+                                                    <span id="verifyOtpSpinner" class="d-none">
+                                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                            <div class="otp-timer" id="otpTimer">OTP expires in: <span id="timerDisplay">10:00</span></div>
+                                            <div class="otp-actions">
+                                                <button type="button" class="btn btn-link" id="resendOtpBtn">Resend OTP</button>
+                                            </div>
+                                            <div class="invalid-feedback" id="otpError">
+                                                Please enter a valid OTP.
+                                            </div>
+                                            <div class="otp-status" id="otpVerifyStatus"></div>
                                         </div>
                                         
                                         <!-- Password Field -->
@@ -211,30 +243,13 @@
                                         </div>
                                         
                                         <!-- Submit Button -->
-                                        <button type="submit" class="btn btn-primary auth-submit-btn w-100">
+                                        <button type="submit" class="btn btn-primary auth-submit-btn w-100" id="registerSubmitBtn" disabled>
                                             <span class="btn-text">Create Account</span>
                                             <span class="btn-spinner d-none">
                                                 <span class="spinner-border spinner-border-sm" role="status"></span>
                                                 Creating account...
                                             </span>
                                         </button>
-                                        
-                                        <!-- Divider -->
-                                        <div class="divider">
-                                            <span>or sign up with</span>
-                                        </div>
-                                        
-                                        <!-- Social Register -->
-                                        <div class="social-login">
-                                            <button type="button" class="btn btn-outline-secondary social-btn">
-                                                <i class="bi bi-google"></i>
-                                                Google
-                                            </button>
-                                            <button type="button" class="btn btn-outline-secondary social-btn">
-                                                <i class="bi bi-facebook"></i>
-                                                Facebook
-                                            </button>
-                                        </div>
                                         
                                         <!-- Sign In Link -->
                                         <div class="auth-footer text-center">
@@ -252,7 +267,593 @@
         </div>
     </div>
 
-    <!-- Include auth JavaScript -->
+    <!-- Include JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{% static 'js/account/auth.js' %}"></script>
+    <script>
+        // ============================================
+        // OTP Registration JavaScript
+        // ============================================
+
+        $(document).ready(function() {
+            let otpTimerInterval = null;
+            let timeLeft = 600; // 10 minutes in seconds
+            let isOtpVerified = false;
+            let emailForOtp = '';
+            
+            // ========== PASSWORD REQUIREMENTS CHECK ==========
+            function checkPasswordRequirements() {
+                const password = $('#registerPassword').val();
+                const requirements = {
+                    length: password.length >= 8,
+                    uppercase: /[A-Z]/.test(password),
+                    lowercase: /[a-z]/.test(password),
+                    number: /[0-9]/.test(password),
+                    special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+                };
+                
+                // Update UI for each requirement
+                $('.req-item').each(function() {
+                    const check = $(this).data('check');
+                    const icon = $(this).find('i');
+                    if (requirements[check]) {
+                        icon.removeClass('bi-circle').addClass('bi-check-circle-fill');
+                        $(this).addClass('valid');
+                    } else {
+                        icon.removeClass('bi-check-circle-fill').addClass('bi-circle');
+                        $(this).removeClass('valid');
+                    }
+                });
+                
+                // Check if all requirements are met
+                const allValid = Object.values(requirements).every(val => val === true);
+                if (allValid && password.length > 0) {
+                    $('#registerPassword').addClass('is-valid').removeClass('is-invalid');
+                } else if (password.length > 0) {
+                    $('#registerPassword').addClass('is-invalid').removeClass('is-valid');
+                }
+            }
+            
+            // ========== PASSWORD MATCH CHECK ==========
+            function checkPasswordMatch() {
+                const password = $('#registerPassword').val();
+                const confirm = $('#confirmPassword').val();
+                
+                if (confirm.length > 0 && password === confirm) {
+                    $('#confirmPassword').addClass('is-valid').removeClass('is-invalid');
+                    $('#passwordMatch').removeClass('d-none');
+                } else if (confirm.length > 0) {
+                    $('#confirmPassword').addClass('is-invalid').removeClass('is-valid');
+                    $('#passwordMatch').addClass('d-none');
+                } else {
+                    $('#passwordMatch').addClass('d-none');
+                }
+            }
+            
+            // ========== SEND OTP ==========
+            $('#sendOtpBtn').on('click', function() {
+                const email = $('#registerEmail').val().trim().toLowerCase();
+                
+                if (!email) {
+                    showError('emailError', 'Please enter your email address');
+                    $('#registerEmail').addClass('is-invalid');
+                    return;
+                }
+                
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showError('emailError', 'Please enter a valid email address');
+                    $('#registerEmail').addClass('is-invalid');
+                    return;
+                }
+                
+                // Check if email is already registered (quick client check)
+                // You can skip this and let server validate
+                
+                emailForOtp = email;
+                
+                // Disable button and show loading
+                const btn = $(this);
+                btn.prop('disabled', true);
+                $('#sendOtpText').addClass('d-none');
+                $('#sendOtpSpinner').removeClass('d-none');
+                $('#otpStatus').html('<div class="alert alert-info">Sending OTP to your email...</div>');
+                
+                // Send OTP request
+                $.ajax({
+                    url: "{% url 'send_otp' %}",
+                    type: "POST",
+                    data: JSON.stringify({ email: email }),
+                    contentType: "application/json",
+                    headers: {
+                        "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Show OTP section
+                            $('#otpSection').removeClass('d-none');
+                            
+                            // ========== FIX: Use readonly instead of disabled ==========
+                            $('#registerEmail').prop('readonly', true);  // Changed from disabled
+                            // ==========================================================
+                            
+                            // Update hidden email field
+                            $('#hiddenEmail').val(email);
+                            
+                            $('#sendOtpBtn').prop('disabled', true);
+                            $('#sendOtpText').text('OTP Sent');
+                            
+                            // Show success message
+                            $('#otpStatus').html('<div class="alert alert-success">✓ OTP sent successfully! Check your email.</div>');
+                            
+                            // Start timer
+                            startOtpTimer(600);
+                            
+                            // Enable OTP input
+                            $('#otpInput').prop('disabled', false).focus();
+                            $('#verifyOtpBtn').prop('disabled', false);
+                            
+                        } else if (response.rate_limited) {
+                            $('#otpStatus').html(`<div class="alert alert-warning">${response.message}</div>`);
+                            
+                            // Show countdown for rate limit
+                            if (response.time_remaining) {
+                                let remaining = response.time_remaining;
+                                const countdown = setInterval(function() {
+                                    remaining--;
+                                    if (remaining <= 0) {
+                                        clearInterval(countdown);
+                                        $('#sendOtpBtn').prop('disabled', false);
+                                        $('#sendOtpText').removeClass('d-none');
+                                        $('#sendOtpSpinner').addClass('d-none');
+                                        $('#otpStatus').html('<div class="alert alert-info">You can now request OTP again.</div>');
+                                    }
+                                }, 1000);
+                            }
+                        } else {
+                            $('#otpStatus').html(`<div class="alert alert-danger">${response.message}</div>`);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'Failed to send OTP. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        $('#otpStatus').html(`<div class="alert alert-danger">${errorMsg}</div>`);
+                    },
+                    complete: function() {
+                        $('#sendOtpText').removeClass('d-none');
+                        $('#sendOtpSpinner').addClass('d-none');
+                        if (!$('#sendOtpBtn').prop('disabled')) {
+                            $('#sendOtpBtn').prop('disabled', false);
+                        }
+                    }
+                });
+            });
+            
+            // ========== VERIFY OTP ==========
+            $('#verifyOtpBtn').on('click', function() {
+                const otp = $('#otpInput').val().trim();
+                
+                if (!otp || otp.length !== 6 || !/^[0-9]{6}$/.test(otp)) {
+                    showError('otpError', 'Please enter a valid 6-digit OTP');
+                    $('#otpInput').addClass('is-invalid');
+                    return;
+                }
+                
+                // Disable button and show loading
+                const btn = $(this);
+                btn.prop('disabled', true);
+                $('#verifyOtpText').addClass('d-none');
+                $('#verifyOtpSpinner').removeClass('d-none');
+                $('#otpVerifyStatus').html('<div class="alert alert-info">Verifying OTP...</div>');
+                
+                // Send verification request
+                $.ajax({
+                    url: "{% url 'verify_otp' %}",
+                    type: "POST",
+                    data: JSON.stringify({ 
+                        email: emailForOtp, 
+                        otp: otp 
+                    }),
+                    contentType: "application/json",
+                    headers: {
+                        "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            isOtpVerified = true;
+                            $('#otpVerifyStatus').html('<div class="alert alert-success">✓ OTP verified successfully!</div>');
+                            $('#otpInput').prop('disabled', true);
+                            $('#verifyOtpBtn').prop('disabled', true);
+                            $('#verifyOtpText').text('Verified ✓');
+                            
+                            // Show success icon on OTP input
+                            $('#otpInput').addClass('is-valid');
+                            
+                            // Enable register button
+                            $('#registerSubmitBtn').prop('disabled', false);
+                            
+                            // Clear timer
+                            stopOtpTimer();
+                            $('#otpTimer').addClass('d-none');
+                            
+                            // Display success message
+                            showMessage('success', 'Email verified successfully! You can now create your account.');
+                        } else {
+                            if (response.remaining_attempts !== undefined) {
+                                $('#otpVerifyStatus').html(`<div class="alert alert-warning">${response.message}</div>`);
+                            } else {
+                                $('#otpVerifyStatus').html(`<div class="alert alert-danger">${response.message}</div>`);
+                            }
+                            $('#otpInput').val('');
+                            $('#otpInput').focus();
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'Verification failed. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        $('#otpVerifyStatus').html(`<div class="alert alert-danger">${errorMsg}</div>`);
+                        $('#otpInput').val('');
+                        $('#otpInput').focus();
+                    },
+                    complete: function() {
+                        $('#verifyOtpText').removeClass('d-none');
+                        $('#verifyOtpSpinner').addClass('d-none');
+                        if (!$('#verifyOtpBtn').prop('disabled')) {
+                            $('#verifyOtpBtn').prop('disabled', false);
+                        }
+                    }
+                });
+            });
+            
+            // ========== RESEND OTP ==========
+            $('#resendOtpBtn').on('click', function() {
+                if (!emailForOtp) {
+                    return;
+                }
+                
+                const btn = $(this);
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm" role="status"></span> Sending...');
+                
+                $.ajax({
+                    url: "{% url 'resend_otp' %}",
+                    type: "POST",
+                    data: JSON.stringify({ email: emailForOtp }),
+                    contentType: "application/json",
+                    headers: {
+                        "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#otpVerifyStatus').html('<div class="alert alert-success">✓ New OTP sent successfully!</div>');
+                            $('#otpInput').val('');
+                            $('#otpInput').focus();
+                            
+                            // Reset timer
+                            stopOtpTimer();
+                            startOtpTimer(600);
+                            
+                            // Reset verify button
+                            $('#verifyOtpBtn').prop('disabled', false);
+                            $('#verifyOtpText').text('Verify');
+                            $('#otpInput').prop('disabled', false);
+                            $('#otpInput').removeClass('is-valid');
+                            $('#otpInput').removeClass('is-invalid');
+                            
+                            // Reset verification status
+                            isOtpVerified = false;
+                            $('#registerSubmitBtn').prop('disabled', true);
+                            
+                        } else {
+                            $('#otpVerifyStatus').html(`<div class="alert alert-danger">${response.message}</div>`);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'Failed to resend OTP. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        $('#otpVerifyStatus').html(`<div class="alert alert-danger">${errorMsg}</div>`);
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                        btn.html('Resend OTP');
+                    }
+                });
+            });
+            
+            // ========== OTP TIMER ==========
+            function startOtpTimer(duration) {
+                timeLeft = duration;
+                $('#otpTimer').removeClass('d-none');
+                
+                if (otpTimerInterval) {
+                    clearInterval(otpTimerInterval);
+                }
+                
+                updateTimerDisplay();
+                
+                otpTimerInterval = setInterval(function() {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    
+                    if (timeLeft <= 0) {
+                        stopOtpTimer();
+                        $('#otpTimer').html('<div class="text-danger">OTP expired. Please request a new one.</div>');
+                        $('#otpInput').prop('disabled', true);
+                        $('#verifyOtpBtn').prop('disabled', true);
+                        $('#resendOtpBtn').removeClass('d-none');
+                    }
+                }, 1000);
+            }
+            
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                $('#timerDisplay').text(
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+                );
+            }
+            
+            function stopOtpTimer() {
+                if (otpTimerInterval) {
+                    clearInterval(otpTimerInterval);
+                    otpTimerInterval = null;
+                }
+            }
+            
+            // ========== KEYBOARD SHORTCUTS ==========
+            $('#otpInput').on('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    $('#verifyOtpBtn').click();
+                }
+            });
+            
+            // Auto-move to next field on OTP input
+            $('#otpInput').on('input', function() {
+                const val = $(this).val();
+                if (val.length === 6 && /^[0-9]{6}$/.test(val)) {
+                    $('#verifyOtpBtn').click();
+                }
+            });
+            
+            // ========== UTILITY FUNCTIONS ==========
+            function showMessage(type, message) {
+                const container = $('#authMessages');
+                const alert = container.find('.alert');
+                alert.removeClass('alert-success alert-danger alert-warning alert-info')
+                    .addClass(`alert-${type}`);
+                $('#messageText').text(message);
+                container.removeClass('d-none');
+                setTimeout(hideMessage, 5000);
+            }
+            
+            function hideMessage() {
+                $('#authMessages').addClass('d-none');
+            }
+            
+            function showError(errorId, message) {
+                $(`#${errorId}`).text(message);
+                $(`#${errorId}`).parent().find('input, textarea').addClass('is-invalid');
+            }
+            
+            // ========== EVENT LISTENERS ==========
+            // Password requirements check
+            $('#registerPassword').on('keyup', function() {
+                checkPasswordRequirements();
+                checkPasswordMatch();
+            });
+            
+            // Confirm password check
+            $('#confirmPassword').on('keyup', function() {
+                checkPasswordMatch();
+            });
+            
+            // Email validation
+            $('#registerEmail').on('blur', function() {
+                const email = $(this).val().trim().toLowerCase();
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError('emailError', 'Please enter a valid email address');
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            // Toggle password visibility
+            $('#togglePassword').on('click', function() {
+                const input = $('#registerPassword');
+                const icon = $(this).find('i');
+                if (input.attr('type') === 'password') {
+                    input.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    input.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+            
+            $('#toggleConfirmPassword').on('click', function() {
+                const input = $('#confirmPassword');
+                const icon = $(this).find('i');
+                if (input.attr('type') === 'password') {
+                    input.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    input.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+            
+            // Prevent form submission if OTP not verified
+            $('#registerForm').on('submit', function(e) {
+                if (!isOtpVerified) {
+                    e.preventDefault();
+                    showMessage('warning', 'Please verify your email with OTP first.');
+                    return false;
+                }
+            });
+            
+            // ========== PREVENT MULTIPLE SUBMISSIONS ==========
+            let isSubmitting = false;
+            $('#registerForm').on('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                isSubmitting = true;
+                $(this).find('.auth-submit-btn').prop('disabled', true);
+                $(this).find('.btn-text').addClass('d-none');
+                $(this).find('.btn-spinner').removeClass('d-none');
+            });
+        });
+    </script>
+
+    <style>
+        /* ============================================ */
+        /* Registration Page Custom Styles */
+        /* ============================================ */
+
+        .otp-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            margin-top: 10px;
+        }
+
+        .otp-timer {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+
+        .otp-actions {
+            margin-top: 5px;
+        }
+
+        .otp-actions .btn-link {
+            padding-left: 0;
+            font-size: 14px;
+        }
+
+        .otp-status {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .otp-status .alert {
+            padding: 8px 12px;
+            margin-bottom: 0;
+        }
+
+        .password-requirements {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-top: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .req-title {
+            font-size: 13px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .req-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            padding: 2px 0;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .req-item i {
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .req-item.valid {
+            color: #28a745;
+        }
+
+        .req-item.valid i {
+            color: #28a745;
+        }
+
+        .password-match {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .password-match i {
+            margin-right: 5px;
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            background: white;
+        }
+
+        .password-toggle:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-spinner {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Disabled state for OTP button */
+        #sendOtpBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .otp-section .input-group {
+                flex-direction: column;
+            }
+            
+            .otp-section .input-group .btn {
+                border-radius: 4px !important;
+                margin-top: 5px;
+                width: 100%;
+            }
+            
+            .otp-section .input-group input {
+                border-radius: 4px !important;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+
+    <!-- Django Messages -->
+    {% if messages %}
+        <script>
+            $(document).ready(function() {
+                {% for message in messages %}
+                    showMessage('{{ message.tags }}', '{{ message }}');
+                {% endfor %}
+            });
+        </script>
+    {% endif %}
+
 {% endblock %}

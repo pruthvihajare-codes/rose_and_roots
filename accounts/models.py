@@ -119,8 +119,6 @@ class ErrorLog(models.Model):  # Capitalized class name for consistency
     def __str__(self):
         return f"Error {self.id} - {self.error_date}"
     
-# models.py (in your accounts app or wherever CustomUser is)
-
 class UserProfile(models.Model):
     """Extended profile information for users"""
     id = models.AutoField(primary_key=True)
@@ -255,3 +253,69 @@ class UserProfile(models.Model):
             missing.append("Pincode")
         
         return missing
+    
+class EmailOTP(models.Model):
+    """Store OTPs for email verification"""
+    id = models.AutoField(primary_key=True)
+    email = models.EmailField()
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_verified = models.BooleanField(default=False)
+    attempt_count = models.IntegerField(default=0)
+    max_attempts = models.IntegerField(default=3)
+    
+    class Meta:
+        db_table = 'email_otp'
+        indexes = [
+            models.Index(fields=['email']),
+            models.Index(fields=['otp_code']),
+            models.Index(fields=['created_at']),
+        ]
+    
+    def __str__(self):
+        return f"OTP for {self.email} - {self.otp_code}"
+    
+    def is_expired(self):
+        """Check if OTP has expired"""
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+    
+    def can_attempt(self):
+        """Check if user can attempt verification"""
+        return self.attempt_count < self.max_attempts
+    
+    def increment_attempt(self):
+        """Increment attempt count"""
+        self.attempt_count += 1
+        self.save()
+    
+    @classmethod
+    def generate_otp(cls):
+        """Generate a 6-digit OTP"""
+        import random
+        return ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    @classmethod
+    def create_otp(cls, email):
+        """Create a new OTP for email"""
+        from django.utils import timezone
+        import datetime
+        
+        # Delete any existing unverified OTPs for this email
+        cls.objects.filter(email=email, is_verified=False).delete()
+        
+        # Generate OTP
+        otp_code = cls.generate_otp()
+        
+        # Set expiry (10 minutes from now)
+        expires_at = timezone.now() + datetime.timedelta(minutes=10)
+        
+        # Create OTP record
+        otp = cls.objects.create(
+            email=email,
+            otp_code=otp_code,
+            expires_at=expires_at
+        )
+        
+        return otp

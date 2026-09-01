@@ -1178,57 +1178,62 @@ def buy_now_checkout(request):
 
 @no_direct_access    
 def cart_view(request):
-    """Display cart page"""
-    cart = get_or_create_cart(request)
-    
-    # Get cart items with details
-    cart_items = get_cart_items_details(cart)
-    subtotal = sum(item['price'] for item in cart_items)
-    
-    # Free shipping calculation (same as checkout) - KEPT for future use
-    free_shipping_threshold = 2000
-    
-    if subtotal >= free_shipping_threshold:
-        shipping = Decimal('0.00')
-        free_shipping_qualified = True
-        remaining_for_free_shipping = 0
-    else:
-        shipping = Decimal('150.00')
-        free_shipping_qualified = False
-        remaining_for_free_shipping = free_shipping_threshold - subtotal
-    
-    # No tax
-    tax = Decimal('0.00')
-    total = subtotal + shipping
-    
-    # Store checkout redirect in session if user clicks checkout while not logged in
-    if not request.user.is_authenticated:
-        request.session['checkout_after_login'] = True
-    
-    # Get admin WhatsApp number
-    admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
-    admin_whatsapp = admin_user.phone if admin_user else '918805433102'
-    
-    context = {
-        'cart_items': cart_items,
-        'item_count': len(cart_items),
-        'subtotal': float(subtotal),
-        'shipping': float(shipping),
-        'tax': float(tax),
-        'total': float(total),
-        'cart_limit': 10,
-        'remaining_slots': 10 - len(cart_items),
-        'cart_id': cart.id,
-        'free_shipping_threshold': free_shipping_threshold,
-        'free_shipping_qualified': free_shipping_qualified,
-        'remaining_for_free_shipping': float(remaining_for_free_shipping),
-        'needs_shipping': shipping > 0,
-        'is_authenticated': request.user.is_authenticated,
-        'admin_whatsapp': admin_whatsapp,  # Add this
-        'MEDIA_URL': settings.MEDIA_URL,
-    }
-    
-    return render(request, 'store/cart.html', context)
+    try:
+        """Display cart page"""
+        cart = get_or_create_cart(request)
+        
+        # Get cart items with details
+        cart_items = get_cart_items_details(cart)
+        subtotal = sum(item['price'] for item in cart_items)
+        
+        # Free shipping calculation (same as checkout) - KEPT for future use
+        free_shipping_threshold = 2000
+        
+        if subtotal >= free_shipping_threshold:
+            shipping = Decimal('0.00')
+            free_shipping_qualified = True
+            remaining_for_free_shipping = 0
+        else:
+            shipping = Decimal('150.00')
+            free_shipping_qualified = False
+            remaining_for_free_shipping = free_shipping_threshold - subtotal
+        
+        # No tax
+        tax = Decimal('0.00')
+        total = subtotal + shipping
+        
+        # Store checkout redirect in session if user clicks checkout while not logged in
+        if not request.user.is_authenticated:
+            request.session['checkout_after_login'] = True
+        
+        # Get admin WhatsApp number
+        admin_user = CustomUser.objects.filter(role_id=1, is_active=True).first()
+        admin_whatsapp = admin_user.phone if admin_user else '918805433102'
+        
+        context = {
+            'cart_items': cart_items,
+            'item_count': len(cart_items),
+            'subtotal': float(subtotal),
+            'shipping': float(shipping),
+            'tax': float(tax),
+            'total': float(total),
+            'cart_limit': 10,
+            'remaining_slots': 10 - len(cart_items),
+            'cart_id': cart.id,
+            'free_shipping_threshold': free_shipping_threshold,
+            'free_shipping_qualified': free_shipping_qualified,
+            'remaining_for_free_shipping': float(remaining_for_free_shipping),
+            'needs_shipping': shipping > 0,
+            'is_authenticated': request.user.is_authenticated,
+            'admin_whatsapp': admin_whatsapp,  # Add this
+            'MEDIA_URL': settings.MEDIA_URL,
+        }
+        
+        return render(request, 'store/cart.html', context)
+    except Exception as e:
+        logger.exception(f"Error in cart_view: {str(e)}")
+        messages.error(request, 'Something went wrong while loading your cart.')
+        return redirect('shop')
 
 # ------------------- CART MERGE ON LOGIN -------------------
 

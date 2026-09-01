@@ -451,7 +451,7 @@
         /* Fonts */
         :root {
             --default-font: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            --heading-font: "Quicksand", sans-serif;
+            --heading-font: 'Merriweather', 'Georgia', serif;
             --nav-font: "Ubuntu", sans-serif;
         }
 
@@ -2612,3 +2612,43 @@
         padding: 8px 0 8px 15px;
     }
 }
+
+/* Navigation Icons - Desktop */
+.nav-menu-link i {
+    font-size: 1.1rem;
+    vertical-align: middle;
+    transition: transform 0.2s ease;
+}
+
+.nav-menu-link:hover i {
+    transform: translateY(-1px);
+}
+
+.nav-menu-link.active i {
+    color: var(--accent-color);
+}
+
+/* Mobile Menu Icons */
+.mobile-nav-menu-link i {
+    font-size: 1.2rem;
+    width: 28px;
+    text-align: center;
+    vertical-align: middle;
+    color: var(--accent-color);
+    transition: transform 0.2s ease;
+}
+
+.mobile-nav-menu-link:hover i {
+    transform: scale(1.1);
+}
+
+.mobile-nav-menu-link.active i {
+    color: var(--accent-color);
+}
+
+/* Ensure proper spacing between icon and text */
+.nav-menu-link .me-1,
+.mobile-nav-menu-link .me-2 {
+    display: inline-block;
+}
+
