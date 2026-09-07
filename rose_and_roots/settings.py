@@ -4,6 +4,10 @@ Django settings for rose_and_roots project.
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -210,11 +214,11 @@ CACHES = {
 # EMAIL SETTINGS
 # ============================================
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'littlecraftone.support@gmail.com'
-EMAIL_HOST_PASSWORD = 'bpnnxxdlyacmphsp'  # CHANGE THIS in production
+EMAIL_HOST = 'smtp-relay.brevo.com'  
+EMAIL_PORT = 2525  
+EMAIL_USE_TLS = True  
+EMAIL_HOST_USER = 'b83989001@smtp-brevo.com' 
+EMAIL_HOST_PASSWORD = os.environ.get('BREVO_SMTP_KEY', '')
 DEFAULT_FROM_EMAIL = 'LittleCraftOne <littlecraftone.support@gmail.com>'
 EMAIL_TIMEOUT = 30
 
