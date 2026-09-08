@@ -130,6 +130,13 @@ class SessionValidationMiddleware(MiddlewareMixin):
     Validates session integrity on browser navigation.
     """
     
+    PUBLIC_PAGES = [
+        '/login/', '/register/', '/logout/', 
+        '/static/', '/media/', '/admin/',
+        '/',  # Home page
+        '/check-session/',
+    ]
+    
     def process_response(self, request, response):
         # Add headers to prevent caching of authenticated pages
         if request.user.is_authenticated:
@@ -207,7 +214,13 @@ class SessionValidationMiddleware(MiddlewareMixin):
                 return redirect('/')
         
         return None
-
+    
+    def _is_public_path(self, path):
+        """Check if path is public"""
+        for public_page in self.PUBLIC_PAGES:
+            if path.startswith(public_page):
+                return True
+        return False
 
 class CacheControlMiddleware(MiddlewareMixin):
     """

@@ -57,9 +57,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
     # 'store.middleware.DirectAccessMiddleware',
-    # 'store.middleware_navigation.CacheControlMiddleware',
-    # 'store.middleware_navigation.SessionValidationMiddleware',
-    # 'store.middleware_navigation.BrowserNavigationMiddleware',
+    'store.middleware_navigation.CacheControlMiddleware',
+    'store.middleware_navigation.SessionValidationMiddleware',
+    'store.middleware_navigation.BrowserNavigationMiddleware',
 ]
 
 # ============================================
