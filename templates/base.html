@@ -973,11 +973,31 @@
                         <div class="footer-links">
                             <h4>Customer Service</h4>
                             <ul>
-                                <li><a href="#"><i class="bi bi-chevron-right"></i> FAQs</a></li>
-                                <li><a href="#"><i class="bi bi-chevron-right"></i> Shipping Info</a></li>
-                                <li><a href="#"><i class="bi bi-chevron-right"></i> Returns & Refunds</a></li>
-                                <li><a href="#"><i class="bi bi-chevron-right"></i> Privacy Policy</a></li>
-                                <li><a href="#"><i class="bi bi-chevron-right"></i> Terms of Service</a></li>
+                                <li>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#faqModal">
+                                        <i class="bi bi-chevron-right"></i> FAQs
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#shippingModal">
+                                        <i class="bi bi-chevron-right"></i> Shipping Info
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#returnsModal">
+                                        <i class="bi bi-chevron-right"></i> Returns & Refunds
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">
+                                        <i class="bi bi-chevron-right"></i> Privacy Policy
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">
+                                        <i class="bi bi-chevron-right"></i> Terms of Service
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -1010,7 +1030,7 @@
                         </div>
                         
                         <!-- Newsletter -->
-                        <div class="newsletter">
+                        {% comment %} <div class="newsletter">
                             <h5>Join Our Newsletter</h5>
                             <div class="newsletter-form">
                                 <input type="email" placeholder="Your email address" id="footerNewsletterEmail">
@@ -1019,7 +1039,7 @@
                                 </button>
                             </div>
                             <small>Get updates on new arrivals & exclusive offers</small>
-                        </div>
+                        </div> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -1037,6 +1057,399 @@
             </div>
         </div>
     </footer>
+
+    <!-- ===== FOOTER INFO MODALS ===== -->
+
+    <!-- FAQ Modal -->
+    <div class="modal fade footer-info-modal" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-header-content">
+                        <div class="modal-icon-wrapper">
+                            <i class="bi bi-question-circle-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title" id="faqModalLabel">Frequently Asked Questions</h5>
+                            <p class="modal-subtitle">Quick answers to common questions</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="accordion footer-accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    <i class="bi bi-patch-question me-2"></i> How long does delivery take?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Standard delivery takes <strong>3-5 business days</strong> across India. For same-day delivery (available in select cities), orders must be placed before <strong>12:00 PM</strong>. You'll receive tracking details via email and WhatsApp once your order ships.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    <i class="bi bi-palette me-2"></i> Can I customize my order?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Absolutely! We specialize in custom orders. You can personalize:
+                                    <ul class="modal-list mt-2">
+                                        <li>Colors and materials</li>
+                                        <li>Names, dates, and messages</li>
+                                        <li>Size and quantity</li>
+                                        <li>Packaging preferences</li>
+                                    </ul>
+                                    Simply message us on <a href="https://wa.me/918805433102" target="_blank" class="modal-link">WhatsApp</a> with your requirements.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    <i class="bi bi-credit-card me-2"></i> What payment methods do you accept?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We accept multiple payment options:
+                                    <ul class="modal-list mt-2">
+                                        <li><strong>UPI</strong> - Google Pay, PhonePe, Paytm</li>
+                                        <li><strong>Credit/Debit Cards</strong> - Visa, Mastercard, RuPay</li>
+                                        <li><strong>Net Banking</strong> - All major banks</li>
+                                        <li><strong>Cash on Delivery</strong> - Available for orders under ₹5,000</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    <i class="bi bi-truck me-2"></i> Do you offer same-day delivery?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! Same-day delivery is available for fresh bouquets in select cities. Look for the <span class="badge-sameday-demo">Same Day</span> badge on product pages. Orders must be placed before 12:00 PM for same-day delivery.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                    <i class="bi bi-arrow-repeat me-2"></i> Can I modify or cancel my order?
+                                </button>
+                            </h2>
+                            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    You can modify or cancel your order within <strong>2 hours</strong> of placing it (for non-custom orders). For custom orders, please contact us within <strong>30 minutes</strong> as we begin crafting immediately. Reach us on WhatsApp at <a href="tel:+918805433102" class="modal-link">+91 88054 33102</a>.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="https://wa.me/918805433102" target="_blank" class="btn-modal-primary">
+                        <i class="bi bi-whatsapp"></i> Still have questions? Chat with us
+                    </a>
+                    <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipping Info Modal -->
+    <div class="modal fade footer-info-modal" id="shippingModal" tabindex="-1" aria-labelledby="shippingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-header-content">
+                        <div class="modal-icon-wrapper">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title" id="shippingModalLabel">Shipping Information</h5>
+                            <p class="modal-subtitle">Everything about delivery & tracking</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="info-card">
+                        <div class="info-card-icon"><i class="bi bi-box-seam"></i></div>
+                        <div>
+                            <h6>Standard Shipping</h6>
+                            <p>Delivered within <strong>3-5 business days</strong>. Free on orders above <strong>₹2000</strong>. Otherwise, a flat fee of ₹99 applies.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                        <div>
+                            <h6>Express Shipping</h6>
+                            <p>Delivered within <strong>1-2 business days</strong>. Available for ₹199. Perfect for last-minute gifts!</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon"><i class="bi bi-clock-history"></i></div>
+                        <div>
+                            <h6>Same-Day Delivery</h6>
+                            <p>Available for fresh bouquets in select cities. Order before <strong>12:00 PM</strong>. Delivery by 8:00 PM same day.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                        <div>
+                            <h6>Delivery Areas</h6>
+                            <p>We deliver <strong>all across India</strong>. International shipping available on request for custom orders.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon"><i class="bi bi-search"></i></div>
+                        <div>
+                            <h6>Order Tracking</h6>
+                            <p>Once your order ships, you'll receive a tracking link via <strong>email & WhatsApp</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'shop' %}" class="btn-modal-primary">
+                        <i class="bi bi-bag"></i> Start Shopping
+                    </a>
+                    <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Returns & Refunds Modal -->
+    <div class="modal fade footer-info-modal" id="returnsModal" tabindex="-1" aria-labelledby="returnsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-header-content">
+                        <div class="modal-icon-wrapper">
+                            <i class="bi bi-arrow-return-left"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title" id="returnsModalLabel">Returns & Refunds</h5>
+                            <p class="modal-subtitle">Hassle-free returns policy</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="policy-highlight">
+                        <i class="bi bi-shield-check"></i>
+                        <div>
+                            <strong>7-Day Return Policy</strong>
+                            <p>Not satisfied? Return within 7 days of delivery for a full refund.</p>
+                        </div>
+                    </div>
+
+                    <h6 class="modal-section-title"><i class="bi bi-check-circle-fill me-2"></i>Eligible for Return</h6>
+                    <ul class="modal-list">
+                        <li>Damaged or defective items</li>
+                        <li>Wrong item delivered</li>
+                        <li>Item significantly different from description</li>
+                        <li>Non-custom, unused products in original packaging</li>
+                    </ul>
+
+                    <h6 class="modal-section-title mt-4"><i class="bi bi-x-circle-fill me-2"></i>Not Eligible for Return</h6>
+                    <ul class="modal-list modal-list-danger">
+                        <li>Custom/personalized orders</li>
+                        <li>Fresh flowers & perishable items</li>
+                        <li>Products used or damaged by customer</li>
+                        <li>Items without original packaging</li>
+                    </ul>
+
+                    <h6 class="modal-section-title mt-4"><i class="bi bi-arrow-repeat me-2"></i>How to Initiate a Return</h6>
+                    <div class="steps-container">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div>
+                                <strong>Contact Us</strong>
+                                <p>Message us on WhatsApp within 7 days with your order ID and photos.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div>
+                                <strong>Approval</strong>
+                                <p>We'll review and approve your request within 24 hours.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div>
+                                <strong>Pickup</strong>
+                                <p>We'll arrange a free pickup from your address.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div>
+                                <strong>Refund</strong>
+                                <p>Refund processed within <strong>5-7 business days</strong> to original payment method.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="https://wa.me/918805433102?text=I%20want%20to%20initiate%20a%20return" target="_blank" class="btn-modal-primary">
+                        <i class="bi bi-whatsapp"></i> Initiate Return
+                    </a>
+                    <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal fade footer-info-modal" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-header-content">
+                        <div class="modal-icon-wrapper">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+                            <p class="modal-subtitle">Your data, your control</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-updated"><i class="bi bi-calendar-check me-2"></i>Last updated: {% now "F Y" %}</p>
+
+                    <div class="privacy-section">
+                        <h6><i class="bi bi-info-circle-fill"></i> Information We Collect</h6>
+                        <p>We collect information you provide directly, including:</p>
+                        <ul class="modal-list">
+                            <li>Name, email, phone number</li>
+                            <li>Order history and preferences</li>
+                            <li>Communication with our support team</li>
+                        </ul>
+                    </div>
+
+                    <div class="privacy-section">
+                        <h6><i class="bi bi-gear-fill"></i> How We Use Your Information</h6>
+                        <ul class="modal-list">
+                            <li>Process and deliver your orders</li>
+                            <li>Send order updates and tracking information</li>
+                            <li>Respond to your inquiries and support requests</li>
+                            <li>Improve our products and services</li>
+                            <li>Send promotional offers (with your consent)</li>
+                        </ul>
+                    </div>
+
+                    <div class="privacy-section">
+                        <h6><i class="bi bi-lock-fill"></i> Data Security</h6>
+                        <p>We implement industry-standard security measures including <strong>SSL encryption</strong>, secure servers, and strict access controls.</p>
+                    </div>
+
+                    <div class="privacy-section">
+                        <h6><i class="bi bi-share-fill"></i> Information Sharing</h6>
+                        <p>We <strong>never sell your personal data</strong>. We only share information with:</p>
+                        <ul class="modal-list">
+                            <li>Delivery partners (for shipping only)</li>
+                        </ul>
+                    </div>
+
+                    <div class="privacy-section">
+                        <h6><i class="bi bi-person-check-fill"></i> Your Rights</h6>
+                        <p>You have the right to access, correct, or delete your personal data. To exercise these rights, contact us at <a href="mailto:littlecraftone.support@gmail.com" class="modal-link">littlecraftone.support@gmail.com</a>.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="mailto:littlecraftone.support@gmail.com" class="btn-modal-primary">
+                        <i class="bi bi-envelope"></i> Contact Privacy Team
+                    </a>
+                    <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div class="modal fade footer-info-modal" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-header-content">
+                        <div class="modal-icon-wrapper">
+                            <i class="bi bi-file-earmark-text-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title" id="termsModalLabel">Terms of Service</h5>
+                            <p class="modal-subtitle">Please read carefully</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-updated"><i class="bi bi-calendar-check me-2"></i>Last updated: {% now "F Y" %}</p>
+
+                    <div class="terms-section">
+                        <h6><i class="bi bi-1-circle-fill"></i> Acceptance of Terms</h6>
+                        <p>By accessing and using LittleCraftOne, you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.</p>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6><i class="bi bi-2-circle-fill"></i> Products & Services</h6>
+                        <ul class="modal-list">
+                            <li>All products are handcrafted, so slight variations may occur</li>
+                            <li>Product images are for reference; actual colors may vary slightly</li>
+                            <li>Fresh flower availability is subject to seasonal availability</li>
+                            <li>Custom orders require advance payment and are non-refundable</li>
+                        </ul>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6><i class="bi bi-3-circle-fill"></i> Orders & Payment</h6>
+                        <ul class="modal-list">
+                            <li>All prices are in Indian Rupees (₹)</li>
+                            <li>We reserve the right to cancel orders due to pricing errors</li>
+                            <li>Payment must be completed before order processing</li>
+                            <li>Custom orders require 50% advance payment</li>
+                        </ul>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6><i class="bi bi-4-circle-fill"></i> Intellectual Property</h6>
+                        <p>All content on LittleCraftOne, including designs, images, logos, and text, is our intellectual property and protected by copyright laws. You may not reproduce, distribute, or use our content without written permission.</p>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6><i class="bi bi-5-circle-fill"></i> Limitation of Liability</h6>
+                        <p>LittleCraftOne is not liable for:</p>
+                        <ul class="modal-list">
+                            <li>Delays caused by courier partners or natural events</li>
+                            <li>Damage to perishable items after delivery</li>
+                            <li>Indirect or consequential damages</li>
+                        </ul>
+                        <p class="mt-2">Our maximum liability is limited to the value of the order.</p>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6><i class="bi bi-6-circle-fill"></i> Contact</h6>
+                        <p>For questions about these Terms, contact us at <a href="mailto:littlecraftone.support@gmail.com" class="modal-link">littlecraftone.support@gmail.com</a> or WhatsApp <a href="tel:+918805433102" class="modal-link">+91 88054 33102</a>.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-primary" data-bs-dismiss="modal">
+                        <i class="bi bi-check-lg"></i> I Accept
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -1589,6 +2002,18 @@
             });
         });
     </script>   
+
+    <script>
+        // Prevent footer modal links from scrolling to top
+        document.addEventListener('DOMContentLoaded', function() {
+            const footerModalLinks = document.querySelectorAll('.footer-links a[data-bs-toggle="modal"]');
+            footerModalLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                });
+            });
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 
