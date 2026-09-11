@@ -164,10 +164,15 @@ PASSWORD_HASHERS = [
 # ============================================
 # SECURITY HEADERS - HTTPS/SSL
 # ============================================
-SECURE_SSL_REDIRECT = False  # Set to True if using HTTPS
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+# SECURE_SSL_REDIRECT = False  
+# SECURE_HSTS_SECONDS = 31536000
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = False       
+SECURE_HSTS_SECONDS = 0          
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False 
+SECURE_HSTS_PRELOAD = False       
+SECURE_PROXY_SSL_HEADER = None    
 
 # ============================================
 # SECURITY HEADERS - XSS, CLICKJACKING, ETC
