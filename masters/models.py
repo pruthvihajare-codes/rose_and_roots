@@ -35,7 +35,7 @@ class Bouquet(models.Model):
     discount_percent = models.IntegerField(null=True, blank=True)
 
     instruction_text = models.CharField(max_length=500, null=True, blank=True)
-    delivery_info = models.CharField(max_length=255, null=True, blank=True)
+    delivery_info = models.CharField(max_length=1555, null=True, blank=True)
 
     same_day_available = models.IntegerField(default=0)
     is_featured = models.IntegerField(default=0)
