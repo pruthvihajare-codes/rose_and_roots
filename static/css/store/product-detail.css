@@ -224,7 +224,7 @@
 
 /* Product Price */
 .product-price {
-    margin-bottom: 25px;
+    /* margin-bottom: 25px; */
     display: flex;
     align-items: center;
     gap: 15px;
@@ -255,7 +255,7 @@
 /* Short Description */
 .short-description {
     margin-bottom: 25px;
-    padding-bottom: 25px;
+    /* padding-bottom: 25px; */
     border-bottom: 1px solid rgba(140, 13, 79, 0.1);
 }
 
