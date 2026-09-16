@@ -40,43 +40,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const rows = tableBody ? tableBody.getElementsByTagName('tr') : [];
 
     // Add data attributes to rows for better filtering
-    if (rows.length > 0) {
-        Array.from(rows).forEach(row => {
-            // Skip empty state row
-            if (row.querySelector('.empty-state')) return;
+    // if (rows.length > 0) {
+    //     Array.from(rows).forEach(row => {
+    //         // Skip empty state row
+    //         if (row.querySelector('.empty-state')) return;
             
-            // Add category data attribute
-            const categoryCell = row.cells[3]?.querySelector('.category-badge');
-            if (categoryCell) {
-                const categoryText = categoryCell.textContent.trim();
-                // Find matching category in filter dropdown
-                if (filterCategory) {
-                    const categoryOptions = Array.from(filterCategory.options);
-                    const matchingOption = categoryOptions.find(opt => 
-                        opt.text.trim() === categoryText
-                    );
-                    if (matchingOption) {
-                        row.dataset.categoryId = matchingOption.value;
-                    } else {
-                        row.dataset.categoryId = 'uncategorized';
-                    }
-                }
-            }
+    //         // Add category data attribute
+    //         const categoryCell = row.cells[3]?.querySelector('.category-badge');
+    //         if (categoryCell) {
+    //             const categoryText = categoryCell.textContent.trim();
+    //             // Find matching category in filter dropdown
+    //             if (filterCategory) {
+    //                 const categoryOptions = Array.from(filterCategory.options);
+    //                 const matchingOption = categoryOptions.find(opt => 
+    //                     opt.text.trim() === categoryText
+    //                 );
+    //                 if (matchingOption) {
+    //                     row.dataset.categoryId = matchingOption.value;
+    //                 } else {
+    //                     row.dataset.categoryId = 'uncategorized';
+    //                 }
+    //             }
+    //         }
             
-            // Add occasion data for better filtering
-            const occasionCell = row.cells[7]?.querySelector('.occasion-tags');
-            if (occasionCell) {
-                row.dataset.occasionText = occasionCell.textContent.toLowerCase();
-            }
-        });
-    }
+    //         // Add occasion data for better filtering
+    //         const occasionCell = row.cells[7]?.querySelector('.occasion-tags');
+    //         if (occasionCell) {
+    //             row.dataset.occasionText = occasionCell.textContent.toLowerCase();
+    //         }
+    //     });
+    // }
 
     if (searchInput && filterOccasion && filterCategory && filterStatus) {
         
         function filterTable() {
             const searchTerm = searchInput.value.toLowerCase().trim();
             const occasionFilter = filterOccasion.value;
-            const categoryFilter = filterCategory.value;  // Get category filter value
+            const categoryFilter = filterCategory.value;
             const statusFilter = filterStatus.value;
             
             let visibleCount = 0;
@@ -85,41 +85,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Skip empty state row
                 if (row.querySelector('.empty-state')) return;
                 
-                const bouquetName = row.cells[2]?.querySelector('strong')?.textContent.toLowerCase() || '';
-                const occasionTags = row.cells[7]?.textContent.toLowerCase() || '';
-                const rowCategoryId = row.dataset.categoryId || '';  // Get row's category ID
-                const statusCell = row.cells[8]?.querySelector('.status-badge');  // Updated index for status
+                // Correct column indexes (no ID column anymore):
+                // 0=Image, 1=Name, 2=Category, 3=Price, 4=Discount, 5=Final, 6=Occasions, 7=Status, 8=Actions
+                const bouquetName = row.cells[1]?.querySelector('strong')?.textContent.toLowerCase() || '';
+                const occasionTags = row.cells[6]?.textContent.toLowerCase() || '';
+                const rowCategoryName = row.dataset.categoryName || '';
+                const statusCell = row.cells[7]?.querySelector('.status-badge');
                 const status = statusCell ? (statusCell.classList.contains('status-active') ? '1' : '0') : '';
                 
                 let matchesSearch = true;
                 let matchesOccasion = true;
-                let matchesCategory = true;  // New category match flag
+                let matchesCategory = true;
                 let matchesStatus = true;
                 
-                // Search filter
                 if (searchTerm) {
                     matchesSearch = bouquetName.includes(searchTerm) || occasionTags.includes(searchTerm);
                 }
                 
-                // Occasion filter
                 if (occasionFilter) {
-                    // Get the selected occasion text
                     const selectedOption = filterOccasion.options[filterOccasion.selectedIndex];
                     const selectedOccasionText = selectedOption.text.toLowerCase();
                     matchesOccasion = occasionTags.includes(selectedOccasionText);
                 }
                 
-                // Category filter - NEW
                 if (categoryFilter) {
-                    matchesCategory = rowCategoryId === categoryFilter;
+                    matchesCategory = rowCategoryName === categoryFilter;
                 }
                 
-                // Status filter
                 if (statusFilter !== '') {
                     matchesStatus = status === statusFilter;
                 }
                 
-                // Show/hide row - include category match
                 if (matchesSearch && matchesOccasion && matchesCategory && matchesStatus) {
                     row.style.display = '';
                     visibleCount++;
@@ -128,12 +124,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Show/hide clear search button
             if (clearSearch) {
                 clearSearch.style.display = searchTerm ? 'block' : 'none';
             }
             
-            // Show empty state if no results
             showEmptyState(visibleCount === 0);
         }
         

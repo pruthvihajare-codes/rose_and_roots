@@ -878,6 +878,17 @@ def bouquet_list(request):
             isactive=1
         ).order_by('parameter_value')
         
+        # Encrypt each category's ID before sending to template
+        categories_list = []
+        for cat in categories:
+            cat.encrypted_id = enc(str(cat.parameter_id))
+            categories_list.append(cat)
+
+        occasions_list = []
+        for occ in occasions:
+            occ.encrypted_id = enc(str(occ.id))
+            occasions_list.append(occ)
+        
         # Add encrypted IDs and additional data
         bouquet_list = []
         for bouquet in bouquets:
@@ -895,14 +906,17 @@ def bouquet_list(request):
             
             # Add category name and ID for filtering
             bouquet.category_name = bouquet.category.parameter_value if bouquet.category else 'Uncategorized'
-            bouquet.category_id = bouquet.category.parameter_id if bouquet.category else None
+            # bouquet.category_id = bouquet.category.parameter_id if bouquet.category else None
+            bouquet.category_id = (
+                enc(str(bouquet.category.parameter_id)) if bouquet.category else None
+            )
                 
             bouquet_list.append(bouquet)
         
         context = {
             'bouquets': bouquet_list,
-            'occasions': occasions,
-            'categories': categories,  # Add categories to context
+            'occasions': occasions_list,
+            'categories': categories_list,  # Add categories to context
             "MEDIA_URL": settings.MEDIA_URL,
         }
         return render(request, 'masters/bouquet_list.html', context)
