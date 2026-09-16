@@ -5,6 +5,10 @@
 
 {% block extra_css %}
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
         /* Same CSS as before - keeping it consistent */
         .contact-hero {
             background: linear-gradient(135deg, rgba(62, 9, 37, 0.95), rgba(140, 13, 79, 0.9)), 
@@ -1153,9 +1157,10 @@
     <script>
         // ===== AUTO SCROLL TO CONTACT FORM SECTION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Small delay to ensure page is fully loaded
+            // Don't auto-scroll if user arrived via an anchor link (e.g. #faq-section)
+            if (window.location.hash) return;
+
             setTimeout(function() {
-                // Scroll to the contact form wrapper
                 const contactForm = document.querySelector('.contact-form-wrapper');
                 if (contactForm) {
                     contactForm.scrollIntoView({ 
@@ -1166,7 +1171,6 @@
             }, 300);
         });
 
-        // ... keep your existing FAQ and form validation scripts ...
     </script>
 
 {% endblock %}
