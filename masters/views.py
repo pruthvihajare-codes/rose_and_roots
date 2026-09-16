@@ -239,6 +239,10 @@ def send_contact_email(request):
                 .content {{ background: #fef5f8; padding: 30px; border-radius: 0 0 10px 10px; }}
                 .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
                 .highlight {{ color: #8c0d4f; font-weight: bold; }}
+                
+                html {{
+                    scroll-behavior: smooth;
+                }}
             </style>
         </head>
         <body>
@@ -260,9 +264,9 @@ def send_contact_email(request):
                     
                     <p>In the meantime, you can:</p>
                     <ul>
-                        <li>📦 Check our <a href="https://yourdomain.com/shop">Shop</a> for more beautiful creations</li>
+                        <li>📦 Check our <a href="http://168.144.184.87/shop/">Shop</a> for more beautiful creations</li>
                         <li>✨ Follow us on <a href="https://instagram.com/littlecraftone">Instagram</a> for daily inspiration</li>
-                        <li>💬 Read our <a href="https://yourdomain.com/faq">FAQ</a> for quick answers</li>
+                        <li>💬 Read our <a href="http://168.144.184.87/contact-us/#faq-section">FAQ</a> for quick answers</li>
                     </ul>
                     
                     <p>We look forward to connecting with you!</p>
